@@ -334,17 +334,83 @@ export default function RecipeDetail() {
                     </Badge>
                   )}
 
-                  {totalTime > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  {editingField === "prepTime" ? (
+                    <Input
+                      type="number"
+                      defaultValue={recipe.prepTime || ""}
+                      placeholder="Prep min"
+                      autoFocus
+                      className="w-20 h-7 text-sm"
+                      onBlur={(e) => handleSave("prepTime", e.target.value ? parseInt(e.target.value) : null)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSave("prepTime", e.currentTarget.value ? parseInt(e.currentTarget.value) : null);
+                        else if (e.key === "Escape") setEditingField(null);
+                      }}
+                      data-testid="input-prep-time"
+                    />
+                  ) : (
+                    <div 
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer group"
+                      onClick={() => setEditingField("prepTime")}
+                      data-testid="text-prep-time"
+                    >
                       <Clock className="h-3.5 w-3.5" />
-                      <span className="font-data">{totalTime} min</span>
+                      <span className="font-data">{recipe.prepTime || 0}m prep</span>
+                      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
                     </div>
                   )}
 
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span>
-                  </div>
+                  {editingField === "cookTime" ? (
+                    <Input
+                      type="number"
+                      defaultValue={recipe.cookTime || ""}
+                      placeholder="Cook min"
+                      autoFocus
+                      className="w-20 h-7 text-sm"
+                      onBlur={(e) => handleSave("cookTime", e.target.value ? parseInt(e.target.value) : null)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSave("cookTime", e.currentTarget.value ? parseInt(e.currentTarget.value) : null);
+                        else if (e.key === "Escape") setEditingField(null);
+                      }}
+                      data-testid="input-cook-time"
+                    />
+                  ) : (
+                    <div 
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer group"
+                      onClick={() => setEditingField("cookTime")}
+                      data-testid="text-cook-time"
+                    >
+                      <Clock className="h-3.5 w-3.5" />
+                      <span className="font-data">{recipe.cookTime || 0}m cook</span>
+                      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                    </div>
+                  )}
+
+                  {editingField === "servings" ? (
+                    <Input
+                      type="number"
+                      defaultValue={recipe.servings || ""}
+                      placeholder="Servings"
+                      autoFocus
+                      className="w-16 h-7 text-sm"
+                      onBlur={(e) => handleSave("servings", e.target.value ? parseInt(e.target.value) : null)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSave("servings", e.currentTarget.value ? parseInt(e.currentTarget.value) : null);
+                        else if (e.key === "Escape") setEditingField(null);
+                      }}
+                      data-testid="input-servings"
+                    />
+                  ) : (
+                    <div 
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer group"
+                      onClick={() => setEditingField("servings")}
+                      data-testid="text-servings"
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                      <span className="font-data">{Math.round((recipe.servings || 4) * scale)} servings</span>
+                      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                    </div>
+                  )}
 
                   <code className="text-xs text-muted-foreground font-data ml-auto" data-testid="text-recipe-id">
                     #{recipe.id}
