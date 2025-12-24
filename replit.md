@@ -6,10 +6,13 @@ Recipe Tracker is a family recipe management application that allows users to or
 
 ## Recent Changes (December 2024)
 
+- **OpenSea-inspired design rebrand**: Dark minimal aesthetic with flat design, 1px borders for depth, no shadows/glows
+- Updated color system: dark neutrals (#0c0c0d base, #1a1a1d cards, #2a2a2d borders), electric blue primary (#2081e2)
+- Added monospace font utility (`.font-data`) for numerical data display (times, servings, recipe IDs)
+- Removed premium effects: glassmorphism, shadows, glows, gradients, backdrop blur, image zoom
 - Implemented complete frontend with landing page, home page (grid/list view), recipe detail with scaling, AI wizard, manual entry form, family settings, and family onboarding
 - Created backend API routes for families (CRUD, invite/join) and recipes (CRUD, AI processing, PDF export)
 - Added recipe scaling with fraction display (1/2, 1/4, 2/3, etc.) using custom fraction utility
-- Implemented theme toggle with dark/light mode support via ThemeProvider context
 - Fixed family API to return null with 200 status (not 404) for proper onboarding flow
 - Added validation for AI-extracted recipe data to ensure proper structure
 
@@ -25,7 +28,7 @@ Preferred communication style: Simple, everyday language.
 - **State Management**: TanStack Query for server state, React hooks for local state
 - **Styling**: Tailwind CSS with shadcn/ui component library (New York style)
 - **Build Tool**: Vite with path aliases (`@/` for client src, `@shared/` for shared code)
-- **Design System**: Material Design 3 principles with Inter font family
+- **Design System**: OpenSea-inspired dark minimal aesthetic with Inter/JetBrains Mono fonts
 
 The frontend follows a page-based architecture with:
 - Protected routes for authenticated users
