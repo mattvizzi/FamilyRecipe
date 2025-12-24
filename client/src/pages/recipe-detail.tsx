@@ -1,18 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Header } from "@/components/header";
+import { RecipeEditDrawer } from "@/components/recipe-edit-drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Collapsible,
   CollapsibleContent,
@@ -46,8 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { scaleAmount } from "@/lib/fraction";
 import { abbreviateUnit } from "@/lib/units";
-import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
-import { recipeCategories } from "@shared/schema";
+import type { RecipeWithCreator, Family } from "@shared/schema";
 
 export default function RecipeDetail() {
   const [, params] = useRoute("/recipe/:id");
@@ -56,7 +48,7 @@ export default function RecipeDetail() {
   const recipeId = params?.id;
 
   const [scale, setScale] = useState(1);
-  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set([0]));
 
   const { data: family } = useQuery<Family>({
@@ -66,21 +58,6 @@ export default function RecipeDetail() {
   const { data: recipe, isLoading } = useQuery<RecipeWithCreator>({
     queryKey: ["/api/recipes", recipeId],
     enabled: !!recipeId,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (data: Partial<RecipeWithCreator>) => {
-      return apiRequest("PATCH", `/api/recipes/${recipeId}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/recipes", recipeId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
-      setEditingField(null);
-      toast({ title: "Saved", description: "Recipe updated successfully" });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to update recipe", variant: "destructive" });
-    },
   });
 
   const deleteMutation = useMutation({
@@ -96,10 +73,6 @@ export default function RecipeDetail() {
       toast({ title: "Error", description: "Failed to delete recipe", variant: "destructive" });
     },
   });
-
-  const handleSave = useCallback((field: string, value: unknown) => {
-    updateMutation.mutate({ [field]: value });
-  }, [updateMutation]);
 
   const toggleGroup = (index: number) => {
     const newExpanded = new Set(expandedGroups);
@@ -222,6 +195,10 @@ export default function RecipeDetail() {
           </Button>
           
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
+              <Pencil className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Edit</span>
+            </Button>
             <Button variant="ghost" size="sm" onClick={copyToClipboard} data-testid="button-copy">
               <Copy className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Copy</span>
@@ -278,139 +255,33 @@ export default function RecipeDetail() {
               </div>
 
               <div>
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    {editingField === "name" ? (
-                      <Input
-                        defaultValue={recipe.name}
-                        autoFocus
-                        onBlur={(e) => handleSave("name", e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleSave("name", e.currentTarget.value);
-                          } else if (e.key === "Escape") {
-                            setEditingField(null);
-                          }
-                        }}
-                        className="text-3xl font-bold h-auto py-2 rounded-xl"
-                        data-testid="input-recipe-name"
-                      />
-                    ) : (
-                      <h1 
-                        className="text-2xl md:text-3xl font-bold cursor-pointer inline-flex items-center gap-3 group"
-                        onClick={() => setEditingField("name")}
-                        data-testid="text-recipe-name"
-                      >
-                        {recipe.name}
-                        <Pencil className="h-4 w-4 opacity-0 group-hover:opacity-50 transition-opacity text-muted-foreground" />
-                      </h1>
-                    )}
-                  </div>
-                </div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-4" data-testid="text-recipe-name">
+                  {recipe.name}
+                </h1>
 
                 <div className="flex flex-wrap items-center gap-3 mb-5">
-                  {editingField === "category" ? (
-                    <Select
-                      defaultValue={recipe.category}
-                      onValueChange={(v) => handleSave("category", v)}
-                    >
-                      <SelectTrigger className="w-36">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {recipeCategories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Badge 
-                      variant="secondary" 
-                      className="cursor-pointer text-xs"
-                      onClick={() => setEditingField("category")}
-                      data-testid="badge-category"
-                    >
-                      {recipe.category}
-                    </Badge>
-                  )}
+                  <Badge variant="secondary" className="text-xs" data-testid="badge-category">
+                    {recipe.category}
+                  </Badge>
 
-                  {editingField === "prepTime" ? (
-                    <Input
-                      type="number"
-                      defaultValue={recipe.prepTime || ""}
-                      placeholder="Prep min"
-                      autoFocus
-                      className="w-20 h-7 text-sm"
-                      onBlur={(e) => handleSave("prepTime", e.target.value ? parseInt(e.target.value) : null)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSave("prepTime", e.currentTarget.value ? parseInt(e.currentTarget.value) : null);
-                        else if (e.key === "Escape") setEditingField(null);
-                      }}
-                      data-testid="input-prep-time"
-                    />
-                  ) : (
-                    <div 
-                      className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer group"
-                      onClick={() => setEditingField("prepTime")}
-                      data-testid="text-prep-time"
-                    >
+                  {(recipe.prepTime || 0) > 0 && (
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground" data-testid="text-prep-time">
                       <Clock className="h-3.5 w-3.5" />
-                      <span className="font-data">{recipe.prepTime || 0}m prep</span>
-                      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                      <span className="font-data">{recipe.prepTime}m prep</span>
                     </div>
                   )}
 
-                  {editingField === "cookTime" ? (
-                    <Input
-                      type="number"
-                      defaultValue={recipe.cookTime || ""}
-                      placeholder="Cook min"
-                      autoFocus
-                      className="w-20 h-7 text-sm"
-                      onBlur={(e) => handleSave("cookTime", e.target.value ? parseInt(e.target.value) : null)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSave("cookTime", e.currentTarget.value ? parseInt(e.currentTarget.value) : null);
-                        else if (e.key === "Escape") setEditingField(null);
-                      }}
-                      data-testid="input-cook-time"
-                    />
-                  ) : (
-                    <div 
-                      className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer group"
-                      onClick={() => setEditingField("cookTime")}
-                      data-testid="text-cook-time"
-                    >
+                  {(recipe.cookTime || 0) > 0 && (
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground" data-testid="text-cook-time">
                       <Clock className="h-3.5 w-3.5" />
-                      <span className="font-data">{recipe.cookTime || 0}m cook</span>
-                      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
+                      <span className="font-data">{recipe.cookTime}m cook</span>
                     </div>
                   )}
 
-                  {editingField === "servings" ? (
-                    <Input
-                      type="number"
-                      defaultValue={recipe.servings || ""}
-                      placeholder="Servings"
-                      autoFocus
-                      className="w-16 h-7 text-sm"
-                      onBlur={(e) => handleSave("servings", e.target.value ? parseInt(e.target.value) : null)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSave("servings", e.currentTarget.value ? parseInt(e.currentTarget.value) : null);
-                        else if (e.key === "Escape") setEditingField(null);
-                      }}
-                      data-testid="input-servings"
-                    />
-                  ) : (
-                    <div 
-                      className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer group"
-                      onClick={() => setEditingField("servings")}
-                      data-testid="text-servings"
-                    >
-                      <Users className="h-3.5 w-3.5" />
-                      <span className="font-data">{Math.round((recipe.servings || 4) * scale)} servings</span>
-                      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50 transition-opacity" />
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground" data-testid="text-servings">
+                    <Users className="h-3.5 w-3.5" />
+                    <span className="font-data">{Math.round((recipe.servings || 4) * scale)} servings</span>
+                  </div>
 
                   <code className="text-xs text-muted-foreground font-data ml-auto" data-testid="text-recipe-id">
                     #{recipe.id}
@@ -525,6 +396,12 @@ export default function RecipeDetail() {
           </div>
         </div>
       </main>
+
+      <RecipeEditDrawer 
+        recipe={recipe} 
+        open={editDrawerOpen} 
+        onOpenChange={setEditDrawerOpen} 
+      />
     </div>
   );
 }
