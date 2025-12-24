@@ -129,29 +129,45 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
 
   const addIngredient = (groupIndex: number) => {
     const groups = form.getValues("groups");
-    groups[groupIndex].ingredients.push({ name: "", amount: "", unit: "" });
-    form.setValue("groups", [...groups]);
+    const newGroups = groups.map((group, i) => 
+      i === groupIndex 
+        ? { ...group, ingredients: [...group.ingredients, { name: "", amount: "", unit: "" }] }
+        : group
+    );
+    form.setValue("groups", newGroups, { shouldDirty: true });
   };
 
   const removeIngredient = (groupIndex: number, ingredientIndex: number) => {
     const groups = form.getValues("groups");
     if (groups[groupIndex].ingredients.length > 1) {
-      groups[groupIndex].ingredients.splice(ingredientIndex, 1);
-      form.setValue("groups", [...groups]);
+      const newGroups = groups.map((group, i) => 
+        i === groupIndex 
+          ? { ...group, ingredients: group.ingredients.filter((_, j) => j !== ingredientIndex) }
+          : group
+      );
+      form.setValue("groups", newGroups, { shouldDirty: true });
     }
   };
 
   const addInstruction = (groupIndex: number) => {
     const groups = form.getValues("groups");
-    groups[groupIndex].instructions.push("");
-    form.setValue("groups", [...groups]);
+    const newGroups = groups.map((group, i) => 
+      i === groupIndex 
+        ? { ...group, instructions: [...group.instructions, ""] }
+        : group
+    );
+    form.setValue("groups", newGroups, { shouldDirty: true });
   };
 
   const removeInstruction = (groupIndex: number, instructionIndex: number) => {
     const groups = form.getValues("groups");
     if (groups[groupIndex].instructions.length > 1) {
-      groups[groupIndex].instructions.splice(instructionIndex, 1);
-      form.setValue("groups", [...groups]);
+      const newGroups = groups.map((group, i) => 
+        i === groupIndex 
+          ? { ...group, instructions: group.instructions.filter((_, j) => j !== instructionIndex) }
+          : group
+      );
+      form.setValue("groups", newGroups, { shouldDirty: true });
     }
   };
 
@@ -164,13 +180,13 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
         ingredients: [{ name: "", amount: "", unit: "" }],
         instructions: [""],
       },
-    ]);
+    ], { shouldDirty: true });
   };
 
   const removeGroup = (index: number) => {
     const groups = form.getValues("groups");
     if (groups.length > 1) {
-      form.setValue("groups", groups.filter((_, i) => i !== index));
+      form.setValue("groups", groups.filter((_, i) => i !== index), { shouldDirty: true });
     }
   };
 
