@@ -34,7 +34,10 @@ export function Header({ family }: HeaderProps) {
         <Link href="/">
           <div className="flex items-center gap-2.5 cursor-pointer group" data-testid="link-home">
             <img src={logoImage} alt="FamilyRecipe" className="w-9 h-9 rounded-lg object-cover" />
-            <span className="font-semibold text-base hidden sm:inline">FamilyRecipe</span>
+            <span className="hidden sm:inline">
+              <span className="text-lg font-bold tracking-tight">Family</span>
+              <span className="text-lg font-light text-primary tracking-tight">Recipe</span>
+            </span>
           </div>
         </Link>
 
