@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LayoutGrid, List, Search } from "lucide-react";
+import { LayoutGrid, List, Search, Plus } from "lucide-react";
+import { Link } from "wouter";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 
@@ -115,6 +116,12 @@ export default function Home() {
                       <List className="h-4 w-4" />
                     </Button>
                   </div>
+                  <Button asChild className="gap-2" data-testid="button-add-recipe">
+                    <Link href="/add-recipe">
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden sm:inline">Add Recipe</span>
+                    </Link>
+                  </Button>
                 </div>
               </div>
 
@@ -127,7 +134,7 @@ export default function Home() {
               ) : (
                 <div className={`animate-stagger ${viewMode === "grid" 
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-                  : "flex flex-col gap-4"
+                  : "grid grid-cols-1 md:grid-cols-2 gap-4"
                 }`}>
                   {filteredRecipes.map((recipe) => (
                     <RecipeCard key={recipe.id} recipe={recipe} viewMode={viewMode} />

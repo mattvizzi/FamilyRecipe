@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChefHat, Plus, LogOut, Users } from "lucide-react";
+import { ChefHat, LogOut, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { Family } from "@shared/schema";
 
@@ -42,13 +42,6 @@ export function Header({ family }: HeaderProps) {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Button asChild className="gap-2" data-testid="button-add-recipe">
-            <Link href="/add-recipe">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Add Recipe</span>
-            </Link>
-          </Button>
-
           <ThemeToggle />
 
           <DropdownMenu>

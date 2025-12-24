@@ -45,6 +45,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { scaleAmount } from "@/lib/fraction";
+import { abbreviateUnit } from "@/lib/units";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 
@@ -208,19 +209,58 @@ export default function RecipeDetail() {
     <div className="min-h-screen bg-background">
       <Header family={family} />
       
-      <main className="pt-20 px-6 pb-12">
-        <div className="max-w-7xl mx-auto">
+      <div className="fixed top-16 left-0 right-0 z-40 bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
           <Button 
             variant="ghost" 
-            size="sm" 
-            className="mb-5 -ml-2"
+            size="sm"
             onClick={() => navigate("/")}
             data-testid="button-back"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to recipes
+            Back
           </Button>
-
+          
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={copyToClipboard} data-testid="button-copy">
+              <Copy className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Copy</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={exportToPDF} data-testid="button-export-pdf">
+              <FileDown className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">PDF</span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-muted-foreground" data-testid="button-delete">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Delete</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete "{recipe.name}".
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => deleteMutation.mutate()}
+                    className="bg-destructive text-destructive-foreground"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </div>
+      
+      <main className="pt-32 px-6 pb-12">
+        <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-[1fr,380px] gap-10">
             <div className="space-y-6">
               <div className="rounded-lg overflow-hidden bg-muted aspect-video border border-border">
@@ -357,7 +397,7 @@ export default function RecipeDetail() {
               </div>
             </div>
 
-            <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
+            <div className="lg:sticky lg:top-32 lg:self-start">
               <Card className="border border-border">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between gap-2">
@@ -393,59 +433,28 @@ export default function RecipeDetail() {
                       {recipe.groups.length > 1 && (
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">{group.name}</p>
                       )}
-                      <ul className="space-y-2">
-                        {group.ingredients.map((ingredient, i) => {
-                          const scaledAmount = scaleAmount(ingredient.amount, scale);
-                          return (
-                            <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
-                              <span className="font-data font-medium min-w-[2rem] text-right text-primary">{scaledAmount}</span>
-                              <span className="text-muted-foreground min-w-[2.5rem]">{ingredient.unit}</span>
-                              <span>{ingredient.name}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
+                      <table className="w-full text-sm">
+                        <tbody>
+                          {group.ingredients.map((ingredient, i) => {
+                            const scaledAmount = scaleAmount(ingredient.amount, scale);
+                            return (
+                              <tr key={i} data-testid={`ingredient-${groupIndex}-${i}`}>
+                                <td className="py-1 pr-2 text-right align-baseline w-12">
+                                  <span className="font-data font-medium text-primary">{scaledAmount}</span>
+                                </td>
+                                <td className="py-1 pr-3 text-muted-foreground align-baseline w-14">
+                                  {abbreviateUnit(ingredient.unit)}
+                                </td>
+                                <td className="py-1 align-baseline">{ingredient.name}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
                     </div>
                   ))}
                 </CardContent>
               </Card>
-
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={copyToClipboard} data-testid="button-copy">
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy
-                </Button>
-                <Button variant="outline" className="flex-1" onClick={exportToPDF} data-testid="button-export-pdf">
-                  <FileDown className="h-4 w-4 mr-2" />
-                  PDF
-                </Button>
-              </div>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full text-muted-foreground" data-testid="button-delete">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Recipe
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete "{recipe.name}".
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => deleteMutation.mutate()}
-                      className="bg-destructive text-destructive-foreground"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
           </div>
         </div>

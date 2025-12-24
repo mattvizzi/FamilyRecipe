@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,6 +49,18 @@ export default function AddRecipe() {
   const { data: family } = useQuery<Family>({
     queryKey: ["/api/family"],
   });
+
+  useEffect(() => {
+    if (step === "processing") {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = "Recipe is still being processed. Are you sure you want to leave?";
+        return e.returnValue;
+      };
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }
+  }, [step]);
 
   const processRecipeMutation = useMutation({
     mutationFn: async (data: { method: string; content: string }) => {
@@ -222,6 +234,37 @@ export default function AddRecipe() {
     { id: "text", icon: FileText, label: "Type or Paste", description: "Enter recipe text" },
   ];
 
+  if (step === "processing") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="max-w-md w-full">
+          <Card className="border border-border">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                  <Loader2 className="h-5 w-5 text-primary-foreground animate-spin" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-base font-semibold">Processing Recipe</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {progressMessage || "Analyzing your recipe..."}
+                  </p>
+                </div>
+                <span className="text-sm font-data text-muted-foreground">{Math.round(progress)}%</span>
+              </div>
+              
+              <Progress value={progress} className="h-1.5" />
+              
+              <p className="text-xs text-muted-foreground mt-4">
+                Please don't close this page while processing.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header family={family} />
@@ -260,35 +303,32 @@ export default function AddRecipe() {
             {step === "select" && (
               <motion.div
                 key="select"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
               >
-                <div className="text-center mb-8">
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-10 w-10 text-primary" />
-                  </div>
-                  <h1 className="text-2xl font-bold mb-2">Add a New Recipe</h1>
-                  <p className="text-muted-foreground">
+                <div className="text-center mb-6">
+                  <h1 className="text-xl font-bold mb-2">Add a New Recipe</h1>
+                  <p className="text-sm text-muted-foreground">
                     Choose how you'd like to add your recipe
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {inputMethods.map((method) => (
                     <Card
                       key={method.id}
-                      className="cursor-pointer hover-elevate active-elevate-2 transition-all"
+                      className="cursor-pointer border border-border"
                       onClick={() => handleMethodSelect(method.id as InputMethod)}
                       data-testid={`card-method-${method.id}`}
                     >
-                      <CardContent className="p-6 text-center">
-                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                          <method.icon className="h-7 w-7 text-muted-foreground" />
+                      <CardContent className="p-5 text-center">
+                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-3">
+                          <method.icon className="h-6 w-6 text-muted-foreground" />
                         </div>
-                        <h3 className="font-medium mb-1">{method.label}</h3>
-                        <p className="text-sm text-muted-foreground">{method.description}</p>
+                        <h3 className="font-medium text-sm mb-1">{method.label}</h3>
+                        <p className="text-xs text-muted-foreground">{method.description}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -375,44 +415,6 @@ export default function AddRecipe() {
                         Process with AI
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {step === "processing" && (
-              <motion.div
-                key="processing"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <motion.div
-                      animate={{ 
-                        rotate: 360,
-                        scale: [1, 1.1, 1],
-                      }}
-                      transition={{ 
-                        rotate: { duration: 2, repeat: Infinity, ease: "linear" },
-                        scale: { duration: 1, repeat: Infinity },
-                      }}
-                      className="w-24 h-24 mx-auto mb-6"
-                    >
-                      <div className="w-full h-full rounded-full bg-gradient-to-r from-primary via-primary/50 to-primary flex items-center justify-center">
-                        <ChefHat className="h-12 w-12 text-primary-foreground" />
-                      </div>
-                    </motion.div>
-                    
-                    <h2 className="text-xl font-bold mb-2">AI Magic in Progress</h2>
-                    <p className="text-muted-foreground mb-6">
-                      {progressMessage || "Extracting ingredients, instructions, and generating a beautiful photo..."}
-                    </p>
-                    
-                    <Progress value={progress} className="h-2 mb-2" />
-                    <p className="text-sm text-muted-foreground">{Math.round(progress)}%</p>
                   </CardContent>
                 </Card>
               </motion.div>
