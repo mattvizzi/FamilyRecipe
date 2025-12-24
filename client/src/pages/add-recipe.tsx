@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
+import heic2any from "heic2any";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -86,6 +87,28 @@ export default function AddRecipe() {
 
   // Convert image file to JPEG base64 (handles HEIC and reduces file size)
   const convertToJpegBase64 = async (file: File): Promise<string> => {
+    let imageBlob: Blob = file;
+    
+    // Convert HEIC/HEIF to JPEG using heic2any
+    const isHeic = file.type === "image/heic" || 
+                   file.type === "image/heif" || 
+                   file.name.toLowerCase().endsWith(".heic") ||
+                   file.name.toLowerCase().endsWith(".heif");
+    
+    if (isHeic) {
+      try {
+        const convertedBlob = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+          quality: 0.85,
+        });
+        imageBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+      } catch (e) {
+        console.error("HEIC conversion failed:", e);
+        throw new Error("Failed to convert HEIC image");
+      }
+    }
+    
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
@@ -119,7 +142,7 @@ export default function AddRecipe() {
         resolve(jpegDataUrl);
       };
       img.onerror = () => reject(new Error("Failed to load image"));
-      img.src = URL.createObjectURL(file);
+      img.src = URL.createObjectURL(imageBlob);
     });
   };
 
