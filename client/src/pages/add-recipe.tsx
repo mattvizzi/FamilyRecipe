@@ -168,14 +168,14 @@ export default function AddRecipe() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             onChange={handleFileChange}
             className="hidden"
           />
           <input
             ref={cameraInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             capture="environment"
             onChange={handleFileChange}
             className="hidden"
