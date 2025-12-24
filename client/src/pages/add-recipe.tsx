@@ -84,6 +84,45 @@ export default function AddRecipe() {
     }
   };
 
+  // Convert image file to JPEG base64 (handles HEIC and reduces file size)
+  const convertToJpegBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        // Create canvas with reasonable max dimensions
+        const maxDim = 2048;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = (height / width) * maxDim;
+            width = maxDim;
+          } else {
+            width = (width / height) * maxDim;
+            height = maxDim;
+          }
+        }
+        
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        resolve(jpegDataUrl);
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -99,13 +138,15 @@ export default function AddRecipe() {
 
     let content = inputValue;
 
-    // Convert file to base64 for photo/camera methods
+    // Convert file to JPEG base64 for photo/camera methods
     if (selectedFile) {
-      content = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(selectedFile);
-      });
+      try {
+        content = await convertToJpegBase64(selectedFile);
+      } catch {
+        setErrorMessage("Failed to process image. Please try a different photo.");
+        setStep("error");
+        return;
+      }
     }
 
     // Simulate progress for UX
