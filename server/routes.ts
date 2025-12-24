@@ -272,14 +272,20 @@ Choose the most appropriate category based on the recipe.
       type ContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
       let messages: Array<{ role: "user"; content: ContentPart[] }>;
       
-      if ((method === "photo" || method === "camera") && content.startsWith("data:image")) {
-        // Image content - use vision capabilities
+      if ((method === "photo" || method === "camera") && content.includes("data:image")) {
+        // Handle multiple images separated by |||IMAGE_SEPARATOR|||
+        const images = content.split("|||IMAGE_SEPARATOR|||").filter((img: string) => img.trim());
+        const contentParts: ContentPart[] = [
+          { type: "text", text: extractionPrompt }
+        ];
+        
+        for (const imageData of images) {
+          contentParts.push({ type: "image_url", image_url: { url: imageData.trim() } });
+        }
+        
         messages = [{
           role: "user",
-          content: [
-            { type: "text", text: extractionPrompt },
-            { type: "image_url", image_url: { url: content } }
-          ]
+          content: contentParts
         }];
       } else {
         // Text or URL content

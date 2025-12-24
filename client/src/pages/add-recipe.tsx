@@ -39,9 +39,10 @@ export default function AddRecipe() {
   const [step, setStep] = useState<WizardStep>("select");
   const [inputMethod, setInputMethod] = useState<InputMethod>(null);
   const [inputValue, setInputValue] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [createdRecipeId, setCreatedRecipeId] = useState<string | null>(null);
 
@@ -147,10 +148,11 @@ export default function AddRecipe() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      setSelectedFiles(fileArray);
+      setPreviewUrls(fileArray.map(f => URL.createObjectURL(f)));
       setStep("input");
     }
   };
@@ -158,13 +160,27 @@ export default function AddRecipe() {
   const handleSubmit = async () => {
     setStep("processing");
     setProgress(0);
+    setProgressMessage("Preparing...");
 
     let content = inputValue;
 
-    // Convert file to JPEG base64 for photo/camera methods
-    if (selectedFile) {
+    // Convert files to JPEG base64 for photo/camera methods
+    if (selectedFiles.length > 0) {
       try {
-        content = await convertToJpegBase64(selectedFile);
+        setProgressMessage("Converting images...");
+        setProgress(10);
+        
+        const base64Images: string[] = [];
+        for (let i = 0; i < selectedFiles.length; i++) {
+          setProgressMessage(`Converting image ${i + 1} of ${selectedFiles.length}...`);
+          setProgress(10 + (i / selectedFiles.length) * 30);
+          const base64 = await convertToJpegBase64(selectedFiles[i]);
+          base64Images.push(base64);
+        }
+        
+        // Join multiple images with a separator for the API
+        content = base64Images.join("|||IMAGE_SEPARATOR|||");
+        setProgress(40);
       } catch {
         setErrorMessage("Failed to process image. Please try a different photo.");
         setStep("error");
@@ -172,16 +188,8 @@ export default function AddRecipe() {
       }
     }
 
-    // Simulate progress for UX
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return 90;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 500);
+    setProgressMessage("AI is analyzing your recipe...");
+    setProgress(50);
 
     try {
       await processRecipeMutation.mutateAsync({
@@ -189,8 +197,9 @@ export default function AddRecipe() {
         content,
       });
       setProgress(100);
-    } finally {
-      clearInterval(progressInterval);
+      setProgressMessage("Complete!");
+    } catch {
+      // Error handled by mutation
     }
   };
 
@@ -198,9 +207,10 @@ export default function AddRecipe() {
     setStep("select");
     setInputMethod(null);
     setInputValue("");
-    setSelectedFile(null);
-    setPreviewUrl(null);
+    setSelectedFiles([]);
+    setPreviewUrls([]);
     setProgress(0);
+    setProgressMessage("");
     setErrorMessage("");
     setCreatedRecipeId(null);
   };
@@ -233,6 +243,7 @@ export default function AddRecipe() {
             ref={fileInputRef}
             type="file"
             accept="image/*,.heic,.heif"
+            multiple
             onChange={handleFileChange}
             className="hidden"
           />
@@ -303,13 +314,23 @@ export default function AddRecipe() {
               >
                 <Card>
                   <CardContent className="p-6">
-                    {(inputMethod === "photo" || inputMethod === "camera") && previewUrl && (
+                    {(inputMethod === "photo" || inputMethod === "camera") && previewUrls.length > 0 && (
                       <div className="mb-6">
-                        <img
-                          src={previewUrl}
-                          alt="Recipe preview"
-                          className="w-full max-h-64 object-contain rounded-lg"
-                        />
+                        <div className={`grid gap-2 ${previewUrls.length === 1 ? '' : 'grid-cols-2'}`}>
+                          {previewUrls.map((url, index) => (
+                            <img
+                              key={index}
+                              src={url}
+                              alt={`Recipe preview ${index + 1}`}
+                              className="w-full max-h-48 object-contain rounded-lg bg-muted"
+                            />
+                          ))}
+                        </div>
+                        {previewUrls.length > 1 && (
+                          <p className="text-sm text-muted-foreground mt-2 text-center">
+                            {previewUrls.length} images selected
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -347,7 +368,7 @@ export default function AddRecipe() {
                       <Button 
                         className="flex-1" 
                         onClick={handleSubmit}
-                        disabled={!selectedFile && !inputValue}
+                        disabled={selectedFiles.length === 0 && !inputValue}
                         data-testid="button-process"
                       >
                         <Sparkles className="h-4 w-4 mr-2" />
@@ -387,7 +408,7 @@ export default function AddRecipe() {
                     
                     <h2 className="text-xl font-bold mb-2">AI Magic in Progress</h2>
                     <p className="text-muted-foreground mb-6">
-                      Extracting ingredients, instructions, and generating a beautiful photo...
+                      {progressMessage || "Extracting ingredients, instructions, and generating a beautiful photo..."}
                     </p>
                     
                     <Progress value={progress} className="h-2 mb-2" />
