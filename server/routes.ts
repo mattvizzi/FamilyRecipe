@@ -234,12 +234,11 @@ export async function registerRoutes(
       const method = req.body.method || "text";
       const content = req.body.content || "";
       
-      // For now, use text content (image processing would require multipart)
-      if (!content && method !== "photo" && method !== "camera") {
+      if (!content) {
         return res.status(400).json({ message: "Recipe content is required" });
       }
       
-      // Call OpenAI to extract recipe
+      // Build the extraction prompt
       const extractionPrompt = `
 Extract the recipe from the following content. Return a JSON object with this exact structure:
 {
@@ -262,14 +261,32 @@ Extract the recipe from the following content. Return a JSON object with this ex
 For complex recipes like "Spaghetti and Meatballs", create separate groups for each component.
 Use fractions for amounts where appropriate (e.g., "1/2", "1 1/2").
 Choose the most appropriate category based on the recipe.
-
-Content to extract:
-${content}
 `;
+
+      // Build messages based on content type (image or text)
+      type ContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+      let messages: Array<{ role: "user"; content: ContentPart[] }>;
+      
+      if ((method === "photo" || method === "camera") && content.startsWith("data:image")) {
+        // Image content - use vision capabilities
+        messages = [{
+          role: "user",
+          content: [
+            { type: "text", text: extractionPrompt },
+            { type: "image_url", image_url: { url: content } }
+          ]
+        }];
+      } else {
+        // Text or URL content
+        messages = [{
+          role: "user",
+          content: [{ type: "text", text: extractionPrompt + "\n\nContent to extract:\n" + content }]
+        }];
+      }
 
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
-        messages: [{ role: "user", content: extractionPrompt }],
+        messages,
         response_format: { type: "json_object" },
       });
 

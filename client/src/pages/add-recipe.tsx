@@ -49,10 +49,12 @@ export default function AddRecipe() {
   });
 
   const processRecipeMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
+    mutationFn: async (data: { method: string; content: string }) => {
       const response = await fetch("/api/recipes/process", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();
@@ -95,13 +97,15 @@ export default function AddRecipe() {
     setStep("processing");
     setProgress(0);
 
-    const formData = new FormData();
-    formData.append("method", inputMethod || "text");
+    let content = inputValue;
 
+    // Convert file to base64 for photo/camera methods
     if (selectedFile) {
-      formData.append("file", selectedFile);
-    } else if (inputValue) {
-      formData.append("content", inputValue);
+      content = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(selectedFile);
+      });
     }
 
     // Simulate progress for UX
@@ -116,7 +120,10 @@ export default function AddRecipe() {
     }, 500);
 
     try {
-      await processRecipeMutation.mutateAsync(formData);
+      await processRecipeMutation.mutateAsync({
+        method: inputMethod || "text",
+        content,
+      });
       setProgress(100);
     } finally {
       clearInterval(progressInterval);
