@@ -45,20 +45,20 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <Header family={family} />
       
-      <main className="pt-28 pb-16 px-8">
+      <main className="pt-24 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
             <>
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                <div className="flex-1 h-11 bg-muted rounded-xl animate-pulse" />
-                <div className="flex gap-3">
-                  <div className="w-44 h-11 bg-muted rounded-xl animate-pulse" />
-                  <div className="w-24 h-11 bg-muted rounded-xl animate-pulse" />
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                <div className="flex-1 h-10 bg-muted rounded-lg animate-pulse" />
+                <div className="flex gap-2">
+                  <div className="w-40 h-10 bg-muted rounded-lg animate-pulse" />
+                  <div className="w-20 h-10 bg-muted rounded-lg animate-pulse" />
                 </div>
               </div>
               <div className={viewMode === "grid" 
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                : "flex flex-col gap-5"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+                : "flex flex-col gap-4"
               }>
                 {[...Array(8)].map((_, i) => (
                   <RecipeCardSkeleton key={i} viewMode={viewMode} />
@@ -69,23 +69,23 @@ export default function Home() {
             <EmptyState familyName={family?.name || "Your Family"} />
           ) : (
             <>
-              <div className="flex flex-col sm:flex-row gap-4 mb-10">
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search recipes..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-11 h-11 rounded-xl"
+                    className="pl-10"
                     data-testid="input-search"
                   />
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <Select 
                     value={categoryFilter} 
                     onValueChange={(v) => setCategoryFilter(v as RecipeCategory | "all")}
                   >
-                    <SelectTrigger className="w-44 h-11 rounded-xl" data-testid="select-category-filter">
+                    <SelectTrigger className="w-40" data-testid="select-category-filter">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -95,7 +95,7 @@ export default function Home() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="flex border rounded-xl overflow-hidden">
+                  <div className="flex border border-border rounded-lg overflow-hidden">
                     <Button
                       variant={viewMode === "grid" ? "secondary" : "ghost"}
                       size="icon"
@@ -119,15 +119,15 @@ export default function Home() {
               </div>
 
               {filteredRecipes.length === 0 ? (
-                <div className="text-center py-20">
-                  <p className="text-muted-foreground text-lg" data-testid="text-no-results">
+                <div className="text-center py-16">
+                  <p className="text-muted-foreground" data-testid="text-no-results">
                     No recipes match your search
                   </p>
                 </div>
               ) : (
                 <div className={`animate-stagger ${viewMode === "grid" 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                  : "flex flex-col gap-5"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+                  : "flex flex-col gap-4"
                 }`}>
                   {filteredRecipes.map((recipe) => (
                     <RecipeCard key={recipe.id} recipe={recipe} viewMode={viewMode} />

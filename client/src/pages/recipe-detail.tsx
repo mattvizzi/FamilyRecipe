@@ -164,20 +164,20 @@ export default function RecipeDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header family={family} />
-        <main className="pt-20 px-8">
+        <main className="pt-20 px-6">
           <div className="max-w-7xl mx-auto">
             <Skeleton className="h-8 w-24 mb-6" />
-            <div className="grid lg:grid-cols-[1fr,400px] gap-8">
+            <div className="grid lg:grid-cols-[1fr,380px] gap-10">
               <div>
-                <Skeleton className="aspect-video rounded-2xl mb-6" />
-                <Skeleton className="h-10 w-2/3 mb-4" />
+                <Skeleton className="aspect-video rounded-lg mb-6" />
+                <Skeleton className="h-8 w-2/3 mb-4" />
                 <div className="flex gap-3 mb-6">
-                  <Skeleton className="h-6 w-20" />
-                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-24" />
                 </div>
               </div>
               <div>
-                <Skeleton className="h-64 rounded-2xl" />
+                <Skeleton className="h-64 rounded-lg" />
               </div>
             </div>
           </div>
@@ -190,10 +190,10 @@ export default function RecipeDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header family={family} />
-        <main className="pt-28 px-8">
+        <main className="pt-28 px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4 headline">Recipe Not Found</h1>
-            <Button asChild className="rounded-full px-6">
+            <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
+            <Button asChild>
               <a href="/">Go Back Home</a>
             </Button>
           </div>
@@ -208,12 +208,12 @@ export default function RecipeDetail() {
     <div className="min-h-screen bg-background">
       <Header family={family} />
       
-      <main className="pt-20 px-8 pb-16">
+      <main className="pt-20 px-6 pb-12">
         <div className="max-w-7xl mx-auto">
           <Button 
             variant="ghost" 
             size="sm" 
-            className="mb-6 -ml-2 rounded-full"
+            className="mb-5 -ml-2"
             onClick={() => navigate("/")}
             data-testid="button-back"
           >
@@ -222,20 +222,19 @@ export default function RecipeDetail() {
           </Button>
 
           <div className="grid lg:grid-cols-[1fr,380px] gap-10">
-            <div className="space-y-8">
-              <div className="relative rounded-2xl overflow-hidden bg-muted aspect-video group">
+            <div className="space-y-6">
+              <div className="rounded-lg overflow-hidden bg-muted aspect-video border border-border">
                 {recipe.imageUrl ? (
                   <img 
                     src={recipe.imageUrl} 
                     alt={recipe.name}
-                    className="w-full h-full object-cover img-zoom"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     No Image
                   </div>
                 )}
-                <div className="gradient-overlay opacity-50" />
               </div>
 
               <div>
@@ -258,24 +257,24 @@ export default function RecipeDetail() {
                       />
                     ) : (
                       <h1 
-                        className="text-3xl md:text-4xl headline cursor-pointer hover:text-primary/80 inline-flex items-center gap-3 group transition-colors"
+                        className="text-2xl md:text-3xl font-bold cursor-pointer inline-flex items-center gap-3 group"
                         onClick={() => setEditingField("name")}
                         data-testid="text-recipe-name"
                       >
                         {recipe.name}
-                        <Pencil className="h-5 w-5 opacity-0 group-hover:opacity-50 transition-opacity" />
+                        <Pencil className="h-4 w-4 opacity-0 group-hover:opacity-50 transition-opacity text-muted-foreground" />
                       </h1>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 mb-6">
+                <div className="flex flex-wrap items-center gap-3 mb-5">
                   {editingField === "category" ? (
                     <Select
                       defaultValue={recipe.category}
                       onValueChange={(v) => handleSave("category", v)}
                     >
-                      <SelectTrigger className="w-36 rounded-xl">
+                      <SelectTrigger className="w-36">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -287,7 +286,7 @@ export default function RecipeDetail() {
                   ) : (
                     <Badge 
                       variant="secondary" 
-                      className="cursor-pointer text-sm px-4 py-1"
+                      className="cursor-pointer text-xs"
                       onClick={() => setEditingField("category")}
                       data-testid="badge-category"
                     >
@@ -296,25 +295,25 @@ export default function RecipeDetail() {
                   )}
 
                   {totalTime > 0 && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>{totalTime} min</span>
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span className="font-data">{totalTime} min</span>
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{Math.round((recipe.servings || 4) * scale)} servings</span>
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" />
+                    <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span>
                   </div>
 
-                  <code className="text-xs text-muted-foreground font-mono ml-auto" data-testid="text-recipe-id">
+                  <code className="text-xs text-muted-foreground font-data ml-auto" data-testid="text-recipe-id">
                     #{recipe.id}
                   </code>
                 </div>
 
                 {recipe.creatorFirstName && (
-                  <p className="label-meta mb-8">
-                    Added by {recipe.creatorFirstName} {recipe.creatorLastName}
+                  <p className="text-xs text-muted-foreground mb-6">
+                    by {recipe.creatorFirstName} {recipe.creatorLastName}
                   </p>
                 )}
 
@@ -323,31 +322,31 @@ export default function RecipeDetail() {
                     key={groupIndex}
                     open={expandedGroups.has(groupIndex)}
                     onOpenChange={() => toggleGroup(groupIndex)}
-                    className="mb-8"
+                    className="mb-6"
                   >
                     {recipe.groups.length > 1 && (
                       <CollapsibleTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="w-full justify-between mb-4 h-12 rounded-xl bg-muted/50"
+                          className="w-full justify-between mb-3 h-10 bg-muted"
                           data-testid={`button-group-${groupIndex}`}
                         >
-                          <span className="font-semibold text-lg">{group.name}</span>
-                          <ChevronDown className={`h-5 w-5 transition-transform duration-300 ${expandedGroups.has(groupIndex) ? "rotate-180" : ""}`} />
+                          <span className="font-medium">{group.name}</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expandedGroups.has(groupIndex) ? "rotate-180" : ""}`} />
                         </Button>
                       </CollapsibleTrigger>
                     )}
                     
-                    <CollapsibleContent className="space-y-8">
+                    <CollapsibleContent className="space-y-6">
                       <div>
-                        <h3 className="label-meta mb-4">Instructions</h3>
-                        <ol className="space-y-6">
+                        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Instructions</h3>
+                        <ol className="space-y-4">
                           {group.instructions.map((step, i) => (
-                            <li key={i} className="flex gap-5" data-testid={`instruction-${groupIndex}-${i}`}>
-                              <span className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-semibold">
+                            <li key={i} className="flex gap-4" data-testid={`instruction-${groupIndex}-${i}`}>
+                              <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
                                 {i + 1}
                               </span>
-                              <p className="pt-2 text-lg leading-relaxed">{step}</p>
+                              <p className="pt-1.5 leading-relaxed">{step}</p>
                             </li>
                           ))}
                         </ol>
@@ -358,49 +357,49 @@ export default function RecipeDetail() {
               </div>
             </div>
 
-            <div className="lg:sticky lg:top-24 lg:self-start space-y-6">
-              <Card className="premium-card border-0 overflow-hidden">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg headline">Ingredients</CardTitle>
-                    <div className="flex items-center gap-1 glass-panel rounded-full px-1">
+            <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
+              <Card className="border border-border">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-base font-semibold">Ingredients</CardTitle>
+                    <div className="flex items-center gap-0.5 border border-border rounded-lg">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-full"
+                        className="h-8 w-8"
                         onClick={() => setScale(Math.max(0.5, scale - 0.5))}
                         disabled={scale <= 0.5}
                         data-testid="button-scale-down"
                       >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="h-3.5 w-3.5" />
                       </Button>
-                      <span className="w-12 text-center font-medium">{scale}x</span>
+                      <span className="w-10 text-center text-sm font-data">{scale}x</span>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-full"
+                        className="h-8 w-8"
                         onClick={() => setScale(Math.min(4, scale + 0.5))}
                         disabled={scale >= 4}
                         data-testid="button-scale-up"
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                   {recipe.groups.map((group, groupIndex) => (
-                    <div key={groupIndex} className={groupIndex > 0 ? "mt-6 pt-6 border-t" : ""}>
+                    <div key={groupIndex} className={groupIndex > 0 ? "mt-5 pt-5 border-t border-border" : ""}>
                       {recipe.groups.length > 1 && (
-                        <p className="label-meta mb-3">{group.name}</p>
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">{group.name}</p>
                       )}
-                      <ul className="space-y-3">
+                      <ul className="space-y-2">
                         {group.ingredients.map((ingredient, i) => {
                           const scaledAmount = scaleAmount(ingredient.amount, scale);
                           return (
-                            <li key={i} className="flex items-baseline gap-3" data-testid={`ingredient-${groupIndex}-${i}`}>
-                              <span className="font-semibold min-w-[2.5rem] text-right text-primary">{scaledAmount}</span>
-                              <span className="text-muted-foreground min-w-[3rem]">{ingredient.unit}</span>
+                            <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
+                              <span className="font-data font-medium min-w-[2rem] text-right text-primary">{scaledAmount}</span>
+                              <span className="text-muted-foreground min-w-[2.5rem]">{ingredient.unit}</span>
                               <span>{ingredient.name}</span>
                             </li>
                           );
@@ -411,12 +410,12 @@ export default function RecipeDetail() {
                 </CardContent>
               </Card>
 
-              <div className="flex flex-wrap gap-3">
-                <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={copyToClipboard} data-testid="button-copy">
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={copyToClipboard} data-testid="button-copy">
                   <Copy className="h-4 w-4 mr-2" />
                   Copy
                 </Button>
-                <Button variant="outline" className="flex-1 rounded-xl h-11" onClick={exportToPDF} data-testid="button-export-pdf">
+                <Button variant="outline" className="flex-1" onClick={exportToPDF} data-testid="button-export-pdf">
                   <FileDown className="h-4 w-4 mr-2" />
                   PDF
                 </Button>
@@ -424,23 +423,23 @@ export default function RecipeDetail() {
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full text-muted-foreground hover:text-destructive rounded-xl" data-testid="button-delete">
+                  <Button variant="ghost" size="sm" className="w-full text-muted-foreground" data-testid="button-delete">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Recipe
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-2xl">
+                <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="headline">Delete Recipe?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete "{recipe.name}".
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction 
                       onClick={() => deleteMutation.mutate()}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl"
+                      className="bg-destructive text-destructive-foreground"
                     >
                       Delete
                     </AlertDialogAction>

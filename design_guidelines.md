@@ -1,183 +1,194 @@
 # Recipe Tracker Design Guidelines
 
 ## Design Approach
-**Selected System:** Material Design 3 principles adapted for modern web applications, emphasizing clean hierarchy, purposeful whitespace, and smooth micro-interactions.
+**Selected System:** OpenSea-inspired dark minimal aesthetic with flat design, emphasizing clean hierarchy, subtle borders for depth, and professional simplicity.
 
-**Design Philosophy:** Minimalist interface that puts recipes front and center, with intelligent use of space and professional animations that enhance rather than distract from the core functionality.
+**Design Philosophy:** Marketplace-inspired interface that puts recipes front and center, with flat surfaces, subtle 1px borders for visual hierarchy, and a dark color scheme that feels modern and sophisticated.
+
+---
+
+## Color System
+
+**Theme:** Forced dark mode (no light mode toggle)
+
+**Background Colors:**
+- Background Base: #0c0c0d (HSL 240 7% 5%)
+- Card Background: #1a1a1d (HSL 240 5% 11%)
+- Muted/Secondary: #1e1e21 (HSL 240 5% 12%)
+
+**Border Colors:**
+- Default Border: #2a2a2d (HSL 240 4% 17%)
+- Subtle Border: rgba(255, 255, 255, 0.1)
+
+**Accent Colors:**
+- Primary (Electric Blue): #2081e2 (HSL 210 77% 51%)
+- Primary Hover: Slightly lightened via opacity
+- Destructive: #dc2626
+
+**Text Colors:**
+- Foreground (Primary): #f0f0f0
+- Muted Foreground: #8a8a8a
+- Secondary Foreground: #a0a0a0
 
 ---
 
 ## Typography System
 
 **Font Stack:**
-- Primary: Inter (Google Fonts) - clean, modern, excellent readability
-- Monospace: JetBrains Mono - for recipe IDs and technical elements
+- Primary: Inter (system fallback: -apple-system, Segoe UI)
+- Data/Numerical: "JetBrains Mono", "SF Mono", Menlo, Monaco, monospace
+
+**Special Typography Classes:**
+- `.font-data` - For numerical data display (recipe IDs, times, servings, scale factors)
 
 **Hierarchy:**
-- Page Titles: 2xl (1.5rem), semibold
-- Section Headers: xl (1.25rem), semibold  
-- Recipe Names: lg (1.125rem), medium
-- Body Text: base (1rem), regular
-- Metadata/Labels: sm (0.875rem), medium
-- Captions: xs (0.75rem), regular
-
-**Line Heights:**
-- Headings: tight (1.25)
-- Body: relaxed (1.625)
-- Compact UI: normal (1.5)
+- Page Titles: text-2xl (1.5rem), font-bold
+- Section Headers: text-lg (1.125rem), font-semibold  
+- Recipe Names: text-base (1rem), font-medium
+- Body Text: text-sm (0.875rem), regular
+- Metadata/Labels: text-xs (0.75rem), font-medium, uppercase tracking-wide
+- Captions: text-xs (0.75rem), text-muted-foreground
 
 ---
 
 ## Layout & Spacing System
 
-**Spacing Scale:** Use Tailwind units of 2, 4, 6, 8, 12, 16, 20, 24
-- Micro spacing (within components): 2, 4
-- Component padding: 6, 8
-- Section spacing: 12, 16, 20
-- Page margins: 16, 20, 24
+**Design Principle:** Tighter spacing than Material Design, more compact and information-dense.
+
+**Spacing Scale (Tailwind Units):**
+- Micro spacing (within components): 1, 1.5, 2
+- Component padding: 3, 4
+- Section spacing: 5, 6, 8
+- Page margins: 6 (px-6), 12 (pb-12)
 
 **Container Widths:**
 - Main content: max-w-7xl (1280px)
-- Recipe detail: max-w-4xl (896px)
-- Chat wizard: max-w-2xl (672px)
+- Recipe detail sidebar: 380px
 - Form elements: max-w-md (448px)
 
-**Grid System:**
-- Recipe cards grid: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
-- Gap between cards: gap-6
-- List view: Single column with gap-4
+**Border Radius:** Consistently smaller
+- Cards, panels: rounded-lg (0.5rem)
+- Buttons, inputs: rounded-md (0.375rem)
+- Badges: rounded-sm (0.125rem)
+
+---
+
+## Visual Effects Policy
+
+**REMOVE ALL PREMIUM EFFECTS:**
+- No glassmorphism/backdrop-blur
+- No drop shadows (shadow-sm, shadow-md, shadow-xl)
+- No glow effects
+- No gradient overlays except for hero wash
+- No animation zoom effects on hover
+
+**FLAT DESIGN APPROACH:**
+- Depth conveyed through 1px borders (border border-border)
+- Background color differentiation instead of shadows
+- Flat surfaces with subtle color contrast
+- Simple transitions (opacity, color changes only)
 
 ---
 
 ## Component Library
 
 ### Navigation Header
-- Fixed position with backdrop blur
-- Height: h-16
-- Inner padding: px-6, py-4
-- Contains: Family name (left), primary actions (center), user menu (right)
-- Add Recipe button: Prominent placement, icon + text on desktop, icon-only on mobile
+- Fixed position, bg-background/95 (no blur)
+- Height: h-14 (56px)
+- Inner padding: px-6
+- Border bottom: border-b border-border
+- Simple logo text, no decorative elements
 
 ### Recipe Cards (Grid View)
-- Aspect ratio: 4:3 for image area
-- Card structure:
-  - AI-generated recipe image (full-width, rounded-t-lg)
-  - Content area: p-4
-  - Recipe name: truncate after 2 lines
-  - Metadata row: flex layout with category badge and prep time
-  - Category badge: Inline badge with rounded-full, px-3, py-1
-- Hover state: Subtle lift with shadow-lg transition
-- Border: border with subtle rounding (rounded-lg)
+- Border: border border-border (1px solid)
+- Background: bg-card
+- Border radius: rounded-lg
+- No shadow, no hover transform
+- Image: aspect-[4/3], rounded-t-lg inside card overflow-hidden
+- Content: p-3 compact padding
+- Metadata: text-xs, font-data for numerical values
 
 ### Recipe Cards (List View)
-- Horizontal layout: Image thumbnail (left, w-24, h-24, rounded-lg), content (flex-1)
-- Padding: p-4
-- Metadata: Inline display of all key info with separators
+- Horizontal layout with left thumbnail
+- Single border, no shadow
+- Compact vertical padding (py-3)
 
-### AI Chat Wizard
-- Full-screen overlay with centered card (max-w-2xl)
-- Card padding: p-8
-- Progressive disclosure: Steps reveal smoothly with slide-in animations
-- Upload area: Dashed border, rounded-xl, p-12, hover state with border transition
-- Processing state: Animated gradient shimmer effect on placeholder
-- Message bubbles: User (right-aligned), AI (left-aligned), rounded-2xl, p-4
-
-### Recipe Detail Page
-- Hero section: Full-width AI-generated image, h-64, with gradient overlay at bottom
-- Content container: max-w-4xl, mx-auto, px-6
-- Recipe header: -mt-12 (overlapping hero), rounded-xl card with shadow-xl
-  - Recipe name, category badge, attribution, prep/cook time, servings
-- Recipe ID: Monospace font, text-xs, subtle styling in top-right
-- Ingredient section: Two-column layout on desktop (md:grid-cols-2), gap-4
-- Instructions: Numbered steps with generous spacing (space-y-6)
-- Recipe groups: Collapsible sections with smooth expand/collapse, border-l-4 accent
-
-### Scaling Controls
-- Horizontal button group with current scale highlighted
-- Buttons: 1x, 1.5x, 2x, 2.5x, 3x, 3.5x, 4x
-- Compact sizing: px-3, py-1.5, text-sm
-- Sticky positioning below recipe header on scroll
-
-### In-line Editing
-- Fields become editable on click with subtle border highlight
-- Edit icon appears on hover
-- Auto-save indicator: Small checkmark animation
-- Transition: 200ms ease for all state changes
-
-### Empty State
-- Centered content: max-w-md
-- Large icon (h-32, w-32)
-- Heading + descriptive text + primary CTA
-- 3-step guide cards in grid layout (md:grid-cols-3)
-
-### Form Elements
-- Input fields: rounded-lg, px-4, py-3, border with focus ring
-- Textareas: min-h-32 for instructions, auto-expanding
-- Select dropdowns: Custom styled with icons
-- Fraction inputs: Special handling with helper text
+### Ingredients Card (Recipe Detail)
+- border border-border
+- Flat card background
+- Scale controls: border rounded-lg inline container
+- Ingredient list: text-sm, font-data for amounts
 
 ### Buttons
-- Primary: px-6, py-3, rounded-lg, font-medium, shadow-sm
-- Secondary: Ghost style with hover background
-- Icon buttons: p-2, rounded-full
-- All buttons: Smooth transitions (150ms)
+- Primary: bg-primary text-primary-foreground (electric blue)
+- Secondary: bg-secondary text-secondary-foreground
+- Ghost: No background, subtle hover
+- Outline: border border-border
+- No custom shadows, no glow effects
+- Default sizes only (no custom h-11, rounded-xl)
 
-### PDF Export Preview Modal
-- Overlay with centered preview card (max-w-4xl)
-- Preview area: White background, shadow-2xl, p-12
-- Action bar: Fixed bottom, flex layout, gap-4
+### Badges
+- variant="secondary" for categories
+- text-xs size
+- Minimal padding
+- No border-glow or shadows
+
+### Form Elements
+- Input/Select: Default shadcn styling
+- No custom rounded-xl overrides
+- Focus ring as default
 
 ---
 
 ## Images
 
-### AI-Generated Recipe Photos
-**Placement:** Every recipe card and detail page hero
-**Specifications:**
-- Aspect ratio: 4:3 for cards, 16:9 for detail hero
-- Dimensions: Generate at 1024x768 minimum
-- Style: Professional food photography, clean plating, natural lighting, shallow depth of field
-- Prompt engineering: Include cuisine type, dish name, "professional food photography, styled on clean white plate, natural window lighting, shallow depth of field, appetizing, editorial quality"
+### Recipe Photos
+- Border radius: rounded-lg (inside overflow-hidden container)
+- No hover zoom effect
+- Flat border overlay if needed
 
-### Empty States & Placeholders
-**Upload Wizard:** Large icon illustration (chef's hat or recipe book)
-**No Recipes:** Friendly illustration encouraging first recipe addition
+### Placeholder/Loading
+- bg-muted simple flat color
+- No gradient shimmer (use animate-pulse if needed)
 
-### Image Treatment
-- Border radius: rounded-lg for cards, rounded-xl for detail heroes
-- Loading state: Shimmer effect placeholder with same dimensions
-- Error fallback: Subtle icon placeholder with retry option
+---
+
+## Hero Section (Landing Page)
+
+**Dark Wash Approach:**
+- Dark gradient overlay from bottom for text readability
+- Light text (white) over any hero images
+- Buttons: Primary (filled) or Outline with bg-white/10 backdrop
 
 ---
 
 ## Animations & Transitions
 
-**Micro-interactions:**
-- Card hover: transform scale-105, duration-200
-- Button press: scale-95, duration-100
-- Modal entry: Fade + slide from bottom, duration-300
-- Wizard steps: Slide transitions, duration-500 with ease-out
-- Loading states: Pulse animation for skeletons
+**SIMPLIFIED APPROACH:**
+- 200ms transitions for color/opacity changes
+- No scale transforms on hover
+- No complex multi-stage animations
+- Simple fade-in for stagger effects if used
 
-**AI Processing Animation:**
-- Multi-stage shimmer effect
-- Progress indicator with smooth transitions
-- Success checkmark with bounce effect
+**Allowed:**
+- opacity transitions
+- color transitions
+- basic transform (rotate for chevrons only)
 
-**Page Transitions:**
-- Crossfade between views: duration-200
-- Recipe detail: Slide up from bottom, duration-300
+**Removed:**
+- hover:scale-* effects
+- group-hover zoom
+- complex shimmer effects
+- floating/bouncing animations
 
 ---
 
 ## Accessibility Standards
 
 - Minimum touch targets: 44x44px
-- Focus indicators: 2px ring with offset
-- Keyboard navigation: Full support with visible focus states
-- ARIA labels: All interactive elements and dynamic content
-- Color contrast: Meets WCAG AA standards (evaluated separately from these guidelines)
-- Screen reader: Semantic HTML with proper headings hierarchy
+- Focus indicators: ring-2 ring-primary
+- Keyboard navigation: Full support
+- Color contrast: WCAG AA compliant
 
 ---
 
@@ -191,14 +202,10 @@
 
 **Mobile Adaptations:**
 - Single column layouts
-- Bottom sheet for modals instead of centered cards
-- Simplified navigation with hamburger menu
-- Stacked form layouts
 - Reduced padding (px-4 instead of px-6)
+- Stacked form layouts
 
 **Desktop Enhancements:**
-- Multi-column recipe grids
-- Side-by-side layouts for forms
-- Persistent navigation
-- Enhanced hover states
-- Larger imagery
+- Multi-column recipe grids (up to 4 columns)
+- Side-by-side layouts
+- Sidebar sticky positioning

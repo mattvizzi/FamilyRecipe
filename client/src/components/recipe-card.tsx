@@ -17,16 +17,16 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
     return (
       <Link href={`/recipe/${recipe.id}`}>
         <Card 
-          className="group hover-elevate active-elevate-2 cursor-pointer transition-all duration-300"
+          className="group cursor-pointer border border-border"
           data-testid={`card-recipe-${recipe.id}`}
         >
-          <CardContent className="p-5 flex gap-5">
-            <div className="w-28 h-28 flex-shrink-0 rounded-xl overflow-hidden bg-muted">
+          <CardContent className="p-4 flex gap-4">
+            <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
               {recipe.imageUrl ? (
                 <img
                   src={recipe.imageUrl}
                   alt={recipe.name}
-                  className="w-full h-full object-cover img-zoom"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
@@ -35,29 +35,29 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
               )}
             </div>
             <div className="flex-1 min-w-0 py-1">
-              <h3 className="headline text-lg truncate mb-2" data-testid={`text-recipe-name-${recipe.id}`}>
+              <h3 className="font-semibold text-base truncate mb-2" data-testid={`text-recipe-name-${recipe.id}`}>
                 {recipe.name}
               </h3>
-              <div className="flex items-center gap-3 mb-3 flex-wrap">
+              <div className="flex items-center gap-3 mb-2 flex-wrap">
                 <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
                   {recipe.category}
                 </Badge>
                 {totalTime > 0 && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <Clock className="h-3.5 w-3.5" />
-                    <span>{totalTime} min</span>
+                    <span className="font-data">{totalTime} min</span>
                   </div>
                 )}
                 {recipe.servings && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <Users className="h-3.5 w-3.5" />
-                    <span>{recipe.servings} servings</span>
+                    <span className="font-data">{recipe.servings}</span>
                   </div>
                 )}
               </div>
               {recipe.creatorFirstName && (
-                <p className="label-meta">
-                  Added by {recipe.creatorFirstName} {recipe.creatorLastName}
+                <p className="text-xs text-muted-foreground">
+                  by {recipe.creatorFirstName} {recipe.creatorLastName}
                 </p>
               )}
             </div>
@@ -70,42 +70,41 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
   return (
     <Link href={`/recipe/${recipe.id}`}>
       <Card 
-        className="group overflow-hidden hover-elevate active-elevate-2 cursor-pointer transition-all duration-300"
+        className="group overflow-hidden cursor-pointer border border-border"
         data-testid={`card-recipe-${recipe.id}`}
       >
-        <div className="aspect-[4/3] bg-muted overflow-hidden relative">
+        <div className="aspect-[4/3] bg-muted overflow-hidden">
           {recipe.imageUrl ? (
             <img
               src={recipe.imageUrl}
               alt={recipe.name}
-              className="w-full h-full object-cover img-zoom"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
               No Image
             </div>
           )}
-          <div className="gradient-overlay opacity-60" />
         </div>
-        <CardContent className="p-5">
-          <h3 className="headline truncate mb-3" data-testid={`text-recipe-name-${recipe.id}`}>
+        <CardContent className="p-4">
+          <h3 className="font-semibold truncate mb-2" data-testid={`text-recipe-name-${recipe.id}`}>
             {recipe.name}
           </h3>
           <div className="flex items-center justify-between gap-3">
             <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
               {recipe.category}
             </Badge>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-muted-foreground">
               {recipe.servings && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs">
                   <Users className="h-3 w-3" />
-                  <span>{recipe.servings}</span>
+                  <span className="font-data">{recipe.servings}</span>
                 </div>
               )}
               {totalTime > 0 && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 text-xs">
                   <Clock className="h-3 w-3" />
-                  <span>{totalTime}m</span>
+                  <span className="font-data">{totalTime}m</span>
                 </div>
               )}
             </div>
@@ -119,13 +118,13 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
 export function RecipeCardSkeleton({ viewMode }: { viewMode: "grid" | "list" }) {
   if (viewMode === "list") {
     return (
-      <Card>
-        <CardContent className="p-5 flex gap-5">
-          <Skeleton className="w-28 h-28 rounded-xl flex-shrink-0" />
+      <Card className="border border-border">
+        <CardContent className="p-4 flex gap-4">
+          <Skeleton className="w-24 h-24 rounded-lg flex-shrink-0" />
           <div className="flex-1 py-1">
-            <Skeleton className="h-6 w-3/4 mb-3" />
-            <Skeleton className="h-5 w-24 mb-3" />
-            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-5 w-3/4 mb-2" />
+            <Skeleton className="h-4 w-20 mb-2" />
+            <Skeleton className="h-3 w-28" />
           </div>
         </CardContent>
       </Card>
@@ -133,13 +132,13 @@ export function RecipeCardSkeleton({ viewMode }: { viewMode: "grid" | "list" }) 
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border border-border">
       <Skeleton className="aspect-[4/3]" />
-      <CardContent className="p-5">
-        <Skeleton className="h-5 w-3/4 mb-3" />
-        <div className="flex items-center justify-between gap-3">
-          <Skeleton className="h-5 w-16" />
+      <CardContent className="p-4">
+        <Skeleton className="h-5 w-3/4 mb-2" />
+        <div className="flex items-center justify-between gap-2">
           <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-4 w-14" />
         </div>
       </CardContent>
     </Card>
