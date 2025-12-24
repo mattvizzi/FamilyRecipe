@@ -291,4 +291,95 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Premium UI utilities */
+  
+  /* Glassmorphism panel */
+  .glass-panel {
+    @apply bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl;
+    @apply border border-white/40 dark:border-white/10;
+  }
+
+  /* Premium card with layered shadow */
+  .premium-card {
+    @apply bg-card rounded-2xl;
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 10px 20px -5px rgba(0, 0, 0, 0.08),
+      0 20px 40px -10px rgba(0, 0, 0, 0.05);
+  }
+  .dark .premium-card {
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.3),
+      0 10px 20px -5px rgba(0, 0, 0, 0.4),
+      0 20px 40px -10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Subtle ring border for elevated surfaces */
+  .ring-subtle {
+    @apply ring-1 ring-border/60;
+  }
+
+  /* Image hover zoom */
+  .img-zoom {
+    @apply transition-transform duration-500 ease-out;
+  }
+  .group:hover .img-zoom {
+    transform: scale(1.05);
+  }
+
+  /* Gradient overlay for images */
+  .gradient-overlay {
+    @apply absolute inset-0;
+    background: linear-gradient(to top, hsl(var(--background)) 0%, transparent 60%);
+  }
+
+  /* Premium button glow - no hover state, just static glow */
+  .btn-glow {
+    box-shadow: 0 4px 14px 0 hsl(var(--primary) / 0.25);
+  }
+
+  /* Staggered animation for cards using nth-child */
+  @keyframes fadeSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-stagger > * {
+    animation: fadeSlideUp 0.4s ease-out forwards;
+    opacity: 0;
+  }
+  .animate-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .animate-stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .animate-stagger > *:nth-child(7) { animation-delay: 240ms; }
+  .animate-stagger > *:nth-child(8) { animation-delay: 280ms; }
+  .animate-stagger > *:nth-child(n+9) { animation-delay: 320ms; }
+
+  /* Subtle radial gradient background */
+  .bg-radial-light {
+    background: radial-gradient(ellipse at top, hsl(var(--primary) / 0.08) 0%, transparent 50%);
+  }
+  .dark .bg-radial-light {
+    background: radial-gradient(ellipse at top, hsl(var(--primary) / 0.15) 0%, transparent 50%);
+  }
+
+  /* Uppercase metadata label */
+  .label-meta {
+    @apply text-xs font-medium uppercase tracking-widest text-muted-foreground;
+  }
+
+  /* Headline with tight tracking */
+  .headline {
+    @apply font-semibold tracking-tight;
+  }
 }

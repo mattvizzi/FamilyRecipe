@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChefHat, Plus, Settings, LogOut, Users } from "lucide-react";
+import { ChefHat, Plus, LogOut, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { Family } from "@shared/schema";
 
@@ -30,17 +30,19 @@ export function Header({ family }: HeaderProps) {
   const familyDisplayName = family?.name || "Recipe Tracker";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b h-16">
-      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+    <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-background/70 border-b border-border/50 h-16">
+      <div className="max-w-7xl mx-auto px-8 h-full flex items-center justify-between gap-4">
         <Link href="/">
-          <div className="flex items-center gap-2 cursor-pointer" data-testid="link-home">
-            <ChefHat className="h-7 w-7 text-primary" />
-            <span className="font-semibold text-lg hidden sm:inline">{familyDisplayName}</span>
+          <div className="flex items-center gap-3 cursor-pointer group" data-testid="link-home">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center transition-colors group-hover:bg-primary/15">
+              <ChefHat className="h-5 w-5 text-primary" />
+            </div>
+            <span className="font-semibold text-lg hidden sm:inline headline">{familyDisplayName}</span>
           </div>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <Button asChild variant="default" size="sm" className="gap-1.5" data-testid="button-add-recipe">
+        <div className="flex items-center gap-3">
+          <Button asChild className="gap-2 rounded-full px-5 btn-glow" data-testid="button-add-recipe">
             <Link href="/add-recipe">
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add Recipe</span>
@@ -52,14 +54,14 @@ export function Header({ family }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full" data-testid="button-user-menu">
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-9 w-9 ring-2 ring-border/50">
                   <AvatarImage src={user?.profileImageUrl || undefined} alt="Profile" />
-                  <AvatarFallback className="text-sm">{getInitials()}</AvatarFallback>
+                  <AvatarFallback className="text-sm font-medium">{getInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <div className="px-2 py-1.5">
+            <DropdownMenuContent align="end" className="w-52 rounded-xl p-2">
+              <div className="px-3 py-2">
                 <p className="text-sm font-medium" data-testid="text-user-name">
                   {user?.firstName} {user?.lastName}
                 </p>
@@ -68,8 +70,8 @@ export function Header({ family }: HeaderProps) {
                 </p>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/family" className="flex items-center gap-2 cursor-pointer" data-testid="link-family-settings">
+              <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                <Link href="/family" className="flex items-center gap-2" data-testid="link-family-settings">
                   <Users className="h-4 w-4" />
                   Family Settings
                 </Link>
@@ -78,7 +80,7 @@ export function Header({ family }: HeaderProps) {
               <DropdownMenuItem
                 onClick={() => logout()}
                 disabled={isLoggingOut}
-                className="text-destructive focus:text-destructive cursor-pointer"
+                className="text-destructive focus:text-destructive cursor-pointer rounded-lg"
                 data-testid="button-logout"
               >
                 <LogOut className="h-4 w-4 mr-2" />
