@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth/replitAuth";
+import { registerAuthRoutes } from "./replit_integrations/auth/routes";
 import { openai, generateImageBuffer } from "./replit_integrations/image/client";
 import { insertRecipeSchema, updateRecipeSchema, recipeCategories, type RecipeGroup } from "@shared/schema";
 import PDFDocument from "pdfkit";
@@ -27,6 +28,7 @@ export async function registerRoutes(
   
   // Initialize authentication
   await setupAuth(app);
+  registerAuthRoutes(app);
   
   // ============ FAMILY ROUTES ============
   
