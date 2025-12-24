@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ChefHat, Camera, Users, Sparkles, ArrowRight } from "lucide-react";
+import { Camera, Users, Sparkles, ArrowRight } from "lucide-react";
+import logoImage from "@assets/mom_1766567675287.png";
 
 export default function Landing() {
   return (
@@ -9,10 +10,11 @@ export default function Landing() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <ChefHat className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-base">Recipe Tracker</span>
+            <img src={logoImage} alt="FamilyRecipe" className="w-9 h-9 rounded-lg object-cover" />
+            <span>
+              <span className="text-lg font-bold tracking-tight">Family</span>
+              <span className="text-lg font-light text-primary tracking-tight">Recipe</span>
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -110,10 +112,8 @@ export default function Landing() {
       <footer className="py-8 px-6 border-t border-border">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-              <ChefHat className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <span className="text-sm text-muted-foreground">Recipe Tracker</span>
+            <img src={logoImage} alt="FamilyRecipe" className="w-8 h-8 rounded-lg object-cover" />
+            <span className="text-sm text-muted-foreground">FamilyRecipe</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Powered by AI. Made with love.
