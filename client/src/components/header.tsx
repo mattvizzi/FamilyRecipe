@@ -205,7 +205,7 @@ export function Header({ family }: HeaderProps) {
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/admin" className="flex items-center gap-2" data-testid="dropdown-go-to-admin">
+                      <Link href="/dashboard" className="flex items-center gap-2" data-testid="dropdown-go-to-admin">
                         <Shield className="h-4 w-4" />
                         Go to Admin
                       </Link>

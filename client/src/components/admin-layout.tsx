@@ -50,27 +50,21 @@ function getMainDomainUrl(path: string = "/"): string {
 }
 
 // Pre-compute navigation items at module level (stable across renders)
+// Standardized paths used in both development and production
 const onAdminSubdomain = typeof window !== "undefined" && window.location.hostname === ADMIN_DOMAIN;
 
-const OBJECT_ITEMS = onAdminSubdomain ? [
+const OBJECT_ITEMS = [
   { title: "Users", href: "/objects/users", icon: Users },
   { title: "Families", href: "/objects/families", icon: HomeIcon },
   { title: "Recipes", href: "/objects/recipes", icon: ChefHat },
   { title: "Comments", href: "/objects/comments", icon: MessageSquare },
-] : [
-  { title: "Users", href: "/admin/users", icon: Users },
-  { title: "Families", href: "/admin/families", icon: HomeIcon },
-  { title: "Recipes", href: "/admin/recipes", icon: ChefHat },
-  { title: "Comments", href: "/admin/comments", icon: MessageSquare },
 ];
 
-const INTEGRATION_ITEMS = onAdminSubdomain ? [
+const INTEGRATION_ITEMS = [
   { title: "HubSpot", href: "/integrations/hubspot", icon: RefreshCw },
-] : [
-  { title: "HubSpot", href: "/admin/hubspot", icon: RefreshCw },
 ];
 
-const DASHBOARD_HREF = onAdminSubdomain ? "/dashboard" : "/admin";
+const DASHBOARD_HREF = "/dashboard";
 
 const ALL_NAV_ITEMS = [
   { title: "Dashboard", href: DASHBOARD_HREF, icon: LayoutDashboard },

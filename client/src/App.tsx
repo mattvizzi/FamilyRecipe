@@ -112,34 +112,24 @@ function AdminRouter() {
     return <Redirect to="/home" />;
   }
 
-  // On admin subdomain, use new path structure
-  if (onAdminSubdomain) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <Switch>
-          <Route path="/dashboard" component={AdminDashboard} />
-          <Route path="/objects/users" component={AdminUsers} />
-          <Route path="/objects/families" component={AdminFamilies} />
-          <Route path="/objects/recipes" component={AdminRecipes} />
-          <Route path="/objects/comments" component={AdminComments} />
-          <Route path="/integrations/hubspot" component={AdminHubSpot} />
-          <Route>{() => <Redirect to="/dashboard" />}</Route>
-        </Switch>
-      </Suspense>
-    );
-  }
-
-  // Legacy routes for non-production or direct access
+  // Use standardized paths everywhere
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        <Route path="/admin" component={AdminDashboard} />
-        <Route path="/admin/users" component={AdminUsers} />
-        <Route path="/admin/families" component={AdminFamilies} />
-        <Route path="/admin/recipes" component={AdminRecipes} />
-        <Route path="/admin/comments" component={AdminComments} />
-        <Route path="/admin/hubspot" component={AdminHubSpot} />
-        <Route>{() => <Redirect to="/admin" />}</Route>
+        <Route path="/dashboard" component={AdminDashboard} />
+        <Route path="/objects/users" component={AdminUsers} />
+        <Route path="/objects/families" component={AdminFamilies} />
+        <Route path="/objects/recipes" component={AdminRecipes} />
+        <Route path="/objects/comments" component={AdminComments} />
+        <Route path="/integrations/hubspot" component={AdminHubSpot} />
+        {/* Legacy redirects for old bookmarks */}
+        <Route path="/admin/users">{() => <Redirect to="/objects/users" />}</Route>
+        <Route path="/admin/families">{() => <Redirect to="/objects/families" />}</Route>
+        <Route path="/admin/recipes">{() => <Redirect to="/objects/recipes" />}</Route>
+        <Route path="/admin/comments">{() => <Redirect to="/objects/comments" />}</Route>
+        <Route path="/admin/hubspot">{() => <Redirect to="/integrations/hubspot" />}</Route>
+        <Route path="/admin">{() => <Redirect to="/dashboard" />}</Route>
+        <Route>{() => <Redirect to="/dashboard" />}</Route>
       </Switch>
     </Suspense>
   );
@@ -211,9 +201,9 @@ function Router() {
   }
 
   // Admin routes have their own router with admin checks
-  // On admin subdomain, all routes go through AdminRouter
+  // Routes go through AdminRouter for admin subdomain or admin paths
   const onAdminSubdomain = isAdminSubdomain();
-  if (onAdminSubdomain || location?.startsWith("/admin")) {
+  if (onAdminSubdomain || location?.startsWith("/admin") || location?.startsWith("/dashboard") || location?.startsWith("/objects") || location?.startsWith("/integrations")) {
     return <AdminRouter />;
   }
 
