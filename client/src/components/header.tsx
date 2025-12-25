@@ -44,18 +44,6 @@ export function Header({ family }: HeaderProps) {
           </Link>
 
           <nav className="hidden sm:flex items-center gap-1">
-            <Link href="/my-recipes">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`text-white/80 hover:text-white hover:bg-white/10 ${isMyRecipes ? "bg-white/10 text-white" : ""}`}
-                data-testid="nav-my-recipes"
-              >
-                <ChefHat className="h-4 w-4 mr-1.5" />
-                My Recipes
-              </Button>
-            </Link>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 
@@ -85,6 +73,18 @@ export function Header({ family }: HeaderProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Link href="/my-recipes">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`text-white/80 hover:text-white hover:bg-white/10 ${isMyRecipes ? "bg-white/10 text-white" : ""}`}
+                data-testid="nav-my-recipes"
+              >
+                <ChefHat className="h-4 w-4 mr-1.5" />
+                My Recipes
+              </Button>
+            </Link>
           </nav>
         </div>
 
