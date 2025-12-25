@@ -62,8 +62,8 @@ export async function uploadRecipeImage(
   });
 
   // Return the public URL path that maps to the stored file
-  // The /public/* route serves files from the public directory
-  return `/public/${objectId}`;
+  // The /storage/* route serves files from object storage
+  return `/storage/${objectId}`;
 }
 
 /**

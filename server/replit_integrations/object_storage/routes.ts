@@ -86,13 +86,14 @@ export function registerObjectStorageRoutes(app: Express): void {
   /**
    * Serve public objects (like recipe images).
    *
-   * GET /public/:objectPath(*)
+   * GET /storage/:objectPath(*)
    *
    * This serves files from the public object storage directory.
+   * Using /storage/ prefix to avoid conflicts with Vite's static file serving.
    */
-  app.get("/public/:objectPath(*)", async (req, res) => {
+  app.get("/storage/:objectPath(*)", async (req, res) => {
     try {
-      // Get the path after /public/
+      // Get the path after /storage/
       const filePath = req.params.objectPath;
       const objectFile = await objectStorageService.searchPublicObject(filePath);
       
