@@ -264,21 +264,16 @@ export default function RecipeDetail() {
       <div className="min-h-screen bg-background">
         <Header family={family} />
         <main className="pt-20 px-6">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <Skeleton className="h-8 w-24 mb-6" />
-            <Skeleton className="w-full aspect-[21/9] rounded-lg mb-6" />
-            <div className="grid lg:grid-cols-[1fr,380px] gap-10">
-              <div>
-                <Skeleton className="h-8 w-2/3 mb-4" />
-                <div className="flex gap-3 mb-6">
-                  <Skeleton className="h-5 w-20" />
-                  <Skeleton className="h-5 w-24" />
-                </div>
-              </div>
-              <div>
-                <Skeleton className="h-64 rounded-lg" />
-              </div>
+            <Skeleton className="h-10 w-2/3 mb-4" />
+            <div className="flex gap-2 mb-6">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-20" />
             </div>
+            <Skeleton className="w-full aspect-video rounded-lg mb-8" />
+            <Skeleton className="h-64" />
           </div>
         </main>
       </div>
@@ -290,7 +285,7 @@ export default function RecipeDetail() {
       <div className="min-h-screen bg-background">
         <Header family={family} />
         <main className="pt-20 px-6">
-          <div className="max-w-5xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
             <Button asChild>
               <a href="/my-recipes">Go Back Home</a>
@@ -308,7 +303,7 @@ export default function RecipeDetail() {
       <Header family={family} />
       
       <div className="fixed top-14 left-0 right-0 z-40 bg-background border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
           <Button 
             variant="outline" 
             size="sm"
@@ -332,12 +327,21 @@ export default function RecipeDetail() {
                 {recipe.isSaved ? "Saved" : "Save"}
               </Button>
             )}
+            <Button variant="outline" size="sm" onClick={copyToClipboard} data-testid="button-copy">
+              <Copy className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Copy</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToPDF} data-testid="button-export-pdf">
+              <FileDown className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">PDF</span>
+            </Button>
             {isOwner && (
               <Button 
-                variant="outline" 
+                variant={recipe.isPublic ? "default" : "outline"}
                 size="sm" 
                 onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
                 disabled={visibilityMutation.isPending}
+                className={recipe.isPublic ? "bg-primary text-primary-foreground" : ""}
                 data-testid="button-visibility"
               >
                 {recipe.isPublic ? (
@@ -359,14 +363,6 @@ export default function RecipeDetail() {
                 <span className="hidden sm:inline">Edit</span>
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={copyToClipboard} data-testid="button-copy">
-              <Copy className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Copy</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportToPDF} data-testid="button-export-pdf">
-              <FileDown className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">PDF</span>
-            </Button>
             {isOwner && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -398,310 +394,294 @@ export default function RecipeDetail() {
         </div>
       </div>
       
-      <main className="pt-28 pb-12">
-        <div className="w-full bg-muted border-b border-border">
-          <div className="max-w-5xl mx-auto">
-            <div className="aspect-[21/9] overflow-hidden">
-              {recipe.imageUrl ? (
-                <img 
-                  src={recipe.imageUrl} 
-                  alt={recipe.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                  No Image
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-6 pt-6">
+      <main className="pt-28 pb-12 px-6">
+        <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-3" data-testid="text-recipe-name">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4" data-testid="text-recipe-name">
               {recipe.name}
             </h1>
             
-            <div className="inline-flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 bg-muted rounded-lg border border-border">
-              <Badge variant="secondary" className="text-xs" data-testid="badge-category">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <Badge variant="secondary" data-testid="badge-category">
                 {recipe.category}
               </Badge>
               {recipe.isPublic ? (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Badge variant="outline" className="gap-1">
                   <Globe className="h-3 w-3" />
                   Public
-                </div>
+                </Badge>
               ) : (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Badge variant="outline" className="gap-1">
                   <Lock className="h-3 w-3" />
                   Private
-                </div>
+                </Badge>
               )}
               {(recipe.prepTime || 0) > 0 && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Badge variant="outline" className="gap-1">
                   <Clock className="h-3 w-3" />
-                  <span className="font-data">{recipe.prepTime}m prep</span>
-                </div>
+                  <span className="font-data">{recipe.prepTime}m</span> prep
+                </Badge>
               )}
               {(recipe.cookTime || 0) > 0 && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Badge variant="outline" className="gap-1">
                   <Clock className="h-3 w-3" />
-                  <span className="font-data">{recipe.cookTime}m cook</span>
-                </div>
+                  <span className="font-data">{recipe.cookTime}m</span> cook
+                </Badge>
               )}
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Badge variant="outline" className="gap-1">
                 <Users className="h-3 w-3" />
-                <span className="font-data">{Math.round((recipe.servings || 4) * scale)} servings</span>
-              </div>
+                <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
+              </Badge>
               {recipe.creatorFirstName && (
-                <div className="text-xs text-muted-foreground">
+                <Badge variant="outline">
                   by {recipe.creatorFirstName} {recipe.creatorLastName}
-                </div>
+                </Badge>
+              )}
+              <Badge variant="outline" className="gap-1">
+                <Eye className="h-3 w-3" />
+                <span className="font-data">{recipe.viewCount}</span> views
+              </Badge>
+              <Badge variant="outline" className="gap-1">
+                <ChefHat className="h-3 w-3" />
+                <span className="font-data">{recipe.cookCount}</span> cooked
+              </Badge>
+              {recipe.averageRating !== null && (
+                <Badge variant="outline" className="gap-1">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <span className="font-data">{recipe.averageRating.toFixed(1)}</span>
+                  <span className="text-muted-foreground">({recipe.ratingCount})</span>
+                </Badge>
               )}
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-[1fr,380px] gap-10">
-            <div className="space-y-8">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Ingredients</h2>
-                  <div className="flex items-center gap-0.5 border border-border rounded-lg">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setScale(Math.max(0.5, scale - 0.5))}
-                      disabled={scale <= 0.5}
-                      data-testid="button-scale-down"
-                    >
-                      <Minus className="h-3.5 w-3.5" />
-                    </Button>
-                    <span className="w-10 text-center text-sm font-data">{scale}x</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setScale(Math.min(4, scale + 0.5))}
-                      disabled={scale >= 4}
-                      data-testid="button-scale-up"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                {recipe.groups.map((group, groupIndex) => (
-                  <div key={groupIndex} className={groupIndex > 0 ? "mt-5 pt-5 border-t border-border" : ""}>
-                    {recipe.groups.length > 1 && (
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">{group.name}</p>
-                    )}
-                    <ul className="space-y-2">
-                      {group.ingredients.map((ingredient, i) => {
-                        const scaledAmount = scaleAmount(ingredient.amount, scale);
-                        return (
-                          <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
-                            <span className="font-data font-medium text-primary whitespace-nowrap">{scaledAmount}</span>
-                            <span className="text-muted-foreground whitespace-nowrap">{abbreviateUnit(ingredient.unit)}</span>
-                            <span>{ingredient.name}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+          {recipe.imageUrl && (
+            <div className="rounded-lg overflow-hidden aspect-video mb-8">
+              <img 
+                src={recipe.imageUrl} 
+                alt={recipe.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          {!recipe.imageUrl && (
+            <div className="rounded-lg overflow-hidden aspect-video mb-8 bg-muted flex items-center justify-center text-muted-foreground">
+              No Image
+            </div>
+          )}
 
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <h2 className="text-lg font-semibold">Ingredients</h2>
+                <div className="flex items-center gap-0.5 border border-border rounded-lg">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setScale(Math.max(0.5, scale - 0.5))}
+                    disabled={scale <= 0.5}
+                    data-testid="button-scale-down"
+                  >
+                    <Minus className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="w-10 text-center text-sm font-data">{scale}x</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setScale(Math.min(4, scale + 0.5))}
+                    disabled={scale >= 4}
+                    data-testid="button-scale-up"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
               {recipe.groups.map((group, groupIndex) => (
-                <Collapsible
-                  key={groupIndex}
-                  open={expandedGroups.has(groupIndex)}
-                  onOpenChange={() => toggleGroup(groupIndex)}
-                >
+                <div key={groupIndex} className={groupIndex > 0 ? "mt-5 pt-5 border-t border-border" : ""}>
                   {recipe.groups.length > 1 && (
-                    <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-between mb-3 h-10 bg-muted"
-                        data-testid={`button-group-${groupIndex}`}
-                      >
-                        <span className="font-medium">{group.name}</span>
-                        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expandedGroups.has(groupIndex) ? "rotate-180" : ""}`} />
-                      </Button>
-                    </CollapsibleTrigger>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">{group.name}</p>
                   )}
-                  
-                  <CollapsibleContent>
-                    <div>
-                      <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Instructions</h3>
-                      <ol className="space-y-4">
-                        {group.instructions.map((step, i) => (
-                          <li key={i} className="flex gap-4" data-testid={`instruction-${groupIndex}-${i}`}>
-                            <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
-                              {i + 1}
-                            </span>
-                            <p className="pt-1.5 leading-relaxed">{step}</p>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  <ul className="space-y-2">
+                    {group.ingredients.map((ingredient, i) => {
+                      const scaledAmount = scaleAmount(ingredient.amount, scale);
+                      return (
+                        <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
+                          <span className="font-data font-medium text-primary whitespace-nowrap">{scaledAmount}</span>
+                          <span className="text-muted-foreground whitespace-nowrap">{abbreviateUnit(ingredient.unit)}</span>
+                          <span>{ingredient.name}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               ))}
             </div>
 
-            <div className="lg:sticky lg:top-32 lg:self-start space-y-4">
-              <Card className="border border-border">
-                <CardContent className="pt-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-data text-lg font-semibold">{recipe.viewCount}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Views</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <ChefHat className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-data text-lg font-semibold">{recipe.cookCount}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Cooked</p>
-                    </div>
+            {recipe.groups.map((group, groupIndex) => (
+              <Collapsible
+                key={groupIndex}
+                open={expandedGroups.has(groupIndex)}
+                onOpenChange={() => toggleGroup(groupIndex)}
+              >
+                {recipe.groups.length > 1 && (
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-between mb-3 h-10 bg-muted"
+                      data-testid={`button-group-${groupIndex}`}
+                    >
+                      <span className="font-medium">{group.name}</span>
+                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expandedGroups.has(groupIndex) ? "rotate-180" : ""}`} />
+                    </Button>
+                  </CollapsibleTrigger>
+                )}
+                
+                <CollapsibleContent>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Instructions</h3>
+                    <ol className="space-y-4">
+                      {group.instructions.map((step, i) => (
+                        <li key={i} className="flex gap-4" data-testid={`instruction-${groupIndex}-${i}`}>
+                          <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+                            {i + 1}
+                          </span>
+                          <p className="pt-1.5 leading-relaxed">{step}</p>
+                        </li>
+                      ))}
+                    </ol>
                   </div>
+                </CollapsibleContent>
+              </Collapsible>
+            ))}
 
-                  <div className="border-t border-border pt-4">
-                    <p className="text-xs text-muted-foreground mb-2 text-center">Rate this recipe</p>
-                    <div className="flex justify-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onMouseEnter={() => setHoverRating(star)}
-                          onMouseLeave={() => setHoverRating(0)}
-                          onClick={() => rateMutation.mutate(star)}
-                          className="p-1"
-                          data-testid={`button-rate-${star}`}
-                        >
-                          <Star 
-                            className={`h-6 w-6 transition-colors ${
-                              star <= (hoverRating || recipe.userRating || 0)
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-muted-foreground"
-                            }`}
-                          />
-                        </button>
+            <div className="border-t border-border pt-8">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">Rate this recipe</p>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => rateMutation.mutate(star)}
+                        className="p-0.5"
+                        data-testid={`button-rate-${star}`}
+                      >
+                        <Star 
+                          className={`h-5 w-5 transition-colors ${
+                            star <= (hoverRating || recipe.userRating || 0)
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-muted-foreground"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Button 
+                  onClick={() => cookMutation.mutate()}
+                  disabled={!recipe.canCookAgain || cookMutation.isPending}
+                  size="sm"
+                  variant={recipe.canCookAgain ? "default" : "secondary"}
+                  data-testid="button-mark-cooked"
+                >
+                  <ChefHat className="h-4 w-4 mr-2" />
+                  {recipe.canCookAgain ? "I Made This!" : "Cooked Today"}
+                </Button>
+              </div>
+            </div>
+
+            {recipe.isPublic && (
+              <div className="border-t border-border pt-8">
+                <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                  <MessageCircle className="h-5 w-5" />
+                  Comments ({recipe.commentCount})
+                </h3>
+                
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <Textarea
+                      placeholder="Add a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="min-h-[80px]"
+                      data-testid="input-comment"
+                    />
+                  </div>
+                  <Button 
+                    onClick={() => commentMutation.mutate()}
+                    disabled={!newComment.trim() || commentMutation.isPending}
+                    className="gap-2"
+                    data-testid="button-post-comment"
+                  >
+                    <Send className="h-4 w-4" />
+                    Post Comment
+                  </Button>
+
+                  {commentsLoading ? (
+                    <div className="space-y-4 pt-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex gap-3">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div className="flex-1">
+                            <Skeleton className="h-4 w-24 mb-2" />
+                            <Skeleton className="h-12 w-full" />
+                          </div>
+                        </div>
                       ))}
                     </div>
-                    {recipe.averageRating !== null && (
-                      <p className="text-xs text-muted-foreground text-center mt-2">
-                        <span className="font-data">{recipe.averageRating.toFixed(1)}</span> avg ({recipe.ratingCount} ratings)
-                      </p>
-                    )}
-                  </div>
-
-                  <Button 
-                    onClick={() => cookMutation.mutate()}
-                    disabled={!recipe.canCookAgain || cookMutation.isPending}
-                    className="w-full gap-2"
-                    variant={recipe.canCookAgain ? "default" : "secondary"}
-                    data-testid="button-mark-cooked"
-                  >
-                    <ChefHat className="h-4 w-4" />
-                    {recipe.canCookAgain ? "I Made This!" : "Cooked Today"}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {recipe.isPublic && (
-                <Card className="border border-border">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-semibold flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4" />
-                      Comments ({recipe.commentCount})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0 space-y-4">
-                    <div className="flex gap-3">
-                      <Textarea
-                        placeholder="Add a comment..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="min-h-[80px]"
-                        data-testid="input-comment"
-                      />
-                    </div>
-                    <Button 
-                      onClick={() => commentMutation.mutate()}
-                      disabled={!newComment.trim() || commentMutation.isPending}
-                      className="gap-2"
-                      data-testid="button-post-comment"
-                    >
-                      <Send className="h-4 w-4" />
-                      Post Comment
-                    </Button>
-
-                    {commentsLoading ? (
-                      <div className="space-y-4">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="flex gap-3">
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                            <div className="flex-1">
-                              <Skeleton className="h-4 w-24 mb-2" />
-                              <Skeleton className="h-12 w-full" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : comments.length === 0 ? (
-                      <p className="text-muted-foreground text-sm text-center py-4">
-                        No comments yet. Be the first to comment!
-                      </p>
-                    ) : (
-                      <div className="space-y-4">
-                        {comments.map((comment) => (
-                          <div 
-                            key={comment.id} 
-                            className={`flex gap-3 ${comment.isHidden ? "opacity-50" : ""}`}
-                            data-testid={`comment-${comment.id}`}
-                          >
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={comment.userProfileImageUrl || undefined} />
-                              <AvatarFallback className="text-xs">
-                                {(comment.userFirstName?.[0] || "") + (comment.userLastName?.[0] || "")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium text-sm">
-                                  {comment.userFirstName} {comment.userLastName}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-                                </span>
-                                {comment.isHidden && (
-                                  <Badge variant="outline" className="text-xs">Hidden</Badge>
-                                )}
-                              </div>
-                              <p className="text-sm">{comment.content}</p>
-                              {isOwner && !comment.isHidden && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-muted-foreground mt-1 h-6 px-2"
-                                  onClick={() => hideCommentMutation.mutate(comment.id)}
-                                  data-testid={`button-hide-comment-${comment.id}`}
-                                >
-                                  <EyeOff className="h-3 w-3 mr-1" />
-                                  Hide
-                                </Button>
+                  ) : comments.length === 0 ? (
+                    <p className="text-muted-foreground text-sm text-center py-4">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  ) : (
+                    <div className="space-y-4 pt-4">
+                      {comments.map((comment) => (
+                        <div 
+                          key={comment.id} 
+                          className={`flex gap-3 ${comment.isHidden ? "opacity-50" : ""}`}
+                          data-testid={`comment-${comment.id}`}
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={comment.userProfileImageUrl || undefined} />
+                            <AvatarFallback className="text-xs">
+                              {(comment.userFirstName?.[0] || "") + (comment.userLastName?.[0] || "")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">
+                                {comment.userFirstName} {comment.userLastName}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                              </span>
+                              {comment.isHidden && (
+                                <Badge variant="outline" className="text-xs">Hidden</Badge>
                               )}
                             </div>
+                            <p className="text-sm">{comment.content}</p>
+                            {isOwner && !comment.isHidden && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground mt-1 h-6 px-2"
+                                onClick={() => hideCommentMutation.mutate(comment.id)}
+                                data-testid={`button-hide-comment-${comment.id}`}
+                              >
+                                <EyeOff className="h-3 w-3 mr-1" />
+                                Hide
+                              </Button>
+                            )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
