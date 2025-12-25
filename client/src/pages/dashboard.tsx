@@ -172,7 +172,7 @@ function CategoryGrid() {
 
   return (
     <section>
-      <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:justify-start md:gap-3">
+      <div className="flex gap-2 overflow-x-auto -mx-4 px-4 sm:-mx-6 sm:px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:justify-start md:gap-3 pt-[0px] pb-[0px]">
         {recipeCategories.map((category) => (
           <Link key={category} href={`/recipes/${category.toLowerCase()}`}>
             <Card 
