@@ -173,18 +173,24 @@ export function Header({ family }: HeaderProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/add-recipe" className="flex items-center gap-2" data-testid="dropdown-add-recipe">
-                    <Plus className="h-4 w-4" />
-                    Add a Recipe
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/my-recipes" className="flex items-center gap-2" data-testid="dropdown-my-recipes">
                     <ChefHat className="h-4 w-4" />
                     My Recipes
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/recipes" className="flex items-center gap-2" data-testid="dropdown-public-recipes">
+                    <Globe className="h-4 w-4" />
+                    Public Recipes
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/add-recipe" className="flex items-center gap-2" data-testid="dropdown-add-recipe">
+                    <Plus className="h-4 w-4" />
+                    Add Recipe
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/family" className="flex items-center gap-2" data-testid="link-family-settings">
                     <Users className="h-4 w-4" />
@@ -241,7 +247,7 @@ export function Header({ family }: HeaderProps) {
                 className={`text-primary-foreground hover:bg-primary-foreground/10 ${location === "/recipes" ? "bg-primary-foreground/20" : ""}`}
                 data-testid="subnav-all-recipes"
               >
-                All Recipes
+                Public Recipes
               </Button>
             </Link>
             {recipeCategories.map((cat) => (
@@ -323,25 +329,25 @@ export function Header({ family }: HeaderProps) {
               Add New Recipe
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => navigate("/home"))}
-              data-testid="command-home"
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Home Dashboard
-            </CommandItem>
-            <CommandItem
               onSelect={() => runCommand(() => navigate("/my-recipes"))}
               data-testid="command-my-recipes"
             >
               <ChefHat className="mr-2 h-4 w-4" />
-              My Family Recipes
+              My Recipes
             </CommandItem>
             <CommandItem
               onSelect={() => runCommand(() => navigate("/recipes"))}
               data-testid="command-browse"
             >
-              <BookOpen className="mr-2 h-4 w-4" />
-              Browse All Recipes
+              <Globe className="mr-2 h-4 w-4" />
+              Public Recipes
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/home"))}
+              data-testid="command-home"
+            >
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Dashboard
             </CommandItem>
           </CommandGroup>
 
@@ -383,30 +389,7 @@ export function Header({ family }: HeaderProps) {
             </SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-1">
-            <SheetClose asChild>
-              <Link href="/home">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start gap-3"
-                  data-testid="mobile-nav-home"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Home
-                </Button>
-              </Link>
-            </SheetClose>
-            <SheetClose asChild>
-              <Link href="/add-recipe">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start gap-3"
-                  data-testid="mobile-nav-add"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add a Recipe
-                </Button>
-              </Link>
-            </SheetClose>
+            {/* Primary: View Recipes */}
             <SheetClose asChild>
               <Link href="/my-recipes">
                 <Button 
@@ -426,14 +409,43 @@ export function Header({ family }: HeaderProps) {
                   className={`w-full justify-start gap-3 ${isBrowsing ? "bg-accent" : ""}`}
                   data-testid="mobile-nav-browse"
                 >
-                  <BookOpen className="h-4 w-4" />
-                  Browse All Recipes
+                  <Globe className="h-4 w-4" />
+                  Public Recipes
+                </Button>
+              </Link>
+            </SheetClose>
+            
+            <div className="my-3 border-t border-border" />
+
+            {/* Secondary: Actions */}
+            <SheetClose asChild>
+              <Link href="/add-recipe">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3"
+                  data-testid="mobile-nav-add"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Recipe
+                </Button>
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link href="/home">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3"
+                  data-testid="mobile-nav-home"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Dashboard
                 </Button>
               </Link>
             </SheetClose>
             
             <div className="my-3 border-t border-border" />
             
+            {/* Categories */}
             <p className="px-3 text-xs font-medium text-muted-foreground mb-2">Categories</p>
             {recipeCategories.map((cat) => (
               <SheetClose key={cat} asChild>
@@ -451,7 +463,8 @@ export function Header({ family }: HeaderProps) {
             ))}
             
             <div className="my-3 border-t border-border" />
-            
+
+            {/* Settings */}
             <SheetClose asChild>
               <Link href="/family">
                 <Button 
