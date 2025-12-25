@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Camera, Users, Sparkles, ArrowRight, CheckCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Camera, Link as LinkIcon, FileText, PenLine, ArrowRight, CheckCircle, Sparkles } from "lucide-react";
 import heroImage from "@assets/ChatGPT_Image_Dec_24,_2025,_11_46_48_PM_1766638042461.png";
 import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
 
@@ -81,45 +82,161 @@ export default function Landing() {
         <RecipeShowcaseCarousel />
 
         <section id="features" className="py-16 px-6 bg-card scroll-mt-14">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <p className="text-sm font-medium text-primary mb-2">FEATURES</p>
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-sm font-medium text-primary mb-2">ADD RECIPES YOUR WAY</p>
               <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                Everything you need to preserve recipes
+                Four ways to add recipes
               </h2>
               <p className="text-muted-foreground max-w-xl mx-auto">
-                From handwritten cards to perfectly organized digital recipes in seconds
+                Whether it's a photo, a link, or just text - we've got you covered
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-background rounded-lg p-6 border border-border">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Camera className="h-6 w-6 text-primary" />
+            
+            <Tabs defaultValue="photo" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
+                <TabsTrigger value="photo" className="gap-2 text-xs sm:text-sm">
+                  <Camera className="h-4 w-4 hidden sm:block" />
+                  Photo
+                </TabsTrigger>
+                <TabsTrigger value="url" className="gap-2 text-xs sm:text-sm">
+                  <LinkIcon className="h-4 w-4 hidden sm:block" />
+                  Website
+                </TabsTrigger>
+                <TabsTrigger value="text" className="gap-2 text-xs sm:text-sm">
+                  <FileText className="h-4 w-4 hidden sm:block" />
+                  Text
+                </TabsTrigger>
+                <TabsTrigger value="manual" className="gap-2 text-xs sm:text-sm">
+                  <PenLine className="h-4 w-4 hidden sm:block" />
+                  Manual
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="photo" className="mt-0">
+                <div className="bg-background rounded-lg p-8 border border-border">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Camera className="h-10 w-10 text-primary" />
+                    </div>
+                    <div className="text-center md:text-left">
+                      <h3 className="text-xl font-semibold mb-3">Upload or Take a Photo</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Snap a picture of any recipe - from grandma's handwritten cards to cookbook pages. 
+                        Our AI can read even the messiest handwriting and extract all the ingredients and instructions perfectly.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Works with handwritten recipes (even bad handwriting!)
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Scan cookbook pages or printed recipes
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          AI generates a beautiful photo for your recipe
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-semibold mb-2">Scan Anything</h3>
-                <p className="text-sm text-muted-foreground">
-                  Photos, handwritten cards, websites, or typed text. Our AI extracts it all.
-                </p>
-              </div>
-              <div className="bg-background rounded-lg p-6 border border-border">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Sparkles className="h-6 w-6 text-primary" />
+              </TabsContent>
+              
+              <TabsContent value="url" className="mt-0">
+                <div className="bg-background rounded-lg p-8 border border-border">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <LinkIcon className="h-10 w-10 text-primary" />
+                    </div>
+                    <div className="text-center md:text-left">
+                      <h3 className="text-xl font-semibold mb-3">Add from Another Website</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Found a great recipe online? Just paste the URL and we'll extract everything automatically.
+                        No more losing bookmarks or dealing with annoying pop-ups when you want to cook.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Works with most recipe websites
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Extracts ingredients, steps, and timing
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Keep your favorite recipes forever
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-semibold mb-2">AI-Powered</h3>
-                <p className="text-sm text-muted-foreground">
-                  Automatically parse ingredients, instructions, and even generate beautiful photos.
-                </p>
-              </div>
-              <div className="bg-background rounded-lg p-6 border border-border">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-primary" />
+              </TabsContent>
+              
+              <TabsContent value="text" className="mt-0">
+                <div className="bg-background rounded-lg p-8 border border-border">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <FileText className="h-10 w-10 text-primary" />
+                    </div>
+                    <div className="text-center md:text-left">
+                      <h3 className="text-xl font-semibold mb-3">Paste Text from Anywhere</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Have a recipe in your notes, messages, or emails? Just copy and paste the text.
+                        Our AI will parse it and organize everything into a beautiful, easy-to-follow format.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Paste from notes, messages, or documents
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          AI structures messy text into clean recipes
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Works with any format or language
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-semibold mb-2">Share with Family</h3>
-                <p className="text-sm text-muted-foreground">
-                  Invite family members to view, add, and cook recipes together.
-                </p>
-              </div>
-            </div>
+              </TabsContent>
+              
+              <TabsContent value="manual" className="mt-0">
+                <div className="bg-background rounded-lg p-8 border border-border">
+                  <div className="flex flex-col md:flex-row gap-8 items-center">
+                    <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <PenLine className="h-10 w-10 text-primary" />
+                    </div>
+                    <div className="text-center md:text-left">
+                      <h3 className="text-xl font-semibold mb-3">Add Manually</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Want full control? Enter your recipe step by step with our easy-to-use form.
+                        Perfect for your own creations or when you want to customize every detail.
+                      </p>
+                      <ul className="text-sm text-muted-foreground space-y-2">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Full control over every field
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Add multiple ingredient groups
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
+                          Upload your own photos
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
 
