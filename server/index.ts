@@ -7,6 +7,36 @@ import { createServer } from "http";
 const app = express();
 const httpServer = createServer(app);
 
+// Domain configuration for production
+const MAIN_DOMAIN = "familyrecipe.app";
+const ADMIN_DOMAIN = "admin.familyrecipe.app";
+
+// Hostname-based routing for admin subdomain in production
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    const host = req.hostname || req.get("host")?.split(":")[0] || "";
+    const path = req.path;
+    
+    // If on main domain and accessing /admin, redirect to admin subdomain
+    if (host === MAIN_DOMAIN && path.startsWith("/admin")) {
+      const redirectUrl = `https://${ADMIN_DOMAIN}${req.originalUrl}`;
+      return res.redirect(301, redirectUrl);
+    }
+    
+    // If on admin subdomain and accessing non-admin path (except API/assets), redirect to main domain
+    if (host === ADMIN_DOMAIN && !path.startsWith("/admin") && !path.startsWith("/api") && !path.startsWith("/assets")) {
+      // Redirect root to /admin on admin subdomain
+      if (path === "/") {
+        return res.redirect(301, "/admin");
+      }
+      const redirectUrl = `https://${MAIN_DOMAIN}${req.originalUrl}`;
+      return res.redirect(301, redirectUrl);
+    }
+    
+    next();
+  });
+}
+
 // Enable gzip compression for all responses
 app.use(compression({
   level: 6, // balanced compression level

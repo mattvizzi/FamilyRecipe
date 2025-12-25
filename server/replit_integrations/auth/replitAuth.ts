@@ -27,6 +27,11 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  
+  // In production, set cookie domain to share across main and admin subdomains
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieDomain = isProduction ? ".familyrecipe.app" : undefined;
+  
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -37,6 +42,7 @@ export function getSession() {
       secure: true,
       maxAge: sessionTtl,
       sameSite: "lax", // CSRF protection: prevents cross-site cookie sending
+      domain: cookieDomain, // Share cookie across subdomains in production
     },
   });
 }
