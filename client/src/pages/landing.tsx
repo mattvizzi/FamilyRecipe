@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Link as LinkIcon, FileText, PenLine, ArrowRight, CheckCircle, Sparkles, Clock, Users, Minus, Plus, Copy, FileDown } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Camera, Link as LinkIcon, FileText, PenLine, ArrowRight, CheckCircle, Sparkles, Clock, Users, Minus, Plus, Copy, FileDown, Upload, Wand2, ChefHat, UserPlus, Share2, BookOpen, Mail, Quote } from "lucide-react";
 import heroImage from "@assets/ChatGPT_Image_Dec_24,_2025,_11_46_48_PM_1766638042461.png";
 import carbonaraImage from "@assets/generated_images/spaghetti_carbonara_dish.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
 
 export default function Landing() {
@@ -83,6 +85,61 @@ export default function Landing() {
         </section>
 
         <RecipeShowcaseCarousel />
+
+        <section className="py-16 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-sm font-medium text-primary mb-2">HOW IT WORKS</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                Three simple steps to preserve your recipes
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                From handwritten cards to a beautiful digital cookbook in minutes
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Upload className="h-8 w-8 text-primary" />
+                </div>
+                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-3">
+                  1
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Upload Your Recipe</h3>
+                <p className="text-sm text-muted-foreground">
+                  Take a photo, paste a URL, or type in the text. We accept recipes in any format.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Wand2 className="h-8 w-8 text-primary" />
+                </div>
+                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-3">
+                  2
+                </div>
+                <h3 className="text-lg font-semibold mb-2">AI Does the Magic</h3>
+                <p className="text-sm text-muted-foreground">
+                  Our AI extracts ingredients, instructions, and timing - then generates a beautiful photo.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <ChefHat className="h-8 w-8 text-primary" />
+                </div>
+                <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-3">
+                  3
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Cook & Share</h3>
+                <p className="text-sm text-muted-foreground">
+                  Access your recipes anytime, scale servings, and share with your whole family.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section id="features" className="py-16 px-6 bg-card scroll-mt-14">
           <div className="max-w-4xl mx-auto">
@@ -336,6 +393,186 @@ export default function Landing() {
           </div>
         </section>
 
+        <section className="py-16 px-6 bg-card">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-sm font-medium text-primary mb-2">FAMILY SHARING</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                One cookbook for the whole family
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Invite family members to view, add, and cook from your shared collection
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="border border-border">
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <UserPlus className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Easy Invites</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Share a simple link with family members. They can join your cookbook in seconds, no complicated setup required.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-border">
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <Share2 className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Collaborate Together</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Everyone can add their favorite recipes. See who contributed each dish and build your collection together.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-border">
+                <CardContent className="pt-6">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <BookOpen className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Access Anywhere</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your whole family can access recipes from any device. Perfect for cooking at home or sharing at gatherings.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-sm font-medium text-primary mb-2">LOVED BY FAMILIES</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                Stories from our community
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Families around the world are preserving their culinary heritage
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              <Card className="border border-border">
+                <CardContent className="pt-6">
+                  <Quote className="h-8 w-8 text-primary/20 mb-4" />
+                  <p className="text-sm text-muted-foreground mb-6">
+                    "I finally digitized my grandmother's handwritten recipe cards. The AI read her cursive perfectly - even the notes in the margins. Now my kids can access them anytime."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">MR</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">Maria R.</p>
+                      <p className="text-xs text-muted-foreground">Chicago, IL</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-border">
+                <CardContent className="pt-6">
+                  <Quote className="h-8 w-8 text-primary/20 mb-4" />
+                  <p className="text-sm text-muted-foreground mb-6">
+                    "Our family is spread across three states. Now when we get together for holidays, everyone contributes recipes and we actually use them. No more lost bookmarks."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">JT</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">James T.</p>
+                      <p className="text-xs text-muted-foreground">Austin, TX</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-border">
+                <CardContent className="pt-6">
+                  <Quote className="h-8 w-8 text-primary/20 mb-4" />
+                  <p className="text-sm text-muted-foreground mb-6">
+                    "The scaling feature is a game-changer. I can take my mom's recipe for 4 and instantly scale it for our family of 8. The PDF export is perfect for printing."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">SK</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">Sarah K.</p>
+                      <p className="text-xs text-muted-foreground">Seattle, WA</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 px-6 bg-card">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-sm font-medium text-primary mb-2">FAQ</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                Common questions
+              </h2>
+            </div>
+            
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="item-1" className="border-border">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  Is FamilyRecipe really free to use?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Yes! You can create your family cookbook, add unlimited recipes, and invite family members completely free. We believe everyone should be able to preserve their family recipes without barriers.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="item-2" className="border-border">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  How accurate is the AI at reading handwritten recipes?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Our AI is trained on thousands of handwritten recipes and can read most handwriting accurately - even cursive and faded ink. For best results, take a clear, well-lit photo. You can always edit any details after extraction.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="item-3" className="border-border">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  Can I export or print my recipes?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Absolutely. Every recipe can be exported as a beautifully formatted PDF, perfect for printing or sharing. You can also copy recipes to your clipboard to paste anywhere.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="item-4" className="border-border">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  How many family members can I invite?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  There's no limit! Invite your whole extended family. Everyone with the invite link can join your cookbook, view all recipes, and add their own contributions.
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="item-5" className="border-border">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  What happens to my recipes if I stop using the service?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Your recipes are yours forever. You can export all of them as PDFs at any time. We never delete your data, and you can always come back to access your cookbook.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </section>
+
         <section className="py-16 px-6 bg-primary">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
@@ -351,15 +588,36 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="py-6 px-6 bg-black">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center">
-            <span className="text-lg font-bold tracking-tight text-white">Family</span>
-            <span className="text-lg font-light text-white/80 tracking-tight">Recipe</span>
+      <footer className="py-8 px-6 border-t border-border bg-card">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center mb-2">
+                <span className="text-lg font-bold tracking-tight">Family</span>
+                <span className="text-lg font-light text-muted-foreground tracking-tight">Recipe</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Preserving family culinary traditions, one recipe at a time.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-6 text-sm">
+              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-privacy-policy">
+                Privacy Policy
+              </a>
+              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-terms-service">
+                Terms of Service
+              </a>
+              <a href="mailto:hello@familyrecipe.com" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5" data-testid="link-contact">
+                <Mail className="h-4 w-4" />
+                Contact
+              </a>
+            </div>
           </div>
-          <p className="text-sm text-white/60">
-            Made with love.
-          </p>
+          <div className="border-t border-border mt-6 pt-6 text-center">
+            <p className="text-xs text-muted-foreground">
+              Made with love for families everywhere.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
