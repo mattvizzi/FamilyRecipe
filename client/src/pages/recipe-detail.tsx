@@ -45,6 +45,7 @@ import {
   Globe,
   Lock,
   Send,
+  ImageOff,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -387,140 +388,116 @@ export default function RecipeDetail() {
     <div className="min-h-screen bg-background">
       <Header family={family} />
       
-      <div className="fixed top-14 left-0 right-0 z-40 bg-background border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate("/my-recipes")}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          
-          <div className="flex items-center gap-2">
-            {!isOwner && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => saveMutation.mutate()}
-                disabled={saveMutation.isPending}
-                data-testid="button-save"
-              >
-                <Bookmark className={`h-4 w-4 mr-2 ${recipe.isSaved ? "fill-current" : ""}`} />
-                {recipe.isSaved ? "Saved" : "Save"}
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={copyToClipboard} data-testid="button-copy">
-              <Copy className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Copy</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportToPDF} data-testid="button-export-pdf">
-              <FileDown className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">PDF</span>
-            </Button>
-            {isOwner && (
-              <Button 
-                variant={recipe.isPublic ? "default" : "outline"}
-                size="sm" 
-                onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
-                disabled={visibilityMutation.isPending}
-                className={recipe.isPublic ? "bg-primary text-primary-foreground" : ""}
-                data-testid="button-visibility"
-              >
-                {recipe.isPublic ? (
-                  <>
-                    <Globe className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Public</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Private</span>
-                  </>
-                )}
-              </Button>
-            )}
-            {isOwner && (
-              <Button variant="outline" size="sm" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
-                <Pencil className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Edit</span>
-              </Button>
-            )}
-            {isOwner && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" data-testid="button-delete">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Delete</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete "{recipe.name}".
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={() => deleteMutation.mutate()}
-                      className="bg-destructive text-destructive-foreground"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      <main className="pt-28 pb-12 px-6">
+      <main className="pt-20 pb-12 px-6">
         <div className="max-w-4xl mx-auto">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/my-recipes")}
+              data-testid="button-back"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              {!isOwner && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => saveMutation.mutate()}
+                  disabled={saveMutation.isPending}
+                  data-testid="button-save"
+                >
+                  <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy">
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf">
+                <FileDown className="h-4 w-4" />
+              </Button>
+              {isOwner && (
+                <Button 
+                  variant="ghost"
+                  size="icon" 
+                  onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
+                  disabled={visibilityMutation.isPending}
+                  data-testid="button-visibility"
+                >
+                  {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                </Button>
+              )}
+              {isOwner && (
+                <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+              {isOwner && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" data-testid="button-delete">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete "{recipe.name}".
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => deleteMutation.mutate()}
+                        className="bg-destructive text-destructive-foreground"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
+          </div>
+
           <div className="mb-6">
             <h1 className="text-2xl md:text-3xl font-bold mb-4" data-testid="text-recipe-name">
               {recipe.name}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               <Badge variant="secondary" data-testid="badge-category">
                 {recipe.category}
               </Badge>
-              
-              <span className="text-border">|</span>
-              
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                {(recipe.prepTime || 0) > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="font-data">{recipe.prepTime}m</span> prep
-                  </span>
-                )}
-                {(recipe.cookTime || 0) > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span className="font-data">{recipe.cookTime}m</span> cook
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" />
-                  <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
+              {recipe.isPublic && (
+                <Badge variant="success" className="gap-1" data-testid="badge-public">
+                  <Globe className="h-3 w-3" />
+                  Public
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
+              {(recipe.prepTime || 0) > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-data">{recipe.prepTime}m</span> prep
                 </span>
-                <span className="flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" />
-                  <span className="font-data">{recipe.viewCount}</span>
+              )}
+              {(recipe.cookTime || 0) > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-data">{recipe.cookTime}m</span> cook
                 </span>
-                <span className="flex items-center gap-1">
-                  <ChefHat className="h-3.5 w-3.5" />
-                  <span className="font-data">{recipe.cookCount}</span>
-                </span>
-              </div>
-              
-              <span className="text-border">|</span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <Users className="h-4 w-4" />
+                <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
+              </span>
               
               <div className="flex items-center gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -574,7 +551,7 @@ export default function RecipeDetail() {
           )}
           {!recipe.imageUrl && (
             <div className="rounded-lg overflow-hidden aspect-video mb-8 bg-muted flex items-center justify-center text-muted-foreground">
-              No Image
+              <ImageOff className="h-12 w-12" />
             </div>
           )}
 

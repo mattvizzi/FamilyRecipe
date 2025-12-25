@@ -93,8 +93,6 @@ export default function Landing() {
 
         <RecipeShowcaseCarousel />
 
-        <div className="h-16 bg-background" />
-
         <section className="py-20 px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
@@ -125,7 +123,7 @@ export default function Landing() {
                 </div>
               </div>
               
-              <div className="relative bg-card rounded-lg p-6 border-2 border-primary">
+              <div className="relative bg-card rounded-lg p-6 border border-border">
                 <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-accent-green text-accent-green-foreground flex items-center justify-center font-bold text-lg">
                   2
                 </div>
@@ -182,17 +180,17 @@ export default function Landing() {
             </div>
             
             <Tabs defaultValue="photo" className="w-full">
-              <TabsList className="flex justify-center gap-3 bg-transparent mb-8">
-                <TabsTrigger value="photo" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
+              <TabsList className="flex justify-center gap-1 mb-8">
+                <TabsTrigger value="photo">
                   Photo
                 </TabsTrigger>
-                <TabsTrigger value="url" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
+                <TabsTrigger value="url">
                   Website
                 </TabsTrigger>
-                <TabsTrigger value="text" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
+                <TabsTrigger value="text">
                   Text
                 </TabsTrigger>
-                <TabsTrigger value="manual" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
+                <TabsTrigger value="manual">
                   Manual
                 </TabsTrigger>
               </TabsList>

@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, Globe, ImageOff } from "lucide-react";
 import type { RecipeWithCreator } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -30,8 +30,8 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-                  No Image
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                  <ImageOff className="h-8 w-8" />
                 </div>
               )}
             </div>
@@ -43,6 +43,12 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
                 <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
                   {recipe.category}
                 </Badge>
+                {recipe.isPublic && (
+                  <Badge variant="success" className="text-xs gap-1" data-testid={`badge-public-${recipe.id}`}>
+                    <Globe className="h-3 w-3" />
+                    Public
+                  </Badge>
+                )}
                 {totalTime > 0 && (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                     <Clock className="h-3.5 w-3.5" />
@@ -83,7 +89,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              No Image
+              <ImageOff className="h-10 w-10" />
             </div>
           )}
         </div>
@@ -92,9 +98,16 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
             {recipe.name}
           </h3>
           <div className="flex items-center justify-between gap-3 mb-2">
-            <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
-              {recipe.category}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
+                {recipe.category}
+              </Badge>
+              {recipe.isPublic && (
+                <Badge variant="success" className="text-xs gap-1" data-testid={`badge-public-${recipe.id}`}>
+                  <Globe className="h-3 w-3" />
+                </Badge>
+              )}
+            </div>
             <div className="flex items-center gap-3 text-muted-foreground">
               {recipe.servings && (
                 <div className="flex items-center gap-1 text-xs">

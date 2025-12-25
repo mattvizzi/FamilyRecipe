@@ -107,11 +107,12 @@
 ## Component Library
 
 ### Navigation Header
-- Fixed position, bg-background (solid, no blur/glassmorphism)
+- Fixed position, bg-background (solid, neutral, no blur/glassmorphism)
 - Height: h-14 (56px)
 - Inner padding: px-6
 - Border bottom: border-b border-border
-- Logo: Text-only "FamilyRecipe" - "Family" in bold + "Recipe" in light primary color
+- Logo: Text-only "FamilyRecipe" - "Family" in text-foreground + "Recipe" in text-primary for accent
+- Consistent across landing page and authenticated pages (no dominant amber bar)
 - No icon logos or decorative elements
 
 ### Recipe Cards (Grid View)
@@ -143,10 +144,13 @@
 - Default sizes only (no custom h-11, rounded-xl)
 
 ### Badges
-- variant="secondary" for categories
+- variant="secondary" for categories, general tags
+- variant="success" for public/shared status (uses accent-green)
+- variant="accent" for favorites, emotional highlights (uses accent-rose)
 - text-xs size
 - Minimal padding
 - No border-glow or shadows
+- Use icons inline with badge text (e.g., Globe icon for "Public")
 
 ### Form Elements
 - Input/Select: Default shadcn styling
@@ -165,6 +169,12 @@
 ### Placeholder/Loading
 - bg-muted simple flat color
 - No gradient shimmer (use animate-pulse if needed)
+
+### Empty States & No Image Placeholders
+- Use icons (ImageOff from lucide-react) instead of plain text like "No Image"
+- Icon size: h-8 w-8 for cards, h-12 w-12 for larger containers
+- Color: text-muted-foreground
+- Centered within container
 
 ---
 
