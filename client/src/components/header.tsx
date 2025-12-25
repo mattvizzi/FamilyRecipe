@@ -114,7 +114,7 @@ export function Header({ family }: HeaderProps) {
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-2 text-muted-foreground w-64 justify-between border-foreground"
+              className="flex items-center gap-2 text-muted-foreground w-64 justify-between border border-black dark:border-white"
               onClick={() => setOpen(true)}
               data-testid="button-search"
             >
@@ -144,11 +144,10 @@ export function Header({ family }: HeaderProps) {
 
             {/* Family Recipes link - hidden on mobile, shown on desktop */}
             {family && (
-              <Link href="/family-recipes" className="hidden sm:block">
-                <Button variant="ghost" size="sm" className="text-muted-foreground" data-testid="link-family-recipes-nav">
-                  <ChefHat className="h-4 w-4 mr-1.5" />
+              <Link href="/family-recipes" className="hidden sm:block" data-testid="link-family-recipes-nav">
+                <span className="text-sm text-foreground hover:underline cursor-pointer">
                   {family.name}
-                </Button>
+                </span>
               </Link>
             )}
 
@@ -221,7 +220,7 @@ export function Header({ family }: HeaderProps) {
       </header>
 
       {/* Desktop Sub-navigation bar with categories */}
-      <nav className="fixed top-14 left-0 right-0 z-40 bg-primary hidden sm:block">
+      <nav className="fixed top-14 left-0 right-0 z-40 bg-primary hidden sm:block shadow-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-4 h-10 overflow-x-auto scrollbar-hide">
             <Link href="/recipes">
