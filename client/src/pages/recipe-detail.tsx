@@ -139,7 +139,7 @@ export default function RecipeDetail() {
       <div className="min-h-screen bg-background">
         <Header family={family} />
         <main className="pt-20 px-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <Skeleton className="h-8 w-24 mb-6" />
             <div className="grid lg:grid-cols-[1fr,380px] gap-10">
               <div>
@@ -164,8 +164,8 @@ export default function RecipeDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header family={family} />
-        <main className="pt-28 px-6">
-          <div className="max-w-4xl mx-auto text-center">
+        <main className="pt-20 px-6">
+          <div className="max-w-5xl mx-auto text-center">
             <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
             <Button asChild>
               <a href="/">Go Back Home</a>
@@ -182,8 +182,8 @@ export default function RecipeDetail() {
     <div className="min-h-screen bg-background">
       <Header family={family} />
       
-      <div className="fixed top-16 left-0 right-0 z-40 bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
+      <div className="fixed top-14 left-0 right-0 z-40 bg-background border-b border-border">
+        <div className="max-w-5xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
           <Button 
             variant="ghost" 
             size="sm"
@@ -236,8 +236,8 @@ export default function RecipeDetail() {
         </div>
       </div>
       
-      <main className="pt-32 px-6 pb-12">
-        <div className="max-w-7xl mx-auto">
+      <main className="pt-28 px-6 pb-12">
+        <div className="max-w-5xl mx-auto">
           <div className="grid lg:grid-cols-[1fr,380px] gap-10">
             <div className="space-y-6">
               <div className="rounded-lg overflow-hidden bg-muted aspect-video border border-border">
