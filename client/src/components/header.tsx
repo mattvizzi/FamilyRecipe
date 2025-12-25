@@ -103,8 +103,8 @@ export function Header({ family }: HeaderProps) {
           <div>
             <Link href="/home">
               <div className="flex items-center cursor-pointer" data-testid="link-home">
-                <span className="text-xl font-bold tracking-tight text-primary">Family</span>
-                <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
+                <span className="text-2xl font-bold tracking-tight text-primary">Family</span>
+                <span className="text-2xl font-light text-foreground tracking-tight">Recipe</span>
               </div>
             </Link>
           </div>
@@ -114,7 +114,7 @@ export function Header({ family }: HeaderProps) {
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-2 text-muted-foreground w-64 justify-between"
+              className="flex items-center gap-2 text-muted-foreground w-64 justify-between border-foreground"
               onClick={() => setOpen(true)}
               data-testid="button-search"
             >
@@ -141,6 +141,16 @@ export function Header({ family }: HeaderProps) {
             >
               <Search className="h-4 w-4" />
             </Button>
+
+            {/* Family Recipes link - hidden on mobile, shown on desktop */}
+            {family && (
+              <Link href="/family-recipes" className="hidden sm:block">
+                <Button variant="ghost" size="sm" className="text-muted-foreground" data-testid="link-family-recipes-nav">
+                  <ChefHat className="h-4 w-4 mr-1.5" />
+                  {family.name}
+                </Button>
+              </Link>
+            )}
 
             {/* Notifications - hidden on mobile, shown on desktop */}
             <div className="hidden sm:block">
@@ -213,27 +223,23 @@ export function Header({ family }: HeaderProps) {
       {/* Desktop Sub-navigation bar with categories */}
       <nav className="fixed top-14 left-0 right-0 z-40 bg-primary hidden sm:block">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-1 h-10 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-4 h-10 overflow-x-auto scrollbar-hide">
             <Link href="/recipes">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className={`text-primary-foreground hover:bg-primary-foreground/10 ${location === "/recipes" ? "bg-primary-foreground/20" : ""}`}
+              <span 
+                className={`text-sm text-primary-foreground cursor-pointer hover:underline ${location === "/recipes" ? "font-bold underline" : ""}`}
                 data-testid="subnav-all-recipes"
               >
                 All Recipes
-              </Button>
+              </span>
             </Link>
             {recipeCategories.map((cat) => (
               <Link key={cat} href={`/recipes/${cat.toLowerCase()}`}>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className={`text-primary-foreground hover:bg-primary-foreground/10 whitespace-nowrap ${currentCategory === cat.toLowerCase() ? "bg-primary-foreground/20" : ""}`}
+                <span 
+                  className={`text-sm text-primary-foreground cursor-pointer hover:underline whitespace-nowrap ${currentCategory === cat.toLowerCase() ? "font-bold underline" : ""}`}
                   data-testid={`subnav-category-${cat.toLowerCase()}`}
                 >
                   {cat}
-                </Button>
+                </span>
               </Link>
             ))}
           </div>
