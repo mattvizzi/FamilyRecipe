@@ -142,15 +142,6 @@ export function Header({ family }: HeaderProps) {
               <Search className="h-4 w-4" />
             </Button>
 
-            {/* Family Recipes link - hidden on mobile, shown on desktop */}
-            {family && (
-              <Link href="/family-recipes" className="hidden sm:block" data-testid="link-family-recipes-nav">
-                <span className="text-sm text-foreground hover:underline cursor-pointer">
-                  {family.name}
-                </span>
-              </Link>
-            )}
-
             {/* Notifications - hidden on mobile, shown on desktop */}
             <div className="hidden sm:block">
               <NotificationBell />
