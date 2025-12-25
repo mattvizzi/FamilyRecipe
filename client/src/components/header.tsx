@@ -99,21 +99,8 @@ export function Header({ family }: HeaderProps) {
       {/* Main Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
-          {/* Mobile: Hamburger Left, Logo Center */}
-          <div className="flex items-center gap-2 sm:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileNavOpen(true)}
-              aria-label="Open navigation menu"
-              data-testid="button-mobile-menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Logo - Centered on mobile, left on desktop */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 sm:relative sm:left-0 sm:transform-none">
+          {/* Logo - Left aligned on all screens now that mobile has bottom nav */}
+          <div>
             <Link href="/home">
               <div className="flex items-center cursor-pointer" data-testid="link-home">
                 <span className="text-xl font-bold tracking-tight text-primary">Family</span>
@@ -143,6 +130,7 @@ export function Header({ family }: HeaderProps) {
 
           {/* Right side actions */}
           <div className="flex items-center gap-2">
+            {/* Mobile search - keep since it's not in bottom nav */}
             <Button
               variant="ghost"
               size="icon"
@@ -154,11 +142,15 @@ export function Header({ family }: HeaderProps) {
               <Search className="h-4 w-4" />
             </Button>
 
-            <NotificationBell />
+            {/* Notifications - hidden on mobile, shown on desktop */}
+            <div className="hidden sm:block">
+              <NotificationBell />
+            </div>
 
+            {/* Profile menu - hidden on mobile, shown on desktop */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-lg" aria-label="User menu" data-testid="button-user-menu">
+                <Button variant="ghost" size="icon" className="rounded-lg hidden sm:flex" aria-label="User menu" data-testid="button-user-menu">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.profileImageUrl || undefined} alt="Profile" />
                     <AvatarFallback className="text-sm font-medium bg-muted">{getInitials()}</AvatarFallback>

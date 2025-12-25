@@ -11,6 +11,7 @@ import { useAdmin } from "@/features/admin/use-admin";
 import { useQuery } from "@tanstack/react-query";
 import type { Family } from "@shared/schema";
 import { Header } from "@/components/header";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 // Helper to detect if we're on the admin subdomain (memoized for stability)
 const ADMIN_DOMAIN = "admin.familyrecipe.app";
@@ -218,7 +219,8 @@ function AuthenticatedRouter() {
           <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
       }>
-        <div id="main-content">
+        {/* Add bottom padding on mobile for the bottom nav */}
+        <div id="main-content" className="pb-16 sm:pb-0">
           <Switch>
             <Route path="/">{() => <Redirect to="/home" />}</Route>
             <Route path="/home" component={Dashboard} />
@@ -236,6 +238,7 @@ function AuthenticatedRouter() {
           </Switch>
         </div>
       </Suspense>
+      <MobileBottomNav />
     </div>
   );
 }
