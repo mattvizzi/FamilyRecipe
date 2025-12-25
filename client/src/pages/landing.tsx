@@ -33,14 +33,21 @@ export default function Landing() {
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-sm text-primary font-medium mb-6">
-                  <Sparkles className="h-4 w-4" />
-                  <span>AI-Powered Recipe Management</span>
-                </div>
                 <h1 className="text-4xl md:text-5xl font-bold mb-5 leading-tight">
                   Family Recipes,
                   <span className="text-primary"> preserved forever.</span>
                 </h1>
+                
+                <div className="lg:hidden relative mb-8">
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden border-2 border-border">
+                    <img 
+                      src={heroImage} 
+                      alt="Home cooking with love" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                
                 <p className="text-lg text-muted-foreground mb-8">
                   The smart way to digitize, organize, and share your family's culinary traditions. 
                   Scan any recipe and let AI do the rest.
@@ -71,7 +78,7 @@ export default function Landing() {
                   </div>
                 </div>
               </div>
-              <div className="relative lg:pl-8">
+              <div className="relative lg:pl-8 hidden lg:block">
                 <div className="aspect-[4/3] rounded-lg overflow-hidden border-2 border-border">
                   <img 
                     src={heroImage} 
