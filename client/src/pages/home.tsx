@@ -217,18 +217,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Floating Action Button for Add Recipe */}
-        <Link href="/add-recipe">
-          <Button
-            size="lg"
-            className="fixed bottom-6 right-6 rounded-full w-14 h-14 z-40 border border-border"
-            aria-label="Add new recipe"
-            data-testid="button-fab-add-recipe"
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </Link>
-      </main>
+        </main>
     </>
   );
 }
