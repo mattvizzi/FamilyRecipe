@@ -17,7 +17,7 @@ type RecipeFilter = "all" | "my-recipes" | "saved";
 
 const filterLabels: Record<RecipeFilter, string> = {
   "all": "All",
-  "my-recipes": "My Recipes",
+  "my-recipes": "Family",
   "saved": "Saved",
 };
 
@@ -95,11 +95,11 @@ export default function Home() {
             </h1>
           </div>
 
-          {/* Filter Tabs: My Recipes / Saved */}
+          {/* Filter Tabs: All / Family / Saved */}
           <Tabs value={recipeFilter} onValueChange={(v) => setRecipeFilter(v as RecipeFilter)} className="mb-4">
             <TabsList className="grid w-full max-w-xs grid-cols-3">
               <TabsTrigger value="all" data-testid="tab-all">All</TabsTrigger>
-              <TabsTrigger value="my-recipes" data-testid="tab-my-recipes">Created</TabsTrigger>
+              <TabsTrigger value="my-recipes" data-testid="tab-my-recipes">Family</TabsTrigger>
               <TabsTrigger value="saved" data-testid="tab-saved">Saved</TabsTrigger>
             </TabsList>
           </Tabs>
