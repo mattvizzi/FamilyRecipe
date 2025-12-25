@@ -33,13 +33,13 @@ export function Header({ family }: HeaderProps) {
   const isBrowsing = location?.startsWith("/recipes") ?? false;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
       <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
         <div className="flex items-center gap-6">
           <Link href="/">
             <div className="flex items-center cursor-pointer" data-testid="link-home">
-              <span className="text-xl font-bold tracking-tight text-white">Family</span>
-              <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
+              <span className="text-xl font-bold tracking-tight text-primary">Family</span>
+              <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
             </div>
           </Link>
 
@@ -49,7 +49,7 @@ export function Header({ family }: HeaderProps) {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`text-white/80 hover:text-white hover:bg-white/10 ${isBrowsing ? "bg-white/10 text-white" : ""}`}
+                  className={isBrowsing ? "bg-accent" : ""}
                   data-testid="nav-browse-dropdown"
                 >
                   <Search className="h-4 w-4 mr-1.5" />
@@ -78,7 +78,7 @@ export function Header({ family }: HeaderProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`text-white/80 hover:text-white hover:bg-white/10 ${isMyRecipes ? "bg-white/10 text-white" : ""}`}
+                className={isMyRecipes ? "bg-accent" : ""}
                 data-testid="nav-my-recipes"
               >
                 <ChefHat className="h-4 w-4 mr-1.5" />
@@ -89,11 +89,11 @@ export function Header({ family }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle className="text-white hover:bg-white/10" />
+          <ThemeToggle />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-lg text-white hover:bg-white/10" data-testid="button-user-menu">
+              <Button variant="ghost" size="icon" className="rounded-lg" data-testid="button-user-menu">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.profileImageUrl || undefined} alt="Profile" />
                   <AvatarFallback className="text-sm font-medium bg-muted">{getInitials()}</AvatarFallback>

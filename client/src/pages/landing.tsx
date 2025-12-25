@@ -13,15 +13,15 @@ import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
         <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center">
-            <span className="text-xl font-bold tracking-tight text-white">Family</span>
-            <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
+            <span className="text-xl font-bold tracking-tight text-primary">Family</span>
+            <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle className="text-white hover:bg-white/10" />
-            <Button asChild variant="secondary" data-testid="button-login">
+            <ThemeToggle />
+            <Button asChild data-testid="button-login">
               <a href="/api/login">Sign In</a>
             </Button>
           </div>
