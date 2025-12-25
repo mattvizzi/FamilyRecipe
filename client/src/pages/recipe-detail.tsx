@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Collapsible,
   CollapsibleContent,
@@ -268,9 +266,9 @@ export default function RecipeDetail() {
         <main className="pt-20 px-6">
           <div className="max-w-5xl mx-auto">
             <Skeleton className="h-8 w-24 mb-6" />
+            <Skeleton className="w-full aspect-[21/9] rounded-lg mb-6" />
             <div className="grid lg:grid-cols-[1fr,380px] gap-10">
               <div>
-                <Skeleton className="aspect-video rounded-lg mb-6" />
                 <Skeleton className="h-8 w-2/3 mb-4" />
                 <div className="flex gap-3 mb-6">
                   <Skeleton className="h-5 w-20" />
@@ -304,7 +302,6 @@ export default function RecipeDetail() {
   }
 
   const isOwner = recipe.createdById === user?.id;
-  const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -313,7 +310,7 @@ export default function RecipeDetail() {
       <div className="fixed top-14 left-0 right-0 z-40 bg-background border-b border-border">
         <div className="max-w-5xl mx-auto px-6 h-12 flex items-center justify-between gap-4">
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="sm"
             onClick={() => navigate("/my-recipes")}
             data-testid="button-back"
@@ -325,7 +322,7 @@ export default function RecipeDetail() {
           <div className="flex items-center gap-2">
             {!isOwner && (
               <Button 
-                variant={recipe.isSaved ? "secondary" : "ghost"} 
+                variant="outline" 
                 size="sm" 
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
@@ -336,25 +333,44 @@ export default function RecipeDetail() {
               </Button>
             )}
             {isOwner && (
-              <>
-                <Button variant="ghost" size="sm" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Edit</span>
-                </Button>
-              </>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
+                disabled={visibilityMutation.isPending}
+                data-testid="button-visibility"
+              >
+                {recipe.isPublic ? (
+                  <>
+                    <Globe className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Public</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Private</span>
+                  </>
+                )}
+              </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={copyToClipboard} data-testid="button-copy">
+            {isOwner && (
+              <Button variant="outline" size="sm" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
+                <Pencil className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Edit</span>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={copyToClipboard} data-testid="button-copy">
               <Copy className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Copy</span>
             </Button>
-            <Button variant="ghost" size="sm" onClick={exportToPDF} data-testid="button-export-pdf">
+            <Button variant="outline" size="sm" onClick={exportToPDF} data-testid="button-export-pdf">
               <FileDown className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">PDF</span>
             </Button>
             {isOwner && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground" data-testid="button-delete">
+                  <Button variant="destructive" size="sm" data-testid="button-delete">
                     <Trash2 className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Delete</span>
                   </Button>
@@ -382,123 +398,117 @@ export default function RecipeDetail() {
         </div>
       </div>
       
-      <main className="pt-28 px-6 pb-12">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-8">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-2" data-testid="text-recipe-name">
-                  {recipe.name}
-                </h1>
-                <div className="flex flex-wrap items-center gap-3">
-                  <Badge variant="secondary" className="text-xs" data-testid="badge-category">
-                    {recipe.category}
-                  </Badge>
-                  {recipe.isPublic ? (
-                    <Badge variant="outline" className="text-xs gap-1">
-                      <Globe className="h-3 w-3" />
-                      Public
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs gap-1">
-                      <Lock className="h-3 w-3" />
-                      Private
-                    </Badge>
-                  )}
-                  {(recipe.prepTime || 0) > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span className="font-data">{recipe.prepTime}m prep</span>
-                    </div>
-                  )}
-                  {(recipe.cookTime || 0) > 0 && (
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span className="font-data">{recipe.cookTime}m cook</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    <span className="font-data">{Math.round((recipe.servings || 4) * scale)} servings</span>
-                  </div>
+      <main className="pt-28 pb-12">
+        <div className="w-full bg-muted border-b border-border">
+          <div className="max-w-5xl mx-auto">
+            <div className="aspect-[21/9] overflow-hidden">
+              {recipe.imageUrl ? (
+                <img 
+                  src={recipe.imageUrl} 
+                  alt={recipe.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                  No Image
                 </div>
-              </div>
-              <code className="text-xs text-muted-foreground font-data" data-testid="text-recipe-id">
-                #{recipe.id}
-              </code>
+              )}
             </div>
-            {recipe.creatorFirstName && (
-              <p className="text-sm text-muted-foreground">
-                by {recipe.creatorFirstName} {recipe.creatorLastName}
-              </p>
-            )}
+          </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-6 pt-6">
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold mb-3" data-testid="text-recipe-name">
+              {recipe.name}
+            </h1>
+            
+            <div className="inline-flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 bg-muted rounded-lg border border-border">
+              <Badge variant="secondary" className="text-xs" data-testid="badge-category">
+                {recipe.category}
+              </Badge>
+              {recipe.isPublic ? (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Globe className="h-3 w-3" />
+                  Public
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Lock className="h-3 w-3" />
+                  Private
+                </div>
+              )}
+              {(recipe.prepTime || 0) > 0 && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  <span className="font-data">{recipe.prepTime}m prep</span>
+                </div>
+              )}
+              {(recipe.cookTime || 0) > 0 && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  <span className="font-data">{recipe.cookTime}m cook</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3 w-3" />
+                <span className="font-data">{Math.round((recipe.servings || 4) * scale)} servings</span>
+              </div>
+              {recipe.creatorFirstName && (
+                <div className="text-xs text-muted-foreground">
+                  by {recipe.creatorFirstName} {recipe.creatorLastName}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid lg:grid-cols-[1fr,380px] gap-10">
             <div className="space-y-8">
-              <div className="rounded-lg overflow-hidden bg-muted aspect-video border border-border">
-                {recipe.imageUrl ? (
-                  <img 
-                    src={recipe.imageUrl} 
-                    alt={recipe.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    No Image
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Ingredients</h2>
+                  <div className="flex items-center gap-0.5 border border-border rounded-lg">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setScale(Math.max(0.5, scale - 0.5))}
+                      disabled={scale <= 0.5}
+                      data-testid="button-scale-down"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="w-10 text-center text-sm font-data">{scale}x</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setScale(Math.min(4, scale + 0.5))}
+                      disabled={scale >= 4}
+                      data-testid="button-scale-up"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
-                )}
+                </div>
+                {recipe.groups.map((group, groupIndex) => (
+                  <div key={groupIndex} className={groupIndex > 0 ? "mt-5 pt-5 border-t border-border" : ""}>
+                    {recipe.groups.length > 1 && (
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">{group.name}</p>
+                    )}
+                    <ul className="space-y-2">
+                      {group.ingredients.map((ingredient, i) => {
+                        const scaledAmount = scaleAmount(ingredient.amount, scale);
+                        return (
+                          <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
+                            <span className="font-data font-medium text-primary whitespace-nowrap">{scaledAmount}</span>
+                            <span className="text-muted-foreground whitespace-nowrap">{abbreviateUnit(ingredient.unit)}</span>
+                            <span>{ingredient.name}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
               </div>
-
-              <Card className="border border-border">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="text-base font-semibold">Ingredients</CardTitle>
-                    <div className="flex items-center gap-0.5 border border-border rounded-lg">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setScale(Math.max(0.5, scale - 0.5))}
-                        disabled={scale <= 0.5}
-                        data-testid="button-scale-down"
-                      >
-                        <Minus className="h-3.5 w-3.5" />
-                      </Button>
-                      <span className="w-10 text-center text-sm font-data">{scale}x</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setScale(Math.min(4, scale + 0.5))}
-                        disabled={scale >= 4}
-                        data-testid="button-scale-up"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {recipe.groups.map((group, groupIndex) => (
-                    <div key={groupIndex} className={groupIndex > 0 ? "mt-5 pt-5 border-t border-border" : ""}>
-                      {recipe.groups.length > 1 && (
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">{group.name}</p>
-                      )}
-                      <ul className="space-y-2">
-                        {group.ingredients.map((ingredient, i) => {
-                          const scaledAmount = scaleAmount(ingredient.amount, scale);
-                          return (
-                            <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
-                              <span className="font-data font-medium text-primary whitespace-nowrap">{scaledAmount}</span>
-                              <span className="text-muted-foreground whitespace-nowrap">{abbreviateUnit(ingredient.unit)}</span>
-                              <span>{ingredient.name}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
 
               {recipe.groups.map((group, groupIndex) => (
                 <Collapsible
@@ -536,6 +546,69 @@ export default function RecipeDetail() {
                   </CollapsibleContent>
                 </Collapsible>
               ))}
+            </div>
+
+            <div className="lg:sticky lg:top-32 lg:self-start space-y-4">
+              <Card className="border border-border">
+                <CardContent className="pt-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="flex items-center justify-center gap-1.5 mb-1">
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-data text-lg font-semibold">{recipe.viewCount}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Views</p>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-center gap-1.5 mb-1">
+                        <ChefHat className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-data text-lg font-semibold">{recipe.cookCount}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Cooked</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border pt-4">
+                    <p className="text-xs text-muted-foreground mb-2 text-center">Rate this recipe</p>
+                    <div className="flex justify-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          onClick={() => rateMutation.mutate(star)}
+                          className="p-1"
+                          data-testid={`button-rate-${star}`}
+                        >
+                          <Star 
+                            className={`h-6 w-6 transition-colors ${
+                              star <= (hoverRating || recipe.userRating || 0)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-muted-foreground"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    {recipe.averageRating !== null && (
+                      <p className="text-xs text-muted-foreground text-center mt-2">
+                        <span className="font-data">{recipe.averageRating.toFixed(1)}</span> avg ({recipe.ratingCount} ratings)
+                      </p>
+                    )}
+                  </div>
+
+                  <Button 
+                    onClick={() => cookMutation.mutate()}
+                    disabled={!recipe.canCookAgain || cookMutation.isPending}
+                    className="w-full gap-2"
+                    variant={recipe.canCookAgain ? "default" : "secondary"}
+                    data-testid="button-mark-cooked"
+                  >
+                    <ChefHat className="h-4 w-4" />
+                    {recipe.canCookAgain ? "I Made This!" : "Cooked Today"}
+                  </Button>
+                </CardContent>
+              </Card>
 
               {recipe.isPublic && (
                 <Card className="border border-border">
@@ -625,100 +698,6 @@ export default function RecipeDetail() {
                         ))}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            <div className="lg:sticky lg:top-32 lg:self-start space-y-4">
-              <Card className="border border-border">
-                <CardContent className="pt-4 space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div>
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-data text-lg font-semibold">{recipe.viewCount}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Views</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-center gap-1.5 mb-1">
-                        <ChefHat className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-data text-lg font-semibold">{recipe.cookCount}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">Cooked</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border pt-4">
-                    <p className="text-xs text-muted-foreground mb-2 text-center">Rate this recipe</p>
-                    <div className="flex justify-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onMouseEnter={() => setHoverRating(star)}
-                          onMouseLeave={() => setHoverRating(0)}
-                          onClick={() => rateMutation.mutate(star)}
-                          className="p-1"
-                          data-testid={`button-rate-${star}`}
-                        >
-                          <Star 
-                            className={`h-6 w-6 transition-colors ${
-                              star <= (hoverRating || recipe.userRating || 0)
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-muted-foreground"
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                    {recipe.averageRating !== null && (
-                      <p className="text-xs text-muted-foreground text-center mt-2">
-                        <span className="font-data">{recipe.averageRating.toFixed(1)}</span> avg ({recipe.ratingCount} ratings)
-                      </p>
-                    )}
-                  </div>
-
-                  <Button 
-                    onClick={() => cookMutation.mutate()}
-                    disabled={!recipe.canCookAgain || cookMutation.isPending}
-                    className="w-full gap-2"
-                    variant={recipe.canCookAgain ? "default" : "secondary"}
-                    data-testid="button-mark-cooked"
-                  >
-                    <ChefHat className="h-4 w-4" />
-                    {recipe.canCookAgain ? "I Made This!" : "Cooked Today"}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {isOwner && (
-                <Card className="border border-border">
-                  <CardContent className="pt-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-2">
-                        {recipe.isPublic ? (
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <Lock className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <Label htmlFor="visibility" className="text-sm">
-                          {recipe.isPublic ? "Public" : "Private"}
-                        </Label>
-                      </div>
-                      <Switch
-                        id="visibility"
-                        checked={recipe.isPublic}
-                        onCheckedChange={(checked) => visibilityMutation.mutate(checked)}
-                        disabled={visibilityMutation.isPending}
-                        data-testid="switch-visibility"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {recipe.isPublic 
-                        ? "Anyone can view and save this recipe" 
-                        : "Only your family can view this recipe"}
-                    </p>
                   </CardContent>
                 </Card>
               )}
