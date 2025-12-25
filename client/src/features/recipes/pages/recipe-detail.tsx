@@ -85,6 +85,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { scaleAmount } from "@shared/lib/fraction";
 import { abbreviateUnit } from "@/lib/units";
+import { isHeicFile, convertToJpegBase64 } from "@/lib/image-utils";
 import type { RecipeWithStats, Family, CommentWithUser } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
@@ -413,11 +414,13 @@ export default function RecipeDetail() {
     },
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
+    const isHeic = isHeicFile(file);
+    const isImage = file.type.startsWith("image/") || isHeic;
+    if (!isImage) {
       toast({ title: "Error", description: "Please select an image file", variant: "destructive" });
       return;
     }
@@ -427,16 +430,16 @@ export default function RecipeDetail() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64 = reader.result as string;
-      uploadImageMutation.mutate(base64);
-    };
-    reader.readAsDataURL(file);
-    
-    // Reset input
+    // Reset input immediately
     if (imageInputRef.current) {
       imageInputRef.current.value = "";
+    }
+
+    try {
+      const base64 = await convertToJpegBase64(file);
+      uploadImageMutation.mutate(base64);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to process image. Please try a different photo.", variant: "destructive" });
     }
   };
 
@@ -688,7 +691,7 @@ export default function RecipeDetail() {
                 <input
                   ref={imageInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.heic,.heif"
                   onChange={handleImageUpload}
                   className="hidden"
                   data-testid="input-recipe-image"

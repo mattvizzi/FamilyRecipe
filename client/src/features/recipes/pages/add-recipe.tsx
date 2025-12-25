@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import heic2any from "heic2any";
+import { isHeicFile, convertHeicToJpeg, convertToJpegBase64 } from "@/lib/image-utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -73,100 +73,12 @@ export default function AddRecipe() {
     }
   };
 
-  const convertToJpegBase64 = async (file: File): Promise<string> => {
-    let imageBlob: Blob = file;
-    
-    const isHeic = file.type === "image/heic" || 
-                   file.type === "image/heif" || 
-                   file.name.toLowerCase().endsWith(".heic") ||
-                   file.name.toLowerCase().endsWith(".heif");
-    
-    if (isHeic) {
-      try {
-        const convertedBlob = await heic2any({
-          blob: file,
-          toType: "image/jpeg",
-          quality: 0.85,
-        });
-        imageBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-      } catch (e) {
-        console.error("HEIC conversion failed:", e);
-        throw new Error("Failed to convert HEIC image");
-      }
-    }
-    
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxDim = 2048;
-        let width = img.width;
-        let height = img.height;
-        
-        if (width > maxDim || height > maxDim) {
-          if (width > height) {
-            height = (height / width) * maxDim;
-            width = maxDim;
-          } else {
-            width = (width / height) * maxDim;
-            height = maxDim;
-          }
-        }
-        
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          reject(new Error("Could not get canvas context"));
-          return;
-        }
-        
-        ctx.drawImage(img, 0, 0, width, height);
-        const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.85);
-        resolve(jpegDataUrl);
-      };
-      img.onerror = () => reject(new Error("Failed to load image"));
-      img.src = URL.createObjectURL(imageBlob);
-    });
-  };
-
-  const convertHeicToJpeg = async (file: File): Promise<File> => {
-    const isHeic = file.type === "image/heic" || 
-                   file.type === "image/heif" || 
-                   file.name.toLowerCase().endsWith(".heic") ||
-                   file.name.toLowerCase().endsWith(".heif");
-    
-    if (!isHeic) {
-      return file;
-    }
-    
-    try {
-      const convertedBlob = await heic2any({
-        blob: file,
-        toType: "image/jpeg",
-        quality: 0.85,
-      });
-      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-      const newFileName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
-      return new File([blob], newFileName, { type: "image/jpeg" });
-    } catch (e) {
-      console.error("HEIC conversion failed:", e);
-      throw new Error("Failed to convert HEIC image");
-    }
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const fileArray = Array.from(files);
       
-      const hasHeic = fileArray.some(f => 
-        f.type === "image/heic" || 
-        f.type === "image/heif" || 
-        f.name.toLowerCase().endsWith(".heic") ||
-        f.name.toLowerCase().endsWith(".heif")
-      );
+      const hasHeic = fileArray.some(isHeicFile);
       
       setStep("input");
       
