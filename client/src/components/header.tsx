@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Users, ChefHat, Search, ChevronDown, Globe, Plus, Settings, BookOpen, Loader2 } from "lucide-react";
+import { LogOut, Users, ChefHat, Search, ChevronDown, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import type { Family, RecipeWithCreator } from "@shared/schema";
@@ -81,13 +81,29 @@ export function Header({ family }: HeaderProps) {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
         <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <Link href="/">
+          <div className="flex items-center gap-4">
+            <Link href="/home">
               <div className="flex items-center cursor-pointer" data-testid="link-home">
                 <span className="text-xl font-bold tracking-tight text-primary">Family</span>
                 <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
               </div>
             </Link>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:flex items-center gap-2 text-muted-foreground w-52 justify-between"
+              onClick={() => setOpen(true)}
+              data-testid="button-search"
+            >
+              <span className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Search...
+              </span>
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </Button>
 
             <nav className="hidden sm:flex items-center gap-1">
               <DropdownMenu>
@@ -98,7 +114,7 @@ export function Header({ family }: HeaderProps) {
                     className={isBrowsing ? "bg-accent" : ""}
                     data-testid="nav-browse-dropdown"
                   >
-                    Categories
+                    Browse Recipes
                     <ChevronDown className="h-3 w-3 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -134,22 +150,6 @@ export function Header({ family }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:flex items-center gap-2 text-muted-foreground w-56 justify-between"
-              onClick={() => setOpen(true)}
-              data-testid="button-search"
-            >
-              <span className="flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                Search...
-              </span>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            </Button>
-
             <Button
               variant="ghost"
               size="icon"
@@ -266,7 +266,14 @@ export function Header({ family }: HeaderProps) {
               Add New Recipe
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => navigate("/"))}
+              onSelect={() => runCommand(() => navigate("/home"))}
+              data-testid="command-home"
+            >
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Home Dashboard
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/my-recipes"))}
               data-testid="command-my-recipes"
             >
               <ChefHat className="mr-2 h-4 w-4" />

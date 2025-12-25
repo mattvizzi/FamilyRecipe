@@ -16,6 +16,7 @@ import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
 // Lazy loaded pages (code splitting for less frequently used pages)
+const Dashboard = lazy(() => import("@/pages/dashboard"));
 const PublicRecipes = lazy(() => import("@/pages/public-recipes"));
 const RecipeDetail = lazy(() => import("@/pages/recipe-detail"));
 const AddRecipe = lazy(() => import("@/pages/add-recipe"));
@@ -67,7 +68,8 @@ function AuthenticatedRouter() {
         </div>
       }>
         <Switch>
-          <Route path="/">{() => <Redirect to="/my-recipes" />}</Route>
+          <Route path="/">{() => <Redirect to="/home" />}</Route>
+          <Route path="/home" component={Dashboard} />
           <Route path="/my-recipes" component={Home} />
           <Route path="/my-recipes/:category" component={Home} />
           <Route path="/recipes" component={PublicRecipes} />
