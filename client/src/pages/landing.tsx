@@ -14,7 +14,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
-        <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center">
             <span className="text-xl font-bold tracking-tight text-primary">Family</span>
             <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
@@ -29,7 +29,7 @@ export default function Landing() {
       </header>
 
       <main className="pt-14">
-        <section className="py-16 md:py-20 px-6">
+        <section className="py-16 md:py-20 px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
@@ -93,7 +93,7 @@ export default function Landing() {
 
         <RecipeShowcaseCarousel />
 
-        <section className="py-20 px-6 bg-section-alt">
+        <section className="py-20 px-4 sm:px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -167,7 +167,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section id="features" className="py-16 px-6 bg-card scroll-mt-14">
+        <section id="features" className="py-16 px-4 sm:px-6 bg-card scroll-mt-14">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-10">
               <p className="text-sm font-medium text-primary mb-2">ADD RECIPES YOUR WAY</p>
@@ -322,7 +322,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-16 px-6">
+        <section className="py-16 px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
               <p className="text-sm font-medium text-primary mb-2">RECIPE VIEW</p>
@@ -419,7 +419,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-20 px-6 bg-section-alt">
+        <section className="py-20 px-4 sm:px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
@@ -488,7 +488,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-20 px-6 bg-card">
+        <section className="py-20 px-4 sm:px-6 bg-card">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <p className="text-xs font-semibold tracking-widest text-accent-rose uppercase mb-3">Loved by Families</p>
@@ -547,7 +547,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-20 px-6 bg-section-alt">
+        <section className="py-20 px-4 sm:px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-5 gap-12">
               <div className="lg:col-span-2">
@@ -612,7 +612,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-16 px-6 bg-primary">
+        <section className="py-16 px-4 sm:px-6 bg-primary">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
               Ready to preserve your family recipes?
@@ -627,7 +627,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="py-8 px-6 border-t border-border bg-card">
+      <footer className="py-8 px-4 sm:px-6 border-t border-border bg-card">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div>

@@ -156,7 +156,7 @@ export default function ManualRecipe() {
   const groups = form.watch("groups");
 
   return (
-    <main className="pt-24 pb-12 px-6">
+    <main className="pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <Button 
             variant="ghost" 
@@ -223,7 +223,7 @@ export default function ManualRecipe() {
                         <FormItem>
                           <FormLabel>Servings</FormLabel>
                           <FormControl>
-                            <Input type="number" min={1} {...field} data-testid="input-servings" />
+                            <Input type="number" inputMode="numeric" min={1} {...field} data-testid="input-servings" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -239,7 +239,7 @@ export default function ManualRecipe() {
                         <FormItem>
                           <FormLabel>Prep Time (min)</FormLabel>
                           <FormControl>
-                            <Input type="number" min={0} placeholder="Optional" {...field} data-testid="input-prep-time" />
+                            <Input type="number" inputMode="numeric" min={0} placeholder="Optional" {...field} data-testid="input-prep-time" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -253,7 +253,7 @@ export default function ManualRecipe() {
                         <FormItem>
                           <FormLabel>Cook Time (min)</FormLabel>
                           <FormControl>
-                            <Input type="number" min={0} placeholder="Optional" {...field} data-testid="input-cook-time" />
+                            <Input type="number" inputMode="numeric" min={0} placeholder="Optional" {...field} data-testid="input-cook-time" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

@@ -254,7 +254,8 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
                       <FormLabel>Prep (min)</FormLabel>
                       <FormControl>
                         <Input 
-                          type="number" 
+                          type="number"
+                          inputMode="numeric"
                           min={0} 
                           {...field} 
                           value={field.value ?? ""} 
@@ -274,7 +275,8 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
                       <FormLabel>Cook (min)</FormLabel>
                       <FormControl>
                         <Input 
-                          type="number" 
+                          type="number"
+                          inputMode="numeric"
                           min={0} 
                           {...field} 
                           value={field.value ?? ""} 
@@ -293,7 +295,7 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
                     <FormItem>
                       <FormLabel>Servings</FormLabel>
                       <FormControl>
-                        <Input type="number" min={1} {...field} data-testid="input-edit-servings" />
+                        <Input type="number" inputMode="numeric" min={1} {...field} data-testid="input-edit-servings" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

@@ -285,7 +285,7 @@ export default function AddRecipe() {
 
   if (step === "processing") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6">
         <div className="max-w-sm w-full text-center">
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
@@ -312,7 +312,7 @@ export default function AddRecipe() {
   }
 
   return (
-    <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-4 sm:px-6">
         <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 

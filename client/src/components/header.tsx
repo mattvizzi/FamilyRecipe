@@ -20,7 +20,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Users, ChefHat, Search, ChevronDown, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { LogOut, Users, ChefHat, Search, ChevronDown, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import type { Family, RecipeWithCreator } from "@shared/schema";
@@ -35,6 +42,7 @@ export function Header({ family }: HeaderProps) {
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Keyboard shortcut to open command palette
   useEffect(() => {
@@ -80,7 +88,7 @@ export function Header({ family }: HeaderProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
-        <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link href="/home">
               <div className="flex items-center cursor-pointer" data-testid="link-home">
@@ -150,6 +158,16 @@ export function Header({ family }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="sm:hidden"
+              onClick={() => setMobileNavOpen(true)}
+              data-testid="button-mobile-menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
             <Button
               variant="ghost"
               size="icon"
@@ -316,6 +334,100 @@ export function Header({ family }: HeaderProps) {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
+
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="left" className="w-72">
+          <SheetHeader className="text-left mb-6">
+            <SheetTitle className="flex items-center">
+              <span className="text-xl font-bold tracking-tight text-primary">Family</span>
+              <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
+            </SheetTitle>
+          </SheetHeader>
+          <nav className="flex flex-col gap-1">
+            <SheetClose asChild>
+              <Link href="/home">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3"
+                  data-testid="mobile-nav-home"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Home
+                </Button>
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link href="/my-recipes">
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start gap-3 ${isMyRecipes ? "bg-accent" : ""}`}
+                  data-testid="mobile-nav-my-recipes"
+                >
+                  <ChefHat className="h-4 w-4" />
+                  My Family Recipes
+                </Button>
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link href="/recipes">
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start gap-3 ${isBrowsing ? "bg-accent" : ""}`}
+                  data-testid="mobile-nav-browse"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Browse All Recipes
+                </Button>
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link href="/add-recipe">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3"
+                  data-testid="mobile-nav-add"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add New Recipe
+                </Button>
+              </Link>
+            </SheetClose>
+            
+            <div className="my-3 border-t border-border" />
+            
+            <p className="px-3 text-xs font-medium text-muted-foreground mb-2">Categories</p>
+            {recipeCategories.map((cat) => (
+              <SheetClose key={cat} asChild>
+                <Link href={`/recipes/${cat.toLowerCase()}`}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="w-full justify-start text-muted-foreground"
+                    data-testid={`mobile-nav-category-${cat.toLowerCase()}`}
+                  >
+                    {cat}
+                  </Button>
+                </Link>
+              </SheetClose>
+            ))}
+            
+            <div className="my-3 border-t border-border" />
+            
+            <SheetClose asChild>
+              <Link href="/family">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3"
+                  data-testid="mobile-nav-family-settings"
+                >
+                  <Users className="h-4 w-4" />
+                  Family Settings
+                </Button>
+              </Link>
+            </SheetClose>
+          </nav>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

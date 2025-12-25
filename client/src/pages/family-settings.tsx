@@ -52,7 +52,7 @@ export default function FamilySettings() {
 
   if (isLoading) {
     return (
-      <main className="pt-24 pb-12 px-6">
+      <main className="pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-xl mx-auto">
           <Skeleton className="h-8 w-48 mb-6" />
           <Card>
@@ -68,7 +68,7 @@ export default function FamilySettings() {
 
   if (!family) {
     return (
-      <main className="pt-24 pb-12 px-6">
+      <main className="pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
           <h1 className="text-2xl font-bold mb-4">No Family Found</h1>
           <p className="text-muted-foreground mb-6">
@@ -83,7 +83,7 @@ export default function FamilySettings() {
   const inviteLink = `${window.location.origin}/join/${family.inviteCode}`;
 
   return (
-    <main className="pt-24 pb-12 px-6">
+    <main className="pt-24 pb-12 px-4 sm:px-6">
       <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 

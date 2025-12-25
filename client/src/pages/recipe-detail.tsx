@@ -357,7 +357,7 @@ export default function RecipeDetail() {
 
   if (isLoading) {
     return (
-      <main className="pt-20 px-6">
+      <main className="pt-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <Skeleton className="h-8 w-24 mb-6" />
           <Skeleton className="h-10 w-2/3 mb-4" />
@@ -375,7 +375,7 @@ export default function RecipeDetail() {
 
   if (!recipe) {
     return (
-      <main className="pt-20 px-6">
+      <main className="pt-20 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
           <Button asChild>
@@ -389,7 +389,7 @@ export default function RecipeDetail() {
   const isOwner = recipe.createdById === user?.id;
 
   return (
-    <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <Button 
@@ -536,18 +536,18 @@ export default function RecipeDetail() {
                 <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
               </span>
               
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => rateMutation.mutate(star)}
-                    className="p-0.5"
+                    className="p-3 -m-2"
                     data-testid={`button-rate-${star}`}
                   >
                     <Star 
-                      className={`h-4 w-4 transition-colors ${
+                      className={`h-5 w-5 transition-colors ${
                         star <= (hoverRating || recipe.userRating || 0)
                           ? "fill-amber-400 text-amber-400"
                           : recipe.averageRating && star <= Math.round(recipe.averageRating)
@@ -558,7 +558,7 @@ export default function RecipeDetail() {
                   </button>
                 ))}
                 {recipe.ratingCount > 0 && (
-                  <span className="text-xs text-muted-foreground ml-1">
+                  <span className="text-xs text-muted-foreground ml-2">
                     ({recipe.ratingCount})
                   </span>
                 )}

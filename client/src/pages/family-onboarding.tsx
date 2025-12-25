@@ -42,7 +42,7 @@ export default function FamilyOnboarding() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
-        <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center">
             <span className="text-xl font-bold tracking-tight text-primary">Family</span>
             <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
@@ -51,7 +51,7 @@ export default function FamilyOnboarding() {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center pt-16 px-6">
+      <main className="flex-1 flex items-center justify-center pt-16 px-4 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

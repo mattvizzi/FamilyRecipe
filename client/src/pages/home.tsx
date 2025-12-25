@@ -81,7 +81,7 @@ export default function Home() {
   };
 
   return (
-    <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">

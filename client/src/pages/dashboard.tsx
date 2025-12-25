@@ -66,7 +66,7 @@ function HeroRecipe({ recipe }: { recipe: RecipeWithCreator }) {
   return (
     <Link href={`/recipe/${recipe.id}`}>
       <div 
-        className="relative rounded-xl overflow-hidden aspect-[21/9] md:aspect-[3/1] group cursor-pointer"
+        className="relative rounded-xl overflow-hidden aspect-square sm:aspect-[21/9] md:aspect-[3/1] group cursor-pointer"
         data-testid="hero-recipe"
       >
         {recipe.imageUrl ? (
@@ -146,7 +146,7 @@ function RecipeCarousel({
           </Link>
         )}
       </div>
-      <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+      <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 scrollbar-hide">
         {recipes.map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
@@ -173,7 +173,7 @@ function CategoryGrid() {
   return (
     <section className="mb-10">
       <h2 className="text-xl font-semibold mb-4">Browse by Category</h2>
-      <div className="flex gap-2 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:justify-between">
+      <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:justify-between">
         {recipeCategories.map((category) => (
           <Link key={category} href={`/recipes/${category.toLowerCase()}`}>
             <Card 
@@ -230,15 +230,15 @@ export default function Dashboard() {
 
   return (
     <main className="pt-20 pb-12">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {isLoading ? (
-          <Skeleton className="aspect-[21/9] md:aspect-[3/1] rounded-xl mb-10" />
+          <Skeleton className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl mb-10" />
         ) : featuredRecipe ? (
           <div className="mb-10">
             <HeroRecipe recipe={featuredRecipe} />
           </div>
         ) : (
-          <div className="aspect-[21/9] md:aspect-[3/1] rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col items-center justify-center mb-10">
+          <div className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col items-center justify-center mb-10">
             <ChefHat className="h-16 w-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold mb-2">No recipes yet</h2>
             <p className="text-muted-foreground mb-4">Add your first family recipe to get started</p>
