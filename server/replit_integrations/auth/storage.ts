@@ -1,6 +1,7 @@
 import { users, type User, type UpsertUser } from "@shared/models/auth";
 import { db } from "../../db";
 import { eq } from "drizzle-orm";
+import { syncUserToHubSpot } from "../../hubspot";
 
 // Interface for auth storage operations
 // (IMPORTANT) These user operations are mandatory for Replit Auth.
@@ -27,6 +28,12 @@ class AuthStorage implements IAuthStorage {
         },
       })
       .returning();
+    
+    // Sync user to HubSpot as a contact (non-blocking)
+    syncUserToHubSpot(user).catch(err => {
+      console.error("Failed to sync user to HubSpot:", err);
+    });
+    
     return user;
   }
 }

@@ -7,6 +7,12 @@ Recipe Tracker is a family recipe management application that allows users to or
 ## Recent Changes (December 2024)
 
 ### December 25, 2024
+- **HubSpot CRM Integration**: Automatic sync of app data to HubSpot:
+  - Users sync as Contacts when they register
+  - Families sync as Companies when created or updated
+  - Recipes sync as Deals in a "FamilyRecipe Pipeline" with Public/Private stages
+  - All syncing is non-blocking async to avoid slowing down the app
+  - Uses description field to store app IDs for deduplication and lookup
 - **CRITICAL CSRF fix**: Fixed AI recipe processing by replacing raw fetch() with apiRequest() helper that handles CSRF tokens
 - **Rate limiting**: Added express-rate-limit on expensive endpoints:
   - `/api/recipes/process` (AI processing): 10 requests per 15 minutes per user
@@ -93,3 +99,11 @@ The backend is organized into:
 - **PDFKit**: Server-side PDF generation for recipe exports
 - **Framer Motion**: Animations on the frontend
 - **shadcn/ui + Radix UI**: Accessible UI component primitives
+- **@hubspot/api-client**: HubSpot CRM integration for syncing users, families, and recipes
+
+### CRM Integration
+- **HubSpot API**: Via `HUBSPOT_ACCESS_TOKEN` environment variable
+  - Syncs Users → Contacts (email, name)
+  - Syncs Families → Companies (name, member count)
+  - Syncs Recipes → Deals in FamilyRecipe Pipeline (Public/Private stages)
+  - Service file: `server/hubspot.ts`

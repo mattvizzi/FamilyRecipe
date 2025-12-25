@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth/replitAuth";
 import { registerAuthRoutes } from "./replit_integrations/auth/routes";
+import { authStorage } from "./replit_integrations/auth/storage";
 import { openai, generateImageBuffer } from "./replit_integrations/image/client";
 import { 
   insertRecipeSchema, 
@@ -17,6 +18,14 @@ import {
   type RecipeGroup 
 } from "@shared/schema";
 import PDFDocument from "pdfkit";
+import { 
+  syncFamilyToHubSpot, 
+  syncRecipeToHubSpot,
+  syncUserToHubSpot,
+  associateContactWithCompany,
+  getHubSpotContactByEmail,
+  getHubSpotCompanyByFamilyId
+} from "./hubspot";
 
 // Rate limiters for expensive operations
 const aiProcessingLimiter = rateLimit({
@@ -187,6 +196,23 @@ export async function registerRoutes(
       }
       
       const family = await storage.createFamily(parseResult.data.name, userId);
+      
+      // Sync family to HubSpot as a company (non-blocking)
+      syncFamilyToHubSpot(family).then(async (companyId) => {
+        if (companyId) {
+          // Get user email to find their HubSpot contact and associate with company
+          const user = await authStorage.getUser(userId);
+          if (user?.email) {
+            const contactId = await getHubSpotContactByEmail(user.email);
+            if (contactId) {
+              await associateContactWithCompany(contactId, companyId);
+            }
+          }
+        }
+      }).catch(err => {
+        console.error("Failed to sync family to HubSpot:", err);
+      });
+      
       res.status(201).json(family);
     } catch (error) {
       console.error("Error creating family:", error);
@@ -211,6 +237,12 @@ export async function registerRoutes(
       }
       
       const updated = await storage.updateFamily(family.id, parseResult.data.name);
+      
+      // Sync updated family to HubSpot (non-blocking)
+      syncFamilyToHubSpot(updated).catch(err => {
+        console.error("Failed to sync updated family to HubSpot:", err);
+      });
+      
       res.json(updated);
     } catch (error) {
       console.error("Error updating family:", error);
@@ -258,6 +290,21 @@ export async function registerRoutes(
       }
       
       await storage.addFamilyMember(family.id, userId);
+      
+      // Associate user with family company in HubSpot (non-blocking)
+      (async () => {
+        const user = await authStorage.getUser(userId);
+        if (user?.email) {
+          const contactId = await getHubSpotContactByEmail(user.email);
+          const companyId = await getHubSpotCompanyByFamilyId(family.id);
+          if (contactId && companyId) {
+            await associateContactWithCompany(contactId, companyId);
+          }
+        }
+      })().catch(err => {
+        console.error("Failed to associate user with family in HubSpot:", err);
+      });
+      
       res.json(family);
     } catch (error) {
       console.error("Error joining family:", error);
@@ -337,6 +384,12 @@ export async function registerRoutes(
       }
       
       const recipe = await storage.createRecipe(family.id, userId, parseResult.data);
+      
+      // Sync recipe to HubSpot as a deal (non-blocking)
+      syncRecipeToHubSpot(recipe, family.name).catch(err => {
+        console.error("Failed to sync recipe to HubSpot:", err);
+      });
+      
       res.status(201).json(recipe);
     } catch (error) {
       console.error("Error creating recipe:", error);
@@ -484,6 +537,11 @@ shallow depth of field, food styling.`;
         groups: extracted.groups,
       });
 
+      // Sync recipe to HubSpot as a deal (non-blocking)
+      syncRecipeToHubSpot(recipe, family.name).catch(err => {
+        console.error("Failed to sync recipe to HubSpot:", err);
+      });
+
       res.status(201).json(recipe);
     } catch (error) {
       console.error("Error processing recipe:", error);
@@ -514,6 +572,17 @@ shallow depth of field, food styling.`;
       }
       
       const updated = await storage.updateRecipe(id, parseResult.data);
+      
+      // Sync updated recipe to HubSpot (non-blocking)
+      (async () => {
+        const family = await storage.getFamily(recipe.familyId);
+        if (family) {
+          await syncRecipeToHubSpot(updated, family.name);
+        }
+      })().catch(err => {
+        console.error("Failed to sync updated recipe to HubSpot:", err);
+      });
+      
       res.json(updated);
     } catch (error) {
       console.error("Error updating recipe:", error);
@@ -798,6 +867,18 @@ shallow depth of field, food styling.`;
       }
       
       const updated = await storage.updateRecipe(id, { isPublic: parseResult.data.isPublic });
+      
+      // Sync visibility change to HubSpot (non-blocking)
+      // This moves the deal to the Public or Private stage
+      (async () => {
+        const family = await storage.getFamily(recipe.familyId);
+        if (family) {
+          await syncRecipeToHubSpot(updated, family.name);
+        }
+      })().catch(err => {
+        console.error("Failed to sync recipe visibility to HubSpot:", err);
+      });
+      
       res.json(updated);
     } catch (error) {
       console.error("Error updating recipe visibility:", error);
