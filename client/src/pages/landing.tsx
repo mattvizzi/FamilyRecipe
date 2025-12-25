@@ -94,21 +94,17 @@ export default function Landing() {
             </div>
             
             <Tabs defaultValue="photo" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
-                <TabsTrigger value="photo" className="gap-2 text-xs sm:text-sm">
-                  <Camera className="h-4 w-4 hidden sm:block" />
+              <TabsList className="flex justify-center gap-3 bg-transparent mb-8">
+                <TabsTrigger value="photo" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
                   Photo
                 </TabsTrigger>
-                <TabsTrigger value="url" className="gap-2 text-xs sm:text-sm">
-                  <LinkIcon className="h-4 w-4 hidden sm:block" />
+                <TabsTrigger value="url" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
                   Website
                 </TabsTrigger>
-                <TabsTrigger value="text" className="gap-2 text-xs sm:text-sm">
-                  <FileText className="h-4 w-4 hidden sm:block" />
+                <TabsTrigger value="text" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
                   Text
                 </TabsTrigger>
-                <TabsTrigger value="manual" className="gap-2 text-xs sm:text-sm">
-                  <PenLine className="h-4 w-4 hidden sm:block" />
+                <TabsTrigger value="manual" className="bg-primary text-primary-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-6 py-2 text-sm font-medium">
                   Manual
                 </TabsTrigger>
               </TabsList>
