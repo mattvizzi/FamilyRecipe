@@ -1202,6 +1202,100 @@ shallow depth of field, food styling.`;
     }
   });
 
+  // Admin HubSpot sync endpoints
+  app.post("/api/admin/hubspot/sync/users", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const users = await storage.getAllUsers();
+      let synced = 0;
+      let failed = 0;
+      
+      for (const user of users) {
+        if (user.email) {
+          const result = await syncUserToHubSpot(user as any);
+          if (result) synced++;
+          else failed++;
+        }
+      }
+      
+      res.json({ success: true, synced, failed, total: users.length });
+    } catch (error) {
+      console.error("Error syncing users to HubSpot:", error);
+      res.status(500).json({ message: "Failed to sync users" });
+    }
+  });
+
+  app.post("/api/admin/hubspot/sync/families", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const families = await storage.getAllFamiliesWithStats();
+      let synced = 0;
+      let failed = 0;
+      
+      for (const family of families) {
+        const result = await syncFamilyToHubSpot(family as any);
+        if (result) synced++;
+        else failed++;
+      }
+      
+      res.json({ success: true, synced, failed, total: families.length });
+    } catch (error) {
+      console.error("Error syncing families to HubSpot:", error);
+      res.status(500).json({ message: "Failed to sync families" });
+    }
+  });
+
+  app.post("/api/admin/hubspot/sync/recipes", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const recipes = await storage.getAllRecipesAdmin();
+      let synced = 0;
+      let failed = 0;
+      
+      for (const recipe of recipes) {
+        const result = await syncRecipeToHubSpot(recipe as any, recipe.familyName || "Unknown");
+        if (result) synced++;
+        else failed++;
+      }
+      
+      res.json({ success: true, synced, failed, total: recipes.length });
+    } catch (error) {
+      console.error("Error syncing recipes to HubSpot:", error);
+      res.status(500).json({ message: "Failed to sync recipes" });
+    }
+  });
+
+  app.post("/api/admin/hubspot/sync/all", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const [users, families, recipes] = await Promise.all([
+        storage.getAllUsers(),
+        storage.getAllFamiliesWithStats(),
+        storage.getAllRecipesAdmin(),
+      ]);
+      
+      const results = { users: { synced: 0, failed: 0 }, families: { synced: 0, failed: 0 }, recipes: { synced: 0, failed: 0 } };
+      
+      for (const user of users) {
+        if (user.email) {
+          const r = await syncUserToHubSpot(user as any);
+          if (r) results.users.synced++; else results.users.failed++;
+        }
+      }
+      
+      for (const family of families) {
+        const r = await syncFamilyToHubSpot(family as any);
+        if (r) results.families.synced++; else results.families.failed++;
+      }
+      
+      for (const recipe of recipes) {
+        const r = await syncRecipeToHubSpot(recipe as any, recipe.familyName || "Unknown");
+        if (r) results.recipes.synced++; else results.recipes.failed++;
+      }
+      
+      res.json({ success: true, results });
+    } catch (error) {
+      console.error("Error syncing all to HubSpot:", error);
+      res.status(500).json({ message: "Failed to sync all data" });
+    }
+  });
+
   // Admin AI Chat endpoint
   app.post("/api/admin/chat", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
     try {

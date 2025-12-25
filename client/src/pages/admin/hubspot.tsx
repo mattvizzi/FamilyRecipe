@@ -1,39 +1,106 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle, AlertCircle, Info, Play, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { apiRequest } from "@/lib/queryClient";
 
-interface SyncStatus {
-  users: { synced: number; pending: number; lastSync: string | null };
-  families: { synced: number; pending: number; lastSync: string | null };
-  recipes: { synced: number; pending: number; lastSync: string | null };
+interface SyncResult {
+  success: boolean;
+  synced?: number;
+  failed?: number;
+  total?: number;
+  results?: {
+    users: { synced: number; failed: number };
+    families: { synced: number; failed: number };
+    recipes: { synced: number; failed: number };
+  };
 }
 
 export default function AdminHubSpot() {
   const { toast } = useToast();
-  const [syncingType, setSyncingType] = useState<string | null>(null);
 
-  const triggerSync = (type: string) => {
-    setSyncingType(type);
-    setTimeout(() => {
-      setSyncingType(null);
+  const syncUsersMutation = useMutation({
+    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/users", { method: "POST" }),
+    onSuccess: (data) => {
       toast({
-        title: `${type} sync completed`,
-        description: "All records have been synchronized with HubSpot.",
+        title: "Users sync completed",
+        description: `Synced ${data.synced} of ${data.total} users. ${data.failed} failed.`,
       });
-    }, 2000);
-  };
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncFamiliesMutation = useMutation({
+    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/families", { method: "POST" }),
+    onSuccess: (data) => {
+      toast({
+        title: "Families sync completed",
+        description: `Synced ${data.synced} of ${data.total} families. ${data.failed} failed.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncRecipesMutation = useMutation({
+    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/recipes", { method: "POST" }),
+    onSuccess: (data) => {
+      toast({
+        title: "Recipes sync completed",
+        description: `Synced ${data.synced} of ${data.total} recipes. ${data.failed} failed.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncAllMutation = useMutation({
+    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/all", { method: "POST" }),
+    onSuccess: (data) => {
+      if (data.results) {
+        const { users, families, recipes } = data.results;
+        toast({
+          title: "Full sync completed",
+          description: `Users: ${users.synced} synced, ${users.failed} failed. Families: ${families.synced} synced, ${families.failed} failed. Recipes: ${recipes.synced} synced, ${recipes.failed} failed.`,
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Sync failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isSyncing = syncUsersMutation.isPending || syncFamiliesMutation.isPending || syncRecipesMutation.isPending || syncAllMutation.isPending;
 
   return (
     <AdminLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold" data-testid="text-admin-hubspot-title">HubSpot Sync</h1>
+          <h1 className="text-2xl font-bold" data-testid="text-admin-hubspot-title">HubSpot</h1>
           <p className="text-muted-foreground">Monitor and manage HubSpot CRM synchronization</p>
         </div>
 
@@ -42,27 +109,27 @@ export default function AdminHubSpot() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <RefreshCw className="h-5 w-5" />
-                Sync Status
+                Manual Sync
               </CardTitle>
-              <CardDescription>Current synchronization status with HubSpot</CardDescription>
+              <CardDescription>Trigger manual synchronization with HubSpot</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span>Users Sync</span>
+                    <span>Users to Contacts</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Active</Badge>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => triggerSync("Users")}
-                      disabled={syncingType === "Users"}
+                      onClick={() => syncUsersMutation.mutate()}
+                      disabled={isSyncing}
                       data-testid="button-sync-users"
                     >
-                      {syncingType === "Users" ? (
+                      {syncUsersMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Play className="h-4 w-4" />
@@ -73,18 +140,18 @@ export default function AdminHubSpot() {
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span>Families Sync</span>
+                    <span>Families to Companies</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Active</Badge>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => triggerSync("Families")}
-                      disabled={syncingType === "Families"}
+                      onClick={() => syncFamiliesMutation.mutate()}
+                      disabled={isSyncing}
                       data-testid="button-sync-families"
                     >
-                      {syncingType === "Families" ? (
+                      {syncFamiliesMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Play className="h-4 w-4" />
@@ -95,18 +162,18 @@ export default function AdminHubSpot() {
                 <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span>Recipes Sync</span>
+                    <span>Recipes to Deals</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary">Active</Badge>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => triggerSync("Recipes")}
-                      disabled={syncingType === "Recipes"}
+                      onClick={() => syncRecipesMutation.mutate()}
+                      disabled={isSyncing}
                       data-testid="button-sync-recipes"
                     >
-                      {syncingType === "Recipes" ? (
+                      {syncRecipesMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Play className="h-4 w-4" />
@@ -152,11 +219,11 @@ export default function AdminHubSpot() {
               <CardDescription>Trigger a full sync of all platform data to HubSpot</CardDescription>
             </div>
             <Button
-              onClick={() => triggerSync("All")}
-              disabled={syncingType === "All"}
+              onClick={() => syncAllMutation.mutate()}
+              disabled={isSyncing}
               data-testid="button-sync-all"
             >
-              {syncingType === "All" ? (
+              {syncAllMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Syncing...
@@ -171,8 +238,8 @@ export default function AdminHubSpot() {
           </CardHeader>
           <CardContent>
             <div className="text-center py-4 text-muted-foreground">
-              <p className="text-sm">All syncs are currently processed in real-time when data changes.</p>
-              <p className="text-sm">Use the manual sync buttons above to force a resync of specific data types.</p>
+              <p className="text-sm">Data is automatically synced to HubSpot when changes occur.</p>
+              <p className="text-sm">Use manual sync to force a resync of all existing records.</p>
             </div>
           </CardContent>
         </Card>
