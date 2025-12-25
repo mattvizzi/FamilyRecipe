@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { Header } from "@/components/header";
 import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,10 +50,7 @@ export default function PublicRecipes() {
   const categoryTitle = categoryLabels[category.toLowerCase()] || "Recipes";
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header family={family || null} />
-      
-      <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
@@ -177,7 +173,6 @@ export default function PublicRecipes() {
             </>
           )}
         </div>
-      </main>
-    </div>
+    </main>
   );
 }

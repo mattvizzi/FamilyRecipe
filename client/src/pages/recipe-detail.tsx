@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Header } from "@/components/header";
 import { RecipeEditDrawer } from "@/components/recipe-edit-drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -358,54 +357,51 @@ export default function RecipeDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header family={family} />
-        <main className="pt-20 px-6">
-          <div className="max-w-4xl mx-auto">
-            <Skeleton className="h-8 w-24 mb-6" />
-            <Skeleton className="h-10 w-2/3 mb-4" />
-            <div className="flex gap-2 mb-6">
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-24" />
-              <Skeleton className="h-6 w-20" />
-            </div>
-            <Skeleton className="w-full aspect-video rounded-lg mb-8" />
-            <Skeleton className="h-64" />
+      <main className="pt-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <Skeleton className="h-8 w-24 mb-6" />
+          <Skeleton className="h-10 w-2/3 mb-4" />
+          <div className="flex gap-2 mb-6">
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-20" />
           </div>
-        </main>
-      </div>
+          <Skeleton className="w-full aspect-video rounded-lg mb-8" />
+          <Skeleton className="h-64" />
+        </div>
+      </main>
     );
   }
 
   if (!recipe) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header family={family} />
-        <main className="pt-20 px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
-            <Button asChild>
-              <a href="/my-recipes">Go Back Home</a>
-            </Button>
-          </div>
-        </main>
-      </div>
+      <main className="pt-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
+          <Button asChild>
+            <a href="/my-recipes">Go Back Home</a>
+          </Button>
+        </div>
+      </main>
     );
   }
 
   const isOwner = recipe.createdById === user?.id;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header family={family} />
-      
-      <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <Button 
               variant="ghost" 
               size="sm"
-              onClick={() => navigate("/my-recipes")}
+              onClick={() => {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  navigate("/my-recipes");
+                }
+              }}
               data-testid="button-back"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -807,13 +803,13 @@ export default function RecipeDetail() {
             )}
           </div>
         </div>
-      </main>
+      </div>
 
       <RecipeEditDrawer 
         recipe={recipe} 
         open={editDrawerOpen} 
         onOpenChange={setEditDrawerOpen} 
       />
-    </div>
+    </main>
   );
 }

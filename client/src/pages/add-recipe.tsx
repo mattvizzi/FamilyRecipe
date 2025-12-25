@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import heic2any from "heic2any";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -313,10 +312,7 @@ export default function AddRecipe() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header family={family} />
-      
-      <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-6">
         <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 
@@ -621,7 +617,6 @@ export default function AddRecipe() {
             )}
           </AnimatePresence>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }

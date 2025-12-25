@@ -2,11 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Link as LinkIcon, FileText, Plus, BookOpen } from "lucide-react";
 import { Link } from "wouter";
 
-interface EmptyStateProps {
-  familyName: string;
-}
-
-export function EmptyState({ familyName }: EmptyStateProps) {
+export function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-6">
       <div className="max-w-md w-full text-center">
@@ -14,11 +10,8 @@ export function EmptyState({ familyName }: EmptyStateProps) {
           <BookOpen className="h-12 w-12 text-primary" />
         </div>
         
-        <h2 className="text-2xl font-bold mb-2" data-testid="text-empty-title">
-          Welcome to {familyName}!
-        </h2>
-        <p className="text-muted-foreground mb-6" data-testid="text-empty-description">
-          Your family cookbook is waiting. Add your first recipe to get started.
+        <p className="text-lg text-muted-foreground mb-6" data-testid="text-empty-description">
+          Your family cookbook is waiting, add your first recipe to get started.
         </p>
 
         <Button asChild size="lg" className="gap-2 mb-8" data-testid="button-add-first-recipe">

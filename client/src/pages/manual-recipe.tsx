@@ -4,7 +4,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -157,10 +156,7 @@ export default function ManualRecipe() {
   const groups = form.watch("groups");
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header family={family} />
-      
-      <main className="pt-24 pb-12 px-6">
+    <main className="pt-24 pb-12 px-6">
         <div className="max-w-3xl mx-auto">
           <Button 
             variant="ghost" 
@@ -539,7 +535,6 @@ export default function ManualRecipe() {
             </form>
           </Form>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,48 +52,39 @@ export default function FamilySettings() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header family={null} />
-        <main className="pt-24 pb-12 px-6">
-          <div className="max-w-xl mx-auto">
-            <Skeleton className="h-8 w-48 mb-6" />
-            <Card>
-              <CardContent className="p-6">
-                <Skeleton className="h-10 w-full mb-4" />
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-      </div>
+      <main className="pt-24 pb-12 px-6">
+        <div className="max-w-xl mx-auto">
+          <Skeleton className="h-8 w-48 mb-6" />
+          <Card>
+            <CardContent className="p-6">
+              <Skeleton className="h-10 w-full mb-4" />
+              <Skeleton className="h-20 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     );
   }
 
   if (!family) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header family={null} />
-        <main className="pt-24 pb-12 px-6">
-          <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4">No Family Found</h1>
-            <p className="text-muted-foreground mb-6">
-              You need to create or join a family first.
-            </p>
-            <Button onClick={() => navigate("/")}>Go Home</Button>
-          </div>
-        </main>
-      </div>
+      <main className="pt-24 pb-12 px-6">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-2xl font-bold mb-4">No Family Found</h1>
+          <p className="text-muted-foreground mb-6">
+            You need to create or join a family first.
+          </p>
+          <Button onClick={() => navigate("/")}>Go Home</Button>
+        </div>
+      </main>
     );
   }
 
   const inviteLink = `${window.location.origin}/join/${family.inviteCode}`;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header family={family} />
-      
-      <main className="pt-24 pb-12 px-6">
-        <div className="max-w-xl mx-auto">
+    <main className="pt-24 pb-12 px-6">
+      <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -206,7 +196,7 @@ export default function FamilySettings() {
             </Card>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import type { Family } from "@shared/schema";
+import { Header } from "@/components/header";
 
 // Eagerly loaded pages (critical path)
 import Landing from "@/pages/landing";
@@ -58,22 +59,29 @@ function AuthenticatedRouter() {
   }
 
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Switch>
-        <Route path="/">{() => <Redirect to="/my-recipes" />}</Route>
-        <Route path="/my-recipes" component={Home} />
-        <Route path="/my-recipes/:category" component={Home} />
-        <Route path="/recipes" component={PublicRecipes} />
-        <Route path="/recipes/:category" component={PublicRecipes} />
-        <Route path="/recipe/:id" component={RecipeDetail} />
-        <Route path="/add-recipe" component={AddRecipe} />
-        <Route path="/add-recipe/manual" component={ManualRecipe} />
-        <Route path="/family" component={FamilySettings} />
-        <Route path="/join/:code" component={JoinFamily} />
-        <Route path="/create-family">{() => <Redirect to="/my-recipes" />}</Route>
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <div className="min-h-screen bg-background">
+      <Header family={family} />
+      <Suspense fallback={
+        <div className="pt-20 flex items-center justify-center" style={{ minHeight: 'calc(100vh - 5rem)' }}>
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </div>
+      }>
+        <Switch>
+          <Route path="/">{() => <Redirect to="/my-recipes" />}</Route>
+          <Route path="/my-recipes" component={Home} />
+          <Route path="/my-recipes/:category" component={Home} />
+          <Route path="/recipes" component={PublicRecipes} />
+          <Route path="/recipes/:category" component={PublicRecipes} />
+          <Route path="/recipe/:id" component={RecipeDetail} />
+          <Route path="/add-recipe" component={AddRecipe} />
+          <Route path="/add-recipe/manual" component={ManualRecipe} />
+          <Route path="/family" component={FamilySettings} />
+          <Route path="/join/:code" component={JoinFamily} />
+          <Route path="/create-family">{() => <Redirect to="/my-recipes" />}</Route>
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+    </div>
   );
 }
 

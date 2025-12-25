@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { Header } from "@/components/header";
 import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
 import { useAuth } from "@/hooks/use-auth";
 import { EmptyState } from "@/components/empty-state";
@@ -82,10 +81,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header family={family} />
-      
-      <main className="pt-20 pb-12 px-6">
+    <main className="pt-20 pb-12 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
@@ -138,7 +134,7 @@ export default function Home() {
               </div>
             </>
           ) : familyRecipes.length === 0 && savedRecipes.length === 0 ? (
-            <EmptyState familyName={family?.name || "Your Family"} />
+            <EmptyState />
           ) : (
             <>
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -232,7 +228,6 @@ export default function Home() {
             </>
           )}
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
