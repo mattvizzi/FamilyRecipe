@@ -28,9 +28,17 @@ export function getSession() {
     tableName: "sessions",
   });
   
-  // In production, set cookie domain to share across main and admin subdomains
+  // Use PRODUCTION_DOMAIN env var if set, otherwise we'll determine dynamically per-request
   const isProduction = process.env.NODE_ENV === "production";
-  const cookieDomain = isProduction ? ".familyrecipe.app" : undefined;
+  const staticCookieDomain = process.env.PRODUCTION_DOMAIN 
+    ? (process.env.PRODUCTION_DOMAIN.startsWith('.') 
+        ? process.env.PRODUCTION_DOMAIN 
+        : '.' + process.env.PRODUCTION_DOMAIN)
+    : undefined;
+  
+  // For development or if PRODUCTION_DOMAIN is set, use static configuration
+  // Otherwise, we'll need to handle dynamically in middleware
+  const cookieDomain = isProduction ? staticCookieDomain : undefined;
   
   return session({
     secret: process.env.SESSION_SECRET!,
@@ -39,13 +47,14 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: isProduction, // Only require secure in production
       maxAge: sessionTtl,
       sameSite: "lax", // CSRF protection: prevents cross-site cookie sending
-      domain: cookieDomain, // Share cookie across subdomains in production
+      domain: cookieDomain, // Share cookie across subdomains when configured
     },
   });
 }
+
 
 function updateUserSession(
   user: any,

@@ -43,3 +43,8 @@ integrations = ["javascript_object_storage:2.0.0", "javascript_log_in_with_repli
 
 [objectStorage]
 defaultBucketID = "replit-objstore-5a658dc3-9f3b-4ea4-bca3-e65f2d1261f9"
+
+[userenv]
+
+[userenv.production]
+PRODUCTION_DOMAIN = "familyrecipe.app"
