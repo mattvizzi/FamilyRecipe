@@ -63,7 +63,7 @@ export function registerObjectStorageRoutes(app: Express): void {
   });
 
   /**
-   * Serve uploaded objects.
+   * Serve uploaded objects from private storage.
    *
    * GET /objects/:objectPath(*)
    *
@@ -79,6 +79,30 @@ export function registerObjectStorageRoutes(app: Express): void {
       if (error instanceof ObjectNotFoundError) {
         return res.status(404).json({ error: "Object not found" });
       }
+      return res.status(500).json({ error: "Failed to serve object" });
+    }
+  });
+
+  /**
+   * Serve public objects (like recipe images).
+   *
+   * GET /public/:objectPath(*)
+   *
+   * This serves files from the public object storage directory.
+   */
+  app.get("/public/:objectPath(*)", async (req, res) => {
+    try {
+      // Get the path after /public/
+      const filePath = req.params.objectPath;
+      const objectFile = await objectStorageService.searchPublicObject(filePath);
+      
+      if (!objectFile) {
+        return res.status(404).json({ error: "Object not found" });
+      }
+      
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving public object:", error);
       return res.status(500).json({ error: "Failed to serve object" });
     }
   });

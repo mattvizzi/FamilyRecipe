@@ -9,7 +9,7 @@ const objectStorageService = new ObjectStorageService();
  * 
  * @param base64Data - Base64 encoded image data (with or without data URL prefix)
  * @param recipeId - Recipe ID for generating unique filename
- * @returns Object path that can be used to access the image (e.g., /objects/uploads/recipe-123-uuid)
+ * @returns Object path that can be used to access the image via public URL
  */
 export async function uploadRecipeImage(
   base64Data: string,
@@ -31,10 +31,14 @@ export async function uploadRecipeImage(
     imageBuffer = Buffer.from(base64Data, "base64");
   }
 
-  // Get the private object directory and create a path for recipe images
-  const privateDir = objectStorageService.getPrivateObjectDir();
-  const objectId = `recipe-${recipeId}-${randomUUID()}`;
-  const fullPath = `${privateDir}/uploads/${objectId}`;
+  // Get the public directory for storing recipe images
+  // Use the first public search path as the destination
+  const publicPaths = objectStorageService.getPublicObjectSearchPaths();
+  const publicDir = publicPaths[0];
+  
+  // Generate unique filename
+  const objectId = `recipe-images/${recipeId}-${randomUUID()}.png`;
+  const fullPath = `${publicDir}/${objectId}`;
 
   // Parse the path to get bucket and object name
   const pathParts = fullPath.startsWith("/") ? fullPath.slice(1).split("/") : fullPath.split("/");
@@ -57,8 +61,9 @@ export async function uploadRecipeImage(
     },
   });
 
-  // Return the normalized object path that can be served via /objects/* route
-  return `/objects/uploads/${objectId}`;
+  // Return the public URL path that maps to the stored file
+  // The /public/* route serves files from the public directory
+  return `/public/${objectId}`;
 }
 
 /**
@@ -71,13 +76,12 @@ export function isBase64Image(url: string | null | undefined): boolean {
 
 /**
  * Get the full URL for serving an object storage image.
- * For now, we serve through the /objects/* route.
  */
 export function getImageUrl(objectPath: string): string {
   // If it's already a full URL or base64, return as-is
   if (objectPath.startsWith("http") || objectPath.startsWith("data:")) {
     return objectPath;
   }
-  // Object paths like /objects/uploads/uuid are served through our route
+  // Object paths are already relative URLs to be served
   return objectPath;
 }

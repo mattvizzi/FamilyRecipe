@@ -35,6 +35,7 @@ const aiProcessingLimiter = rateLimit({
   message: { message: "Too many recipe processing requests. Please wait before trying again." },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false, // Disable all validation warnings
   keyGenerator: (req: Request) => {
     const authReq = req as AuthRequest;
     return authReq.user?.claims?.sub || req.ip || 'unknown';
@@ -47,6 +48,7 @@ const pdfExportLimiter = rateLimit({
   message: { message: "Too many PDF export requests. Please wait before trying again." },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   keyGenerator: (req: Request) => {
     const authReq = req as AuthRequest;
     return authReq.user?.claims?.sub || req.ip || 'unknown';
@@ -60,6 +62,7 @@ const publicRateLimiter = rateLimit({
   message: { message: "Too many requests. Please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: false,
   keyGenerator: (req: Request) => req.ip || 'unknown',
 });
 import { scaleAmount } from "@shared/lib/fraction";
@@ -531,8 +534,11 @@ shallow depth of field, food styling.`;
       let imageUrl: string | undefined;
       try {
         const imageBuffer = await generateImageBuffer(imagePrompt, "1024x1024");
-        // For now, we'll store as base64 data URL (in production, upload to object storage)
-        imageUrl = `data:image/png;base64,${imageBuffer.toString("base64")}`;
+        // Upload to Object Storage instead of storing base64 in database
+        const base64Data = imageBuffer.toString("base64");
+        // Generate a temporary ID for the image (will be updated after recipe is created)
+        const tempId = `temp-${Date.now()}`;
+        imageUrl = await uploadRecipeImage(base64Data, tempId);
       } catch (imageError) {
         console.error("Image generation failed:", imageError);
         // Continue without image
@@ -644,8 +650,20 @@ shallow depth of field, food styling.`;
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // Increment view count
-      await storage.incrementViewCount(id);
+      // Increment view count only if not already viewed in this session
+      const authReq = req as AuthRequest;
+      if (authReq.session) {
+        if (!authReq.session.viewedRecipes) {
+          authReq.session.viewedRecipes = [];
+        }
+        if (!authReq.session.viewedRecipes.includes(id)) {
+          await storage.incrementViewCount(id);
+          authReq.session.viewedRecipes.push(id);
+        }
+      } else {
+        // No session, increment anyway (fallback)
+        await storage.incrementViewCount(id);
+      }
       
       res.json(recipe);
     } catch (error) {
@@ -654,8 +672,8 @@ shallow depth of field, food styling.`;
     }
   });
 
-  // Get public recipes (all or by category)
-  app.get("/api/public/recipes", async (req: Request, res: Response) => {
+  // Get public recipes (all or by category) - rate limited to prevent abuse
+  app.get("/api/public/recipes", publicRateLimiter, async (req: Request, res: Response) => {
     try {
       const category = req.query.category as string | undefined;
       const recipes = await storage.getPublicRecipes(category);
