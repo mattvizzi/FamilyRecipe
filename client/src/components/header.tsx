@@ -28,21 +28,21 @@ export function Header({ family }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
         <Link href="/">
           <div className="flex items-center cursor-pointer" data-testid="link-home">
-            <span className="text-xl font-bold tracking-tight">Family</span>
-            <span className="text-xl font-light text-primary tracking-tight">Recipe</span>
+            <span className="text-xl font-bold tracking-tight text-white">Family</span>
+            <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
           </div>
         </Link>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <ThemeToggle className="text-white hover:bg-white/10" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-lg" data-testid="button-user-menu">
+              <Button variant="ghost" size="icon" className="rounded-lg text-white hover:bg-white/10" data-testid="button-user-menu">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.profileImageUrl || undefined} alt="Profile" />
                   <AvatarFallback className="text-sm font-medium bg-muted">{getInitials()}</AvatarFallback>
