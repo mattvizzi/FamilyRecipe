@@ -1106,5 +1106,124 @@ shallow depth of field, food styling.`;
     next();
   });
 
+  // Admin AI Chat endpoint
+  app.post("/api/admin/chat", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const { message, history = [] } = req.body;
+      
+      if (!message || typeof message !== "string") {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Gather admin context
+      const [stats, users, families, recipes] = await Promise.all([
+        storage.getAdminStats(),
+        storage.getAllUsers(),
+        storage.getAllFamiliesWithStats(),
+        storage.getAllRecipesAdmin(),
+      ]);
+
+      // Create context summary
+      const contextSummary = `
+## Platform Overview
+- Total Users: ${stats.totalUsers}
+- Total Families: ${stats.totalFamilies}
+- Total Recipes: ${stats.totalRecipes}
+- Public Recipes: ${stats.publicRecipes}
+- Users joined in last 7 days: ${stats.recentUsers}
+- Recipes created in last 7 days: ${stats.recentRecipes}
+
+## Recent Users (last 10)
+${users.slice(0, 10).map(u => `- ${u.firstName || ''} ${u.lastName || ''} (${u.email || 'no email'}) - ${u.recipeCount} recipes, Family: ${u.familyName || 'None'}`).join('\n')}
+
+## Families Overview (top 10 by recipe count)
+${[...families].sort((a, b) => b.recipeCount - a.recipeCount).slice(0, 10).map(f => `- ${f.name}: ${f.memberCount} members, ${f.recipeCount} recipes`).join('\n')}
+
+## Recipe Categories
+${Object.entries(recipes.reduce((acc: Record<string, number>, r) => {
+  acc[r.category] = (acc[r.category] || 0) + 1;
+  return acc;
+}, {})).map(([cat, count]) => `- ${cat}: ${count}`).join('\n')}
+
+## Top 10 Recipes by Views
+${[...recipes].sort((a, b) => b.viewCount - a.viewCount).slice(0, 10).map(r => `- ${r.name} (${r.viewCount} views, ${r.isPublic ? 'public' : 'private'}) by ${r.creatorName || 'Unknown'}`).join('\n')}
+`;
+
+      const systemPrompt = `You are an AI assistant for the Family Recipe platform admin dashboard. You have access to real-time platform data and can help administrators understand trends, identify issues, and make decisions.
+
+Here is the current platform data:
+${contextSummary}
+
+Be concise and helpful. When asked about specific metrics, reference the actual data above. If asked to perform actions, explain what would need to be done but note that you cannot directly modify the database.`;
+
+      // Build messages for OpenAI
+      const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+        { role: "system", content: systemPrompt },
+        ...history.map((h: { role: string; content: string }) => ({
+          role: h.role as "user" | "assistant",
+          content: h.content,
+        })),
+        { role: "user", content: message },
+      ];
+
+      // Set up SSE
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.flushHeaders();
+
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages,
+        stream: true,
+        max_completion_tokens: 1024,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (content) {
+          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+        }
+      }
+
+      res.write("data: [DONE]\n\n");
+      res.end();
+    } catch (error) {
+      console.error("Error in admin chat:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Failed to process chat request" });
+      } else {
+        res.write(`data: ${JSON.stringify({ error: "An error occurred" })}\n\n`);
+        res.end();
+      }
+    }
+  });
+
+  // Get admin context summary for AI (can be used for debugging)
+  app.get("/api/admin/context", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const [stats, users, families, recipes] = await Promise.all([
+        storage.getAdminStats(),
+        storage.getAllUsers(),
+        storage.getAllFamiliesWithStats(),
+        storage.getAllRecipesAdmin(),
+      ]);
+
+      res.json({
+        stats,
+        recentUsers: users.slice(0, 10),
+        topFamilies: [...families].sort((a, b) => b.recipeCount - a.recipeCount).slice(0, 10),
+        topRecipes: [...recipes].sort((a, b) => b.viewCount - a.viewCount).slice(0, 10),
+        categoryCounts: recipes.reduce((acc: Record<string, number>, r) => {
+          acc[r.category] = (acc[r.category] || 0) + 1;
+          return acc;
+        }, {}),
+      });
+    } catch (error) {
+      console.error("Error fetching admin context:", error);
+      res.status(500).json({ message: "Failed to fetch context" });
+    }
+  });
+
   return httpServer;
 }

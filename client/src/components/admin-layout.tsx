@@ -18,9 +18,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon } from "lucide-react";
+import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
+import { AdminAISidebar } from "@/components/admin-ai-sidebar";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -38,6 +39,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, logout, isLoggingOut } = useAuth();
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
+  const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -129,6 +131,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <Search className="h-4 w-4" />
               </Button>
 
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setAiSidebarOpen(!aiSidebarOpen)}
+                className={aiSidebarOpen ? "bg-accent" : ""}
+                data-testid="button-toggle-ai-sidebar"
+              >
+                <Bot className="h-4 w-4" />
+              </Button>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-lg" data-testid="button-admin-user-menu">
@@ -182,9 +194,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        <main className="pt-14">
+        <main className={`pt-14 transition-all duration-200 ${aiSidebarOpen ? "mr-80 lg:mr-96" : ""}`}>
           {children}
         </main>
+
+        <AdminAISidebar isOpen={aiSidebarOpen} onClose={() => setAiSidebarOpen(false)} />
       </div>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
