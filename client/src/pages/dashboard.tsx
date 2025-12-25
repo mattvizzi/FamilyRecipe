@@ -173,15 +173,15 @@ function CategoryGrid() {
   return (
     <section className="mb-10">
       <h2 className="text-xl font-semibold mb-4">Browse by Category</h2>
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+      <div className="flex gap-2 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:justify-between md:gap-0">
         {recipeCategories.map((category) => (
           <Link key={category} href={`/recipes/${category.toLowerCase()}`}>
             <Card 
-              className="p-4 text-center hover-elevate cursor-pointer flex-shrink-0 w-24"
+              className="p-3 md:p-4 text-center hover-elevate cursor-pointer flex-shrink-0 w-20 md:w-auto md:flex-1"
               data-testid={`category-${category.toLowerCase()}`}
             >
-              <div className="text-3xl mb-2">{categoryEmojis[category] || "🍽️"}</div>
-              <p className="font-medium text-sm">{category}</p>
+              <div className="text-2xl md:text-3xl mb-1 md:mb-2">{categoryEmojis[category] || "🍽️"}</div>
+              <p className="font-medium text-xs md:text-sm">{category}</p>
             </Card>
           </Link>
         ))}
