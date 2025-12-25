@@ -210,12 +210,12 @@ export function Header({ family }: HeaderProps) {
         </div>
       </header>
       {/* Desktop Sub-navigation bar with categories */}
-      <nav className="fixed top-14 left-0 right-0 z-40 dark:bg-white hidden sm:block shadow-md bg-[5A7A9E]">
+      <nav className="fixed top-14 left-0 right-0 z-40 hidden sm:block shadow-md bg-[#0F766E]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-6 h-10 overflow-x-auto scrollbar-hide">
             <Link href="/family-recipes">
               <span 
-                className={`text-[10px] text-black cursor-pointer hover:underline uppercase font-semibold ${location === "/family-recipes" ? "font-bold underline" : ""}`}
+                className={`text-[10px] text-white cursor-pointer hover:underline uppercase font-bold ${location === "/family-recipes" ? "underline" : ""}`}
                 data-testid="subnav-family-recipes"
               >
                 My Recipes
@@ -223,7 +223,7 @@ export function Header({ family }: HeaderProps) {
             </Link>
             <Link href="/recipes">
               <span 
-                className={`text-[10px] text-black cursor-pointer hover:underline uppercase font-semibold ${location === "/recipes" ? "font-bold underline" : ""}`}
+                className={`text-[10px] text-white cursor-pointer hover:underline uppercase font-bold ${location === "/recipes" ? "underline" : ""}`}
                 data-testid="subnav-all-recipes"
               >
                 All Recipes
@@ -232,7 +232,7 @@ export function Header({ family }: HeaderProps) {
             {recipeCategories.map((cat) => (
               <Link key={cat} href={`/recipes/${cat.toLowerCase()}`}>
                 <span 
-                  className={`text-[10px] text-black cursor-pointer hover:underline whitespace-nowrap uppercase font-semibold ${currentCategory === cat.toLowerCase() ? "font-bold underline" : ""}`}
+                  className={`text-[10px] text-white cursor-pointer hover:underline whitespace-nowrap uppercase font-bold ${currentCategory === cat.toLowerCase() ? "underline" : ""}`}
                   data-testid={`subnav-category-${cat.toLowerCase()}`}
                 >
                   {cat}
