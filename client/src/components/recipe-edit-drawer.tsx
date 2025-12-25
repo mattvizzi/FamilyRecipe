@@ -200,12 +200,12 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[90vh]">
-        <DrawerHeader className="border-b border-border px-6">
+      <DrawerContent className="max-h-[90vh] flex flex-col">
+        <DrawerHeader className="flex-shrink-0 border-b border-border px-6">
           <DrawerTitle>Edit Recipe</DrawerTitle>
         </DrawerHeader>
         
-        <ScrollArea className="flex-1 px-6 py-4" style={{ height: "calc(90vh - 140px)" }}>
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <Form {...form}>
             <form id="edit-recipe-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -505,9 +505,9 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
               </Button>
             </form>
           </Form>
-        </ScrollArea>
+        </div>
 
-        <DrawerFooter className="border-t border-border px-6 flex-row gap-3">
+        <DrawerFooter className="flex-shrink-0 border-t border-border px-6 flex-row gap-3">
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}

@@ -27,6 +27,7 @@ import {
   getHubSpotCompanyByFamilyId
 } from "./hubspot";
 import { uploadRecipeImage, isBase64Image } from "./imageStorage";
+import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 
 // Rate limiters for expensive operations
 const aiProcessingLimiter = rateLimit({
@@ -144,6 +145,9 @@ export async function registerRoutes(
   // Initialize authentication
   await setupAuth(app);
   registerAuthRoutes(app);
+  
+  // Register object storage routes for serving uploaded images
+  registerObjectStorageRoutes(app);
   
   // ============ CSRF TOKEN ROUTE ============
   
