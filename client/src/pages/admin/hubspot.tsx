@@ -6,7 +6,7 @@ import { RefreshCw, CheckCircle, AlertCircle, Info } from "lucide-react";
 export default function AdminHubSpot() {
   return (
     <AdminLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold" data-testid="text-admin-hubspot-title">HubSpot Sync</h1>
           <p className="text-muted-foreground">Monitor and manage HubSpot CRM synchronization</p>

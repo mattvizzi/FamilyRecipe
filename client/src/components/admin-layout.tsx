@@ -75,13 +75,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </Helmet>
       <div className="min-h-screen bg-background">
         <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <Link href="/admin">
-                <div className="flex items-center gap-2 cursor-pointer" data-testid="link-admin-home">
+                <div className="flex items-center cursor-pointer" data-testid="link-admin-home">
                   <span className="text-xl font-bold tracking-tight text-primary">Family</span>
                   <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
-                  <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
+                  <span className="ml-2 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
                 </div>
               </Link>
 
