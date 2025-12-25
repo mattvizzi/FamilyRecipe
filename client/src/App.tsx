@@ -51,6 +51,7 @@ const FamilySettings = lazy(() => import("@/features/family/pages/family-setting
 const FamilyOnboarding = lazy(() => import("@/features/family/pages/family-onboarding"));
 const JoinFamily = lazy(() => import("@/features/family/pages/join-family"));
 const UserOnboarding = lazy(() => import("@/features/onboarding/pages/user-onboarding"));
+const Settings = lazy(() => import("@/pages/settings"));
 
 // Admin pages (lazy loaded)
 const AdminDashboard = lazy(() => import("@/features/admin/pages/dashboard"));
@@ -232,6 +233,7 @@ function AuthenticatedRouter() {
             <Route path="/add-recipe" component={AddRecipe} />
             <Route path="/add-recipe/manual" component={ManualRecipe} />
             <Route path="/family" component={FamilySettings} />
+            <Route path="/settings" component={Settings} />
             <Route path="/join/:code" component={JoinFamily} />
             <Route path="/create-family">{() => <Redirect to="/family-recipes" />}</Route>
             <Route component={NotFound} />

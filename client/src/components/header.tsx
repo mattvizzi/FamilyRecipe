@@ -167,31 +167,6 @@ export function Header({ family }: HeaderProps) {
                   </p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/family-recipes" className="flex items-center gap-2" data-testid="dropdown-family-recipes">
-                    <ChefHat className="h-4 w-4" />
-                    Family Recipes
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/recipes" className="flex items-center gap-2" data-testid="dropdown-all-recipes">
-                    <Globe className="h-4 w-4" />
-                    All Recipes
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/add-recipe" className="flex items-center gap-2" data-testid="dropdown-add-recipe">
-                    <Plus className="h-4 w-4" />
-                    Add Recipe
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/family" className="flex items-center gap-2" data-testid="link-family-settings">
-                    <Users className="h-4 w-4" />
-                    Family Settings
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={toggleTheme}
                   className="cursor-pointer"
@@ -204,16 +179,20 @@ export function Header({ family }: HeaderProps) {
                   )}
                   {theme === "dark" ? "Light Mode" : "Dark Mode"}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/settings" className="flex items-center gap-2" data-testid="link-settings">
+                    <Settings className="h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
                 {isAdmin && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link href="/dashboard" className="flex items-center gap-2" data-testid="dropdown-go-to-admin">
-                        <Shield className="h-4 w-4" />
-                        Go to Admin
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/dashboard" className="flex items-center gap-2" data-testid="dropdown-go-to-admin">
+                      <Shield className="h-4 w-4" />
+                      Go to Admin
+                    </Link>
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -365,11 +344,11 @@ export function Header({ family }: HeaderProps) {
 
           <CommandGroup heading="Settings">
             <CommandItem
-              onSelect={() => runCommand(() => navigate("/family"))}
-              data-testid="command-family-settings"
+              onSelect={() => runCommand(() => navigate("/settings"))}
+              data-testid="command-settings"
             >
               <Settings className="mr-2 h-4 w-4" />
-              Family Settings
+              Settings
             </CommandItem>
           </CommandGroup>
         </CommandList>
@@ -461,14 +440,14 @@ export function Header({ family }: HeaderProps) {
 
             {/* Settings */}
             <SheetClose asChild>
-              <Link href="/family">
+              <Link href="/settings">
                 <Button 
                   variant="ghost" 
                   className="w-full justify-start gap-3"
-                  data-testid="mobile-nav-family-settings"
+                  data-testid="mobile-nav-settings"
                 >
-                  <Users className="h-4 w-4" />
-                  Family Settings
+                  <Settings className="h-4 w-4" />
+                  Settings
                 </Button>
               </Link>
             </SheetClose>
