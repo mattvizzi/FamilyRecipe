@@ -7,6 +7,12 @@ import { z } from "zod";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -333,118 +339,163 @@ export default function ManualRecipe() {
                   <CardContent className="space-y-6">
                     <div>
                       <h4 className="text-sm font-medium mb-3">Ingredients</h4>
-                      <div className="space-y-2">
-                        {group.ingredients.map((_, ingredientIndex) => (
-                          <div key={ingredientIndex} className="flex gap-2">
-                            <FormField
-                              control={form.control}
-                              name={`groups.${groupIndex}.ingredients.${ingredientIndex}.amount`}
-                              render={({ field }) => (
-                                <FormItem className="w-20">
-                                  <FormControl>
-                                    <Input placeholder="Amt" {...field} data-testid={`input-ingredient-amount-${groupIndex}-${ingredientIndex}`} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`groups.${groupIndex}.ingredients.${ingredientIndex}.unit`}
-                              render={({ field }) => (
-                                <FormItem className="w-20">
-                                  <FormControl>
-                                    <Input placeholder="Unit" {...field} data-testid={`input-ingredient-unit-${groupIndex}-${ingredientIndex}`} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`groups.${groupIndex}.ingredients.${ingredientIndex}.name`}
-                              render={({ field }) => (
-                                <FormItem className="flex-1">
-                                  <FormControl>
-                                    <Input placeholder="Ingredient name" {...field} data-testid={`input-ingredient-name-${groupIndex}-${ingredientIndex}`} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            {group.ingredients.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeIngredient(groupIndex, ingredientIndex)}
-                                data-testid={`button-remove-ingredient-${groupIndex}-${ingredientIndex}`}
+                      <div className="border border-border rounded-md overflow-hidden">
+                        <Table>
+                          <TableBody>
+                            {group.ingredients.map((_, ingredientIndex) => (
+                              <TableRow 
+                                key={ingredientIndex}
+                                className={ingredientIndex % 2 === 0 ? "bg-muted/30 border-0" : "border-0"}
                               >
-                                <Trash2 className="h-4 w-4 text-muted-foreground" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
+                                <TableCell className="w-20 py-1.5 px-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={`groups.${groupIndex}.ingredients.${ingredientIndex}.amount`}
+                                    render={({ field }) => (
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Amt" 
+                                          className="h-8 text-sm"
+                                          {...field} 
+                                          data-testid={`input-ingredient-amount-${groupIndex}-${ingredientIndex}`} 
+                                        />
+                                      </FormControl>
+                                    )}
+                                  />
+                                </TableCell>
+                                <TableCell className="w-20 py-1.5 px-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={`groups.${groupIndex}.ingredients.${ingredientIndex}.unit`}
+                                    render={({ field }) => (
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Unit" 
+                                          className="h-8 text-sm"
+                                          {...field} 
+                                          data-testid={`input-ingredient-unit-${groupIndex}-${ingredientIndex}`} 
+                                        />
+                                      </FormControl>
+                                    )}
+                                  />
+                                </TableCell>
+                                <TableCell className="py-1.5 px-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={`groups.${groupIndex}.ingredients.${ingredientIndex}.name`}
+                                    render={({ field }) => (
+                                      <FormControl>
+                                        <Input 
+                                          placeholder="Ingredient name" 
+                                          className="h-8 text-sm"
+                                          {...field} 
+                                          data-testid={`input-ingredient-name-${groupIndex}-${ingredientIndex}`} 
+                                        />
+                                      </FormControl>
+                                    )}
+                                  />
+                                </TableCell>
+                                <TableCell className="w-10 py-1.5 px-1">
+                                  {group.ingredients.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => removeIngredient(groupIndex, ingredientIndex)}
+                                      data-testid={`button-remove-ingredient-${groupIndex}-${ingredientIndex}`}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="border-0 bg-transparent">
+                              <TableCell colSpan={4} className="py-1.5 px-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full text-muted-foreground"
+                                  onClick={() => addIngredient(groupIndex)}
+                                  data-testid={`button-add-ingredient-${groupIndex}`}
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add ingredient
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={() => addIngredient(groupIndex)}
-                        data-testid={`button-add-ingredient-${groupIndex}`}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add Ingredient
-                      </Button>
                     </div>
 
                     <div>
                       <h4 className="text-sm font-medium mb-3">Instructions</h4>
-                      <div className="space-y-2">
-                        {group.instructions.map((_, instructionIndex) => (
-                          <div key={instructionIndex} className="flex gap-2">
-                            <span className="flex-shrink-0 w-8 h-9 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                              {instructionIndex + 1}
-                            </span>
-                            <FormField
-                              control={form.control}
-                              name={`groups.${groupIndex}.instructions.${instructionIndex}`}
-                              render={({ field }) => (
-                                <FormItem className="flex-1">
-                                  <FormControl>
-                                    <Textarea 
-                                      placeholder="Describe this step..." 
-                                      className="min-h-[80px]"
-                                      {...field} 
-                                      data-testid={`input-instruction-${groupIndex}-${instructionIndex}`}
-                                    />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            {group.instructions.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeInstruction(groupIndex, instructionIndex)}
-                                data-testid={`button-remove-instruction-${groupIndex}-${instructionIndex}`}
+                      <div className="border border-border rounded-md overflow-hidden">
+                        <Table>
+                          <TableBody>
+                            {group.instructions.map((_, instructionIndex) => (
+                              <TableRow 
+                                key={instructionIndex}
+                                className={instructionIndex % 2 === 0 ? "bg-muted/30 border-0" : "border-0"}
                               >
-                                <Trash2 className="h-4 w-4 text-muted-foreground" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
+                                <TableCell className="w-10 py-2 px-2 align-top">
+                                  <span className="flex-shrink-0 w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
+                                    {instructionIndex + 1}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="py-2 px-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={`groups.${groupIndex}.instructions.${instructionIndex}`}
+                                    render={({ field }) => (
+                                      <FormControl>
+                                        <Textarea 
+                                          placeholder="Describe this step..." 
+                                          className="min-h-[60px] text-sm"
+                                          {...field} 
+                                          data-testid={`input-instruction-${groupIndex}-${instructionIndex}`}
+                                        />
+                                      </FormControl>
+                                    )}
+                                  />
+                                </TableCell>
+                                <TableCell className="w-10 py-2 px-1 align-top">
+                                  {group.instructions.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8"
+                                      onClick={() => removeInstruction(groupIndex, instructionIndex)}
+                                      data-testid={`button-remove-instruction-${groupIndex}-${instructionIndex}`}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="border-0 bg-transparent">
+                              <TableCell colSpan={3} className="py-1.5 px-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full text-muted-foreground"
+                                  onClick={() => addInstruction(groupIndex)}
+                                  data-testid={`button-add-instruction-${groupIndex}`}
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add step
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="mt-2"
-                        onClick={() => addInstruction(groupIndex)}
-                        data-testid={`button-add-instruction-${groupIndex}`}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add Step
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

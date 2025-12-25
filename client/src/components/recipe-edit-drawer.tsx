@@ -29,6 +29,12 @@ import {
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 import { Plus, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -328,123 +334,161 @@ export function RecipeEditDrawer({ recipe, open, onOpenChange }: RecipeEditDrawe
 
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Ingredients</p>
-                    <div className="space-y-2">
-                      {group.ingredients.map((_, ingIndex) => (
-                        <div key={ingIndex} className="flex gap-2">
-                          <FormField
-                            control={form.control}
-                            name={`groups.${groupIndex}.ingredients.${ingIndex}.amount`}
-                            render={({ field }) => (
-                              <FormControl>
-                                <Input 
-                                  placeholder="Amt" 
-                                  className="w-16" 
-                                  {...field} 
-                                  data-testid={`input-ing-amount-${groupIndex}-${ingIndex}`}
+                    <div className="border border-border rounded-md overflow-hidden">
+                      <Table>
+                        <TableBody>
+                          {group.ingredients.map((_, ingIndex) => (
+                            <TableRow 
+                              key={ingIndex}
+                              className={ingIndex % 2 === 0 ? "bg-muted/30 border-0" : "border-0"}
+                            >
+                              <TableCell className="w-16 py-1.5 px-2">
+                                <FormField
+                                  control={form.control}
+                                  name={`groups.${groupIndex}.ingredients.${ingIndex}.amount`}
+                                  render={({ field }) => (
+                                    <FormControl>
+                                      <Input 
+                                        placeholder="Amt" 
+                                        className="h-8 text-sm"
+                                        {...field} 
+                                        data-testid={`input-ing-amount-${groupIndex}-${ingIndex}`}
+                                      />
+                                    </FormControl>
+                                  )}
                                 />
-                              </FormControl>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`groups.${groupIndex}.ingredients.${ingIndex}.unit`}
-                            render={({ field }) => (
-                              <FormControl>
-                                <Input 
-                                  placeholder="Unit" 
-                                  className="w-20" 
-                                  {...field} 
-                                  data-testid={`input-ing-unit-${groupIndex}-${ingIndex}`}
+                              </TableCell>
+                              <TableCell className="w-16 py-1.5 px-2">
+                                <FormField
+                                  control={form.control}
+                                  name={`groups.${groupIndex}.ingredients.${ingIndex}.unit`}
+                                  render={({ field }) => (
+                                    <FormControl>
+                                      <Input 
+                                        placeholder="Unit" 
+                                        className="h-8 text-sm"
+                                        {...field} 
+                                        data-testid={`input-ing-unit-${groupIndex}-${ingIndex}`}
+                                      />
+                                    </FormControl>
+                                  )}
                                 />
-                              </FormControl>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`groups.${groupIndex}.ingredients.${ingIndex}.name`}
-                            render={({ field }) => (
-                              <FormControl>
-                                <Input 
-                                  placeholder="Ingredient name" 
-                                  className="flex-1" 
-                                  {...field} 
-                                  data-testid={`input-ing-name-${groupIndex}-${ingIndex}`}
+                              </TableCell>
+                              <TableCell className="py-1.5 px-2">
+                                <FormField
+                                  control={form.control}
+                                  name={`groups.${groupIndex}.ingredients.${ingIndex}.name`}
+                                  render={({ field }) => (
+                                    <FormControl>
+                                      <Input 
+                                        placeholder="Ingredient name" 
+                                        className="h-8 text-sm"
+                                        {...field} 
+                                        data-testid={`input-ing-name-${groupIndex}-${ingIndex}`}
+                                      />
+                                    </FormControl>
+                                  )}
                                 />
-                              </FormControl>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeIngredient(groupIndex, ingIndex)}
-                            disabled={group.ingredients.length <= 1}
-                            data-testid={`button-remove-ing-${groupIndex}-${ingIndex}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </div>
-                      ))}
+                              </TableCell>
+                              <TableCell className="w-10 py-1.5 px-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => removeIngredient(groupIndex, ingIndex)}
+                                  disabled={group.ingredients.length <= 1}
+                                  data-testid={`button-remove-ing-${groupIndex}-${ingIndex}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow className="border-0 bg-transparent">
+                            <TableCell colSpan={4} className="py-1.5 px-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-full text-muted-foreground"
+                                onClick={() => addIngredient(groupIndex)}
+                                data-testid={`button-add-ing-${groupIndex}`}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add ingredient
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => addIngredient(groupIndex)}
-                      data-testid={`button-add-ing-${groupIndex}`}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Ingredient
-                    </Button>
                   </div>
 
                   <div>
                     <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Instructions</p>
-                    <div className="space-y-2">
-                      {group.instructions.map((_, instIndex) => (
-                        <div key={instIndex} className="flex gap-2">
-                          <span className="flex-shrink-0 w-6 h-9 flex items-center justify-center text-xs text-muted-foreground">
-                            {instIndex + 1}.
-                          </span>
-                          <FormField
-                            control={form.control}
-                            name={`groups.${groupIndex}.instructions.${instIndex}`}
-                            render={({ field }) => (
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Instruction step" 
-                                  className="flex-1 min-h-[60px]" 
-                                  {...field} 
-                                  data-testid={`input-inst-${groupIndex}-${instIndex}`}
+                    <div className="border border-border rounded-md overflow-hidden">
+                      <Table>
+                        <TableBody>
+                          {group.instructions.map((_, instIndex) => (
+                            <TableRow 
+                              key={instIndex}
+                              className={instIndex % 2 === 0 ? "bg-muted/30 border-0" : "border-0"}
+                            >
+                              <TableCell className="w-10 py-2 px-2 align-top">
+                                <span className="flex-shrink-0 w-6 h-6 rounded-md bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
+                                  {instIndex + 1}
+                                </span>
+                              </TableCell>
+                              <TableCell className="py-2 px-2">
+                                <FormField
+                                  control={form.control}
+                                  name={`groups.${groupIndex}.instructions.${instIndex}`}
+                                  render={({ field }) => (
+                                    <FormControl>
+                                      <Textarea 
+                                        placeholder="Instruction step" 
+                                        className="min-h-[50px] text-sm" 
+                                        {...field} 
+                                        data-testid={`input-inst-${groupIndex}-${instIndex}`}
+                                      />
+                                    </FormControl>
+                                  )}
                                 />
-                              </FormControl>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeInstruction(groupIndex, instIndex)}
-                            disabled={group.instructions.length <= 1}
-                            data-testid={`button-remove-inst-${groupIndex}-${instIndex}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-muted-foreground" />
-                          </Button>
-                        </div>
-                      ))}
+                              </TableCell>
+                              <TableCell className="w-10 py-2 px-1 align-top">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => removeInstruction(groupIndex, instIndex)}
+                                  disabled={group.instructions.length <= 1}
+                                  data-testid={`button-remove-inst-${groupIndex}-${instIndex}`}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow className="border-0 bg-transparent">
+                            <TableCell colSpan={3} className="py-1.5 px-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-full text-muted-foreground"
+                                onClick={() => addInstruction(groupIndex)}
+                                data-testid={`button-add-inst-${groupIndex}`}
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add step
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => addInstruction(groupIndex)}
-                      data-testid={`button-add-inst-${groupIndex}`}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Step
-                    </Button>
                   </div>
                 </div>
               ))}

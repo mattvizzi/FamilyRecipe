@@ -6,6 +6,12 @@ import { RecipeEditDrawer } from "@/components/recipe-edit-drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,6 +19,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -403,45 +414,75 @@ export default function RecipeDetail() {
             
             <div className="flex items-center gap-2">
               {!isOwner && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => saveMutation.mutate()}
-                  disabled={saveMutation.isPending}
-                  data-testid="button-save"
-                >
-                  <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => saveMutation.mutate()}
+                      disabled={saveMutation.isPending}
+                      data-testid="button-save"
+                    >
+                      <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{recipe.isSaved ? "Remove from saved" : "Save recipe"}</TooltipContent>
+                </Tooltip>
               )}
-              <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy">
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf">
-                <FileDown className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy">
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Copy to clipboard</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf">
+                    <FileDown className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Export as PDF</TooltipContent>
+              </Tooltip>
               {isOwner && (
-                <Button 
-                  variant="ghost"
-                  size="icon" 
-                  onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
-                  disabled={visibilityMutation.isPending}
-                  data-testid="button-visibility"
-                >
-                  {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost"
+                      size="icon" 
+                      onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
+                      disabled={visibilityMutation.isPending}
+                      data-testid="button-visibility"
+                    >
+                      {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{recipe.isPublic ? "Make private" : "Make public"}</TooltipContent>
+                </Tooltip>
               )}
               {isOwner && (
-                <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit recipe</TooltipContent>
+                </Tooltip>
               )}
               {isOwner && (
                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" data-testid="button-delete">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" data-testid="button-delete">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete recipe</TooltipContent>
+                  </Tooltip>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
@@ -556,87 +597,122 @@ export default function RecipeDetail() {
           )}
 
           <div className="space-y-8">
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <h2 className="text-lg font-semibold">Ingredients</h2>
-                <div className="flex items-center gap-0.5 border border-border rounded-lg">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setScale(Math.max(0.5, scale - 0.5))}
-                    disabled={scale <= 0.5}
-                    data-testid="button-scale-down"
-                  >
-                    <Minus className="h-3.5 w-3.5" />
-                  </Button>
-                  <span className="w-10 text-center text-sm font-data">{scale}x</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setScale(Math.min(4, scale + 0.5))}
-                    disabled={scale >= 4}
-                    data-testid="button-scale-up"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </Button>
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-lg">Ingredients</CardTitle>
+                  <div className="flex items-center gap-0.5 border border-border rounded-lg">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setScale(Math.max(0.5, scale - 0.5))}
+                      disabled={scale <= 0.5}
+                      data-testid="button-scale-down"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="w-10 text-center text-sm font-data">{scale}x</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setScale(Math.min(4, scale + 0.5))}
+                      disabled={scale >= 4}
+                      data-testid="button-scale-up"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              {recipe.groups.map((group, groupIndex) => (
-                <div key={groupIndex} className={groupIndex > 0 ? "mt-5 pt-5 border-t border-border" : ""}>
-                  {recipe.groups.length > 1 && (
-                    <p className="text-sm font-medium text-muted-foreground mb-2">{group.name}</p>
-                  )}
-                  <ul className="space-y-2">
-                    {group.ingredients.map((ingredient, i) => {
-                      const scaledAmount = scaleAmount(ingredient.amount, scale);
-                      return (
-                        <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
-                          <span className="font-data font-medium text-primary whitespace-nowrap">{scaledAmount}</span>
-                          <span className="text-muted-foreground whitespace-nowrap">{abbreviateUnit(ingredient.unit)}</span>
-                          <span>{ingredient.name}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {recipe.groups.map((group, groupIndex) => (
+                  <div key={groupIndex} className={groupIndex > 0 ? "mt-4 pt-4 border-t border-border" : ""}>
+                    {recipe.groups.length > 1 && (
+                      <p className="text-sm font-medium text-muted-foreground mb-2">{group.name}</p>
+                    )}
+                    <Table>
+                      <TableBody>
+                        {group.ingredients.map((ingredient, i) => {
+                          const scaledAmount = scaleAmount(ingredient.amount, scale);
+                          return (
+                            <TableRow 
+                              key={i} 
+                              className={i % 2 === 0 ? "bg-muted/30" : ""}
+                              data-testid={`ingredient-${groupIndex}-${i}`}
+                            >
+                              <TableCell className="w-16 py-2 font-data font-medium text-primary whitespace-nowrap">
+                                {scaledAmount}
+                              </TableCell>
+                              <TableCell className="w-20 py-2 text-muted-foreground whitespace-nowrap">
+                                {abbreviateUnit(ingredient.unit)}
+                              </TableCell>
+                              <TableCell className="py-2">
+                                {ingredient.name}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
 
             {recipe.groups.map((group, groupIndex) => (
-              <Collapsible
-                key={groupIndex}
-                open={expandedGroups.has(groupIndex)}
-                onOpenChange={() => toggleGroup(groupIndex)}
-              >
-                {recipe.groups.length > 1 && (
-                  <CollapsibleTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-between mb-3 h-10 bg-muted"
-                      data-testid={`button-group-${groupIndex}`}
-                    >
-                      <span className="font-medium">{group.name}</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expandedGroups.has(groupIndex) ? "rotate-180" : ""}`} />
-                    </Button>
-                  </CollapsibleTrigger>
-                )}
-                
-                <CollapsibleContent>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Instructions</h3>
-                    <ol className="space-y-4">
-                      {group.instructions.map((step, i) => (
-                        <li key={i} className="flex gap-4" data-testid={`instruction-${groupIndex}-${i}`}>
-                          <span className="flex-shrink-0 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
-                            {i + 1}
-                          </span>
-                          <p className="pt-1.5 leading-relaxed">{step}</p>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+              <Card key={groupIndex}>
+                <Collapsible
+                  open={expandedGroups.has(groupIndex)}
+                  onOpenChange={() => toggleGroup(groupIndex)}
+                >
+                  {recipe.groups.length > 1 ? (
+                    <CardHeader className="pb-0">
+                      <CollapsibleTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-between h-10 -ml-4 -mr-4"
+                          data-testid={`button-group-${groupIndex}`}
+                        >
+                          <span className="font-medium">{group.name}</span>
+                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${expandedGroups.has(groupIndex) ? "rotate-180" : ""}`} />
+                        </Button>
+                      </CollapsibleTrigger>
+                    </CardHeader>
+                  ) : (
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg">Instructions</CardTitle>
+                    </CardHeader>
+                  )}
+                  
+                  <CollapsibleContent>
+                    <CardContent className={recipe.groups.length > 1 ? "pt-3" : "pt-0"}>
+                      {recipe.groups.length > 1 && (
+                        <p className="text-lg font-semibold mb-3">Instructions</p>
+                      )}
+                      <Table>
+                        <TableBody>
+                          {group.instructions.map((step, i) => (
+                            <TableRow 
+                              key={i} 
+                              className={i % 2 === 0 ? "bg-muted/30 border-0" : "border-0"}
+                              data-testid={`instruction-${groupIndex}-${i}`}
+                            >
+                              <TableCell className="w-12 py-3 align-top">
+                                <span className="flex-shrink-0 w-7 h-7 rounded-md bg-primary/10 text-primary flex items-center justify-center text-sm font-data font-medium">
+                                  {i + 1}
+                                </span>
+                              </TableCell>
+                              <TableCell className="py-3 leading-relaxed">
+                                {step}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Collapsible>
+              </Card>
             ))}
 
             {recipe.isPublic && (
