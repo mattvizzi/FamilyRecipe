@@ -46,7 +46,7 @@ export default function JoinFamily() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
-          <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+          <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
             <div className="flex items-center">
               <span className="text-xl font-bold tracking-tight text-white">Family</span>
               <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
@@ -79,7 +79,7 @@ export default function JoinFamily() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
-          <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+          <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
             <div className="flex items-center">
               <span className="text-xl font-bold tracking-tight text-white">Family</span>
               <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
@@ -106,7 +106,7 @@ export default function JoinFamily() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
-          <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+          <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
             <div className="flex items-center">
               <span className="text-xl font-bold tracking-tight text-white">Family</span>
               <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
@@ -138,7 +138,7 @@ export default function JoinFamily() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center">
             <span className="text-xl font-bold tracking-tight">Family</span>
             <span className="text-xl font-light text-primary tracking-tight">Recipe</span>

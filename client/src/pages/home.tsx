@@ -47,7 +47,7 @@ export default function Home() {
       <Header family={family} />
       
       <main className="pt-20 pb-12 px-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {isLoading ? (
             <>
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -58,7 +58,7 @@ export default function Home() {
                 </div>
               </div>
               <div className={viewMode === "grid" 
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
                 : "flex flex-col gap-4"
               }>
                 {[...Array(8)].map((_, i) => (
@@ -133,7 +133,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className={`animate-stagger ${viewMode === "grid" 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
                   : "grid grid-cols-1 md:grid-cols-2 gap-4"
                 }`}>
                   {filteredRecipes.map((recipe) => (

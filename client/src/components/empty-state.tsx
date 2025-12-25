@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChefHat, Camera, Link as LinkIcon, FileText, Plus } from "lucide-react";
+import { Camera, Link as LinkIcon, FileText, Plus, Sparkles } from "lucide-react";
 import { Link } from "wouter";
+import emptyStateImage from "@assets/image_1766638977081.png";
 
 interface EmptyStateProps {
   familyName: string;
@@ -9,71 +9,52 @@ interface EmptyStateProps {
 
 export function EmptyState({ familyName }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6">
-      <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center mb-8">
-        <ChefHat className="h-16 w-16 text-primary" />
-      </div>
-      
-      <h2 className="text-2xl font-bold text-center mb-2" data-testid="text-empty-title">
-        Welcome to {familyName}!
-      </h2>
-      <p className="text-muted-foreground text-center max-w-md mb-8" data-testid="text-empty-description">
-        Your family cookbook is empty. Let's add your first recipe!
-      </p>
+    <div className="flex flex-col items-center justify-center py-12 px-6">
+      <div className="max-w-md w-full text-center">
+        <div className="w-48 h-48 mx-auto mb-6 rounded-2xl overflow-hidden">
+          <img 
+            src={emptyStateImage} 
+            alt="Start your cookbook" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        <h2 className="text-2xl font-bold mb-2" data-testid="text-empty-title">
+          Welcome to {familyName}!
+        </h2>
+        <p className="text-muted-foreground mb-6" data-testid="text-empty-description">
+          Your family cookbook is waiting. Add your first recipe to get started.
+        </p>
 
-      <Button asChild size="lg" className="gap-2 mb-12" data-testid="button-add-first-recipe">
-        <Link href="/add-recipe">
-          <Plus className="h-5 w-5" />
-          Add Your First Recipe
-        </Link>
-      </Button>
+        <Button asChild size="lg" className="gap-2 mb-8" data-testid="button-add-first-recipe">
+          <Link href="/add-recipe">
+            <Plus className="h-5 w-5" />
+            Add Your First Recipe
+          </Link>
+        </Button>
 
-      <div className="w-full max-w-3xl">
-        <h3 className="text-lg font-semibold text-center mb-6">
-          Getting Started Guide
-        </h3>
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2">
-                <Camera className="h-6 w-6 text-muted-foreground" />
+        <div className="border-t border-border pt-8">
+          <p className="text-sm font-medium mb-4">You can add recipes by:</p>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <Camera className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-base">Scan Photos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Take a photo of a recipe from a cookbook or handwritten card
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2">
-                <LinkIcon className="h-6 w-6 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Taking a photo</p>
+            </div>
+            <div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <LinkIcon className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-base">Paste URLs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Share a link from your favorite recipe website
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2">
-                <FileText className="h-6 w-6 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Pasting a URL</p>
+            </div>
+            <div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                <FileText className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-base">Type or Paste</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Paste recipe text or type it manually
-              </CardDescription>
-            </CardContent>
-          </Card>
+              <p className="text-xs text-muted-foreground">Typing it in</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
-        <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center">
             <span className="text-xl font-bold tracking-tight text-white">Family</span>
             <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
@@ -24,7 +24,7 @@ export default function Landing() {
 
       <main className="pt-14">
         <section className="py-16 md:py-20 px-6">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-sm text-primary font-medium mb-6">
@@ -177,7 +177,7 @@ export default function Landing() {
       </main>
 
       <footer className="py-6 px-6 border-t border-border">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center">
             <span className="text-lg font-bold tracking-tight">Family</span>
             <span className="text-lg font-light text-primary tracking-tight">Recipe</span>

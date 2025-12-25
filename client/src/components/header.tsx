@@ -29,7 +29,7 @@ export function Header({ family }: HeaderProps) {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
-      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
+      <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
         <Link href="/">
           <div className="flex items-center cursor-pointer" data-testid="link-home">
             <span className="text-xl font-bold tracking-tight text-white">Family</span>

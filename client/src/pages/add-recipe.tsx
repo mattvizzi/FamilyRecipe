@@ -5,10 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import heic2any from "heic2any";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { 
   Camera, 
   Upload, 
@@ -19,8 +18,6 @@ import {
   ArrowRight,
   Check,
   AlertCircle,
-  Loader2,
-  ChefHat,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -98,11 +95,9 @@ export default function AddRecipe() {
     }
   };
 
-  // Convert image file to JPEG base64 (handles HEIC and reduces file size)
   const convertToJpegBase64 = async (file: File): Promise<string> => {
     let imageBlob: Blob = file;
     
-    // Convert HEIC/HEIF to JPEG using heic2any
     const isHeic = file.type === "image/heic" || 
                    file.type === "image/heif" || 
                    file.name.toLowerCase().endsWith(".heic") ||
@@ -125,7 +120,6 @@ export default function AddRecipe() {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        // Create canvas with reasonable max dimensions
         const maxDim = 2048;
         let width = img.width;
         let height = img.height;
@@ -176,7 +170,6 @@ export default function AddRecipe() {
 
     let content = inputValue;
 
-    // Convert files to JPEG base64 for photo/camera methods
     if (selectedFiles.length > 0) {
       try {
         setProgressMessage("Converting images...");
@@ -190,7 +183,6 @@ export default function AddRecipe() {
           base64Images.push(base64);
         }
         
-        // Join multiple images with a separator for the API
         content = base64Images.join("|||IMAGE_SEPARATOR|||");
         setProgress(40);
       } catch {
@@ -228,10 +220,10 @@ export default function AddRecipe() {
   };
 
   const inputMethods = [
-    { id: "photo", icon: Upload, label: "Upload Photo", description: "Upload a recipe photo" },
-    { id: "camera", icon: Camera, label: "Take Photo", description: "Use your camera" },
-    { id: "url", icon: LinkIcon, label: "Paste URL", description: "From a recipe website" },
-    { id: "text", icon: FileText, label: "Type or Paste", description: "Enter recipe text" },
+    { id: "photo", icon: Upload, label: "Upload Photo", description: "From your device" },
+    { id: "camera", icon: Camera, label: "Take Photo", description: "Use camera" },
+    { id: "url", icon: LinkIcon, label: "Paste URL", description: "From a website" },
+    { id: "text", icon: FileText, label: "Type or Paste", description: "Enter text" },
   ];
 
   if (step === "processing") {
@@ -266,8 +258,8 @@ export default function AddRecipe() {
     <div className="min-h-screen bg-background">
       <Header family={family} />
       
-      <main className="pt-24 pb-12 px-6">
-        <div className="max-w-2xl mx-auto">
+      <main className="pt-20 pb-12 px-6">
+        <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -305,39 +297,43 @@ export default function AddRecipe() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="text-center mb-6">
-                  <h1 className="text-xl font-bold mb-2">Add a New Recipe</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Choose how you'd like to add your recipe
-                  </p>
-                </div>
+                <Card>
+                  <CardHeader className="text-center pb-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      <Sparkles className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Add a New Recipe</CardTitle>
+                    <CardDescription>
+                      Choose how you'd like to add your recipe. Our AI will handle the rest.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                      {inputMethods.map((method) => (
+                        <button
+                          key={method.id}
+                          className="p-4 rounded-lg border border-border bg-background hover-elevate active-elevate-2 text-left transition-colors"
+                          onClick={() => handleMethodSelect(method.id as InputMethod)}
+                          data-testid={`card-method-${method.id}`}
+                        >
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center mb-3">
+                            <method.icon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          <p className="font-medium text-sm">{method.label}</p>
+                          <p className="text-xs text-muted-foreground">{method.description}</p>
+                        </button>
+                      ))}
+                    </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {inputMethods.map((method) => (
-                    <Card
-                      key={method.id}
-                      className="cursor-pointer border border-border"
-                      onClick={() => handleMethodSelect(method.id as InputMethod)}
-                      data-testid={`card-method-${method.id}`}
-                    >
-                      <CardContent className="p-5 text-center">
-                        <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center mx-auto mb-3">
-                          <method.icon className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <h3 className="font-medium text-sm mb-1">{method.label}</h3>
-                        <p className="text-xs text-muted-foreground">{method.description}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                <div className="mt-8 text-center">
-                  <Button variant="outline" asChild data-testid="button-manual-entry">
-                    <Link href="/add-recipe/manual">
-                      Or add manually
-                    </Link>
-                  </Button>
-                </div>
+                    <div className="border-t border-border pt-4">
+                      <Button variant="ghost" className="w-full" asChild data-testid="button-manual-entry">
+                        <Link href="/add-recipe/manual">
+                          Or add recipe manually
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
 
@@ -350,7 +346,13 @@ export default function AddRecipe() {
                 transition={{ duration: 0.3 }}
               >
                 <Card>
-                  <CardContent className="p-6">
+                  <CardHeader>
+                    <CardTitle className="text-lg">
+                      {inputMethod === "photo" || inputMethod === "camera" ? "Review Images" : 
+                       inputMethod === "url" ? "Enter Recipe URL" : "Enter Recipe Text"}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     {(inputMethod === "photo" || inputMethod === "camera") && previewUrls.length > 0 && (
                       <div className="mb-6">
                         <div className={`grid gap-2 ${previewUrls.length === 1 ? '' : 'grid-cols-2'}`}>
@@ -373,7 +375,6 @@ export default function AddRecipe() {
 
                     {inputMethod === "url" && (
                       <div className="mb-6">
-                        <label className="block text-sm font-medium mb-2">Recipe URL</label>
                         <Input
                           type="url"
                           placeholder="https://example.com/recipe"
@@ -386,7 +387,6 @@ export default function AddRecipe() {
 
                     {inputMethod === "text" && (
                       <div className="mb-6">
-                        <label className="block text-sm font-medium mb-2">Recipe Text</label>
                         <Textarea
                           placeholder="Paste or type your recipe here..."
                           value={inputValue}
@@ -426,14 +426,14 @@ export default function AddRecipe() {
                 transition={{ duration: 0.3 }}
               >
                 <Card>
-                  <CardContent className="p-12 text-center">
+                  <CardContent className="p-8 text-center">
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                      className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6"
+                      className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4"
                     >
-                      <Check className="h-10 w-10 text-green-600 dark:text-green-400" />
+                      <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </motion.div>
                     
                     <h2 className="text-xl font-bold mb-2">Recipe Added!</h2>
@@ -443,7 +443,7 @@ export default function AddRecipe() {
                     
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       <Button variant="outline" onClick={reset} data-testid="button-add-another">
-                        Add Another Recipe
+                        Add Another
                       </Button>
                       <Button asChild data-testid="button-view-recipe">
                         <Link href={`/recipe/${createdRecipeId}`}>
@@ -466,9 +466,9 @@ export default function AddRecipe() {
                 transition={{ duration: 0.3 }}
               >
                 <Card>
-                  <CardContent className="p-12 text-center">
-                    <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
-                      <AlertCircle className="h-10 w-10 text-destructive" />
+                  <CardContent className="p-8 text-center">
+                    <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+                      <AlertCircle className="h-8 w-8 text-destructive" />
                     </div>
                     
                     <h2 className="text-xl font-bold mb-2">Processing Failed</h2>

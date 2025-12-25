@@ -56,7 +56,7 @@ export default function FamilySettings() {
       <div className="min-h-screen bg-background">
         <Header family={null} />
         <main className="pt-24 pb-12 px-6">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-xl mx-auto">
             <Skeleton className="h-8 w-48 mb-6" />
             <Card>
               <CardContent className="p-6">
@@ -94,7 +94,7 @@ export default function FamilySettings() {
       <Header family={family} />
       
       <main className="pt-24 pb-12 px-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 
             size="sm" 
