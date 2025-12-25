@@ -1,18 +1,28 @@
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc, gte, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { 
   families, 
   familyMembers, 
   recipes,
+  savedRecipes,
+  recipeRatings,
+  recipeCooks,
+  recipeComments,
   users,
   type Family, 
   type FamilyMember, 
   type Recipe, 
   type RecipeWithCreator,
+  type RecipeWithStats,
+  type CommentWithUser,
   type FamilyWithMembers,
   type InsertRecipe,
   type UpdateRecipe,
+  type SavedRecipe,
+  type RecipeRating,
+  type RecipeCook,
+  type RecipeComment,
 } from "@shared/schema";
 
 function generateRecipeId(): string {
@@ -42,9 +52,33 @@ export interface IStorage {
   createRecipe(familyId: string, createdById: string, data: Omit<InsertRecipe, 'familyId' | 'createdById'>): Promise<Recipe>;
   getRecipe(id: string): Promise<Recipe | undefined>;
   getRecipeWithCreator(id: string): Promise<RecipeWithCreator | undefined>;
+  getRecipeWithStats(id: string, userId?: string): Promise<RecipeWithStats | undefined>;
   getRecipesByFamily(familyId: string): Promise<RecipeWithCreator[]>;
+  getPublicRecipes(category?: string): Promise<RecipeWithCreator[]>;
+  getSavedRecipes(userId: string): Promise<RecipeWithCreator[]>;
   updateRecipe(id: string, data: UpdateRecipe): Promise<Recipe | undefined>;
   deleteRecipe(id: string): Promise<boolean>;
+  incrementViewCount(id: string): Promise<void>;
+
+  // Save recipe operations
+  saveRecipe(userId: string, recipeId: string): Promise<SavedRecipe>;
+  unsaveRecipe(userId: string, recipeId: string): Promise<boolean>;
+  isRecipeSaved(userId: string, recipeId: string): Promise<boolean>;
+
+  // Rating operations
+  rateRecipe(userId: string, recipeId: string, rating: number): Promise<RecipeRating>;
+  getUserRating(userId: string, recipeId: string): Promise<number | null>;
+  getAverageRating(recipeId: string): Promise<{ average: number | null; count: number }>;
+
+  // Cook tracking operations
+  markCooked(userId: string, recipeId: string): Promise<RecipeCook>;
+  canUserCookAgain(userId: string, recipeId: string): Promise<boolean>;
+  getCookCount(recipeId: string): Promise<number>;
+
+  // Comment operations
+  addComment(userId: string, recipeId: string, content: string): Promise<RecipeComment>;
+  getComments(recipeId: string, showHidden?: boolean): Promise<CommentWithUser[]>;
+  hideComment(commentId: number, recipeOwnerId: string): Promise<boolean>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -218,6 +252,249 @@ class DatabaseStorage implements IStorage {
 
   async deleteRecipe(id: string): Promise<boolean> {
     const result = await db.delete(recipes).where(eq(recipes.id, id));
+    return true;
+  }
+
+  async getRecipeWithStats(id: string, userId?: string): Promise<RecipeWithStats | undefined> {
+    const recipe = await this.getRecipeWithCreator(id);
+    if (!recipe) return undefined;
+
+    const [ratingData, cookCount, commentCount] = await Promise.all([
+      this.getAverageRating(id),
+      this.getCookCount(id),
+      db.select({ count: sql<number>`COUNT(*)` })
+        .from(recipeComments)
+        .where(and(eq(recipeComments.recipeId, id), eq(recipeComments.isHidden, false))),
+    ]);
+
+    let isSaved = false;
+    let userRating: number | null = null;
+    let canCookAgain = true;
+
+    if (userId) {
+      [isSaved, userRating, canCookAgain] = await Promise.all([
+        this.isRecipeSaved(userId, id),
+        this.getUserRating(userId, id),
+        this.canUserCookAgain(userId, id),
+      ]);
+    }
+
+    return {
+      ...recipe,
+      averageRating: ratingData.average,
+      ratingCount: ratingData.count,
+      cookCount,
+      commentCount: Number(commentCount[0]?.count ?? 0),
+      isSaved,
+      userRating,
+      canCookAgain,
+    };
+  }
+
+  async getPublicRecipes(category?: string): Promise<RecipeWithCreator[]> {
+    let query = db
+      .select({
+        recipe: recipes,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName,
+      })
+      .from(recipes)
+      .leftJoin(users, eq(recipes.createdById, users.id))
+      .where(eq(recipes.isPublic, true));
+
+    const results = await query;
+
+    return results
+      .filter(({ recipe }) => !category || recipe.category.toLowerCase() === category.toLowerCase())
+      .map(({ recipe, creatorFirstName, creatorLastName }) => ({
+        ...recipe,
+        creatorFirstName,
+        creatorLastName,
+      }));
+  }
+
+  async getSavedRecipes(userId: string): Promise<RecipeWithCreator[]> {
+    const results = await db
+      .select({
+        recipe: recipes,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName,
+      })
+      .from(savedRecipes)
+      .innerJoin(recipes, eq(savedRecipes.recipeId, recipes.id))
+      .leftJoin(users, eq(recipes.createdById, users.id))
+      .where(eq(savedRecipes.userId, userId));
+
+    return results.map(({ recipe, creatorFirstName, creatorLastName }) => ({
+      ...recipe,
+      creatorFirstName,
+      creatorLastName,
+    }));
+  }
+
+  async incrementViewCount(id: string): Promise<void> {
+    await db
+      .update(recipes)
+      .set({ viewCount: sql`${recipes.viewCount} + 1` })
+      .where(eq(recipes.id, id));
+  }
+
+  // Save recipe operations
+  async saveRecipe(userId: string, recipeId: string): Promise<SavedRecipe> {
+    const existing = await this.isRecipeSaved(userId, recipeId);
+    if (existing) {
+      const [saved] = await db
+        .select()
+        .from(savedRecipes)
+        .where(and(eq(savedRecipes.userId, userId), eq(savedRecipes.recipeId, recipeId)));
+      return saved;
+    }
+
+    const [saved] = await db
+      .insert(savedRecipes)
+      .values({ userId, recipeId })
+      .returning();
+    return saved;
+  }
+
+  async unsaveRecipe(userId: string, recipeId: string): Promise<boolean> {
+    await db
+      .delete(savedRecipes)
+      .where(and(eq(savedRecipes.userId, userId), eq(savedRecipes.recipeId, recipeId)));
+    return true;
+  }
+
+  async isRecipeSaved(userId: string, recipeId: string): Promise<boolean> {
+    const [saved] = await db
+      .select()
+      .from(savedRecipes)
+      .where(and(eq(savedRecipes.userId, userId), eq(savedRecipes.recipeId, recipeId)));
+    return !!saved;
+  }
+
+  // Rating operations
+  async rateRecipe(userId: string, recipeId: string, rating: number): Promise<RecipeRating> {
+    const existing = await db
+      .select()
+      .from(recipeRatings)
+      .where(and(eq(recipeRatings.userId, userId), eq(recipeRatings.recipeId, recipeId)));
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(recipeRatings)
+        .set({ rating })
+        .where(and(eq(recipeRatings.userId, userId), eq(recipeRatings.recipeId, recipeId)))
+        .returning();
+      return updated;
+    }
+
+    const [created] = await db
+      .insert(recipeRatings)
+      .values({ userId, recipeId, rating })
+      .returning();
+    return created;
+  }
+
+  async getUserRating(userId: string, recipeId: string): Promise<number | null> {
+    const [rating] = await db
+      .select()
+      .from(recipeRatings)
+      .where(and(eq(recipeRatings.userId, userId), eq(recipeRatings.recipeId, recipeId)));
+    return rating?.rating ?? null;
+  }
+
+  async getAverageRating(recipeId: string): Promise<{ average: number | null; count: number }> {
+    const result = await db
+      .select({
+        average: sql<number>`AVG(${recipeRatings.rating})`,
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(recipeRatings)
+      .where(eq(recipeRatings.recipeId, recipeId));
+
+    return {
+      average: result[0]?.average ? Number(result[0].average) : null,
+      count: Number(result[0]?.count ?? 0),
+    };
+  }
+
+  // Cook tracking operations
+  async markCooked(userId: string, recipeId: string): Promise<RecipeCook> {
+    const [cook] = await db
+      .insert(recipeCooks)
+      .values({ userId, recipeId })
+      .returning();
+    return cook;
+  }
+
+  async canUserCookAgain(userId: string, recipeId: string): Promise<boolean> {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [recentCook] = await db
+      .select()
+      .from(recipeCooks)
+      .where(
+        and(
+          eq(recipeCooks.userId, userId),
+          eq(recipeCooks.recipeId, recipeId),
+          gte(recipeCooks.cookedAt, twentyFourHoursAgo)
+        )
+      );
+    return !recentCook;
+  }
+
+  async getCookCount(recipeId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(recipeCooks)
+      .where(eq(recipeCooks.recipeId, recipeId));
+    return Number(result[0]?.count ?? 0);
+  }
+
+  // Comment operations
+  async addComment(userId: string, recipeId: string, content: string): Promise<RecipeComment> {
+    const [comment] = await db
+      .insert(recipeComments)
+      .values({ userId, recipeId, content })
+      .returning();
+    return comment;
+  }
+
+  async getComments(recipeId: string, showHidden = false): Promise<CommentWithUser[]> {
+    const whereClause = showHidden
+      ? eq(recipeComments.recipeId, recipeId)
+      : and(eq(recipeComments.recipeId, recipeId), eq(recipeComments.isHidden, false));
+
+    const results = await db
+      .select({
+        comment: recipeComments,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        userProfileImageUrl: users.profileImageUrl,
+      })
+      .from(recipeComments)
+      .leftJoin(users, eq(recipeComments.userId, users.id))
+      .where(whereClause)
+      .orderBy(desc(recipeComments.createdAt));
+
+    return results.map(({ comment, userFirstName, userLastName, userProfileImageUrl }) => ({
+      ...comment,
+      userFirstName,
+      userLastName,
+      userProfileImageUrl,
+    }));
+  }
+
+  async hideComment(commentId: number, recipeOwnerId: string): Promise<boolean> {
+    const [comment] = await db.select().from(recipeComments).where(eq(recipeComments.id, commentId));
+    if (!comment) return false;
+
+    const [recipe] = await db.select().from(recipes).where(eq(recipes.id, comment.recipeId));
+    if (!recipe || recipe.createdById !== recipeOwnerId) return false;
+
+    await db
+      .update(recipeComments)
+      .set({ isHidden: true })
+      .where(eq(recipeComments.id, commentId));
     return true;
   }
 }

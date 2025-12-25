@@ -66,8 +66,45 @@ export const recipes = pgTable("recipes", {
   imageUrl: text("image_url"),
   groups: jsonb("groups").$type<RecipeGroup[]>().notNull().default([]),
   createdById: varchar("created_by_id").notNull(),
+  isPublic: boolean("is_public").default(false).notNull(),
+  viewCount: integer("view_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Saved recipes table (users saving other people's recipes)
+export const savedRecipes = pgTable("saved_recipes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
+  savedAt: timestamp("saved_at").defaultNow().notNull(),
+});
+
+// Recipe ratings table
+export const recipeRatings = pgTable("recipe_ratings", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(), // 1-5
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Recipe cooks table (tracking when users cook a recipe)
+export const recipeCooks = pgTable("recipe_cooks", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
+  cookedAt: timestamp("cooked_at").defaultNow().notNull(),
+});
+
+// Recipe comments table
+export const recipeComments = pgTable("recipe_comments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  isHidden: boolean("is_hidden").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -83,10 +120,42 @@ export const familyMembersRelations = relations(familyMembers, ({ one }) => ({
   }),
 }));
 
-export const recipesRelations = relations(recipes, ({ one }) => ({
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
   family: one(families, {
     fields: [recipes.familyId],
     references: [families.id],
+  }),
+  savedBy: many(savedRecipes),
+  ratings: many(recipeRatings),
+  cooks: many(recipeCooks),
+  comments: many(recipeComments),
+}));
+
+export const savedRecipesRelations = relations(savedRecipes, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [savedRecipes.recipeId],
+    references: [recipes.id],
+  }),
+}));
+
+export const recipeRatingsRelations = relations(recipeRatings, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [recipeRatings.recipeId],
+    references: [recipes.id],
+  }),
+}));
+
+export const recipeCooksRelations = relations(recipeCooks, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [recipeCooks.recipeId],
+    references: [recipes.id],
+  }),
+}));
+
+export const recipeCommentsRelations = relations(recipeComments, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [recipeComments.recipeId],
+    references: [recipes.id],
   }),
 }));
 
@@ -106,11 +175,35 @@ export const insertRecipeSchema = createInsertSchema(recipes).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  viewCount: true,
 }).extend({
   groups: z.array(recipeGroupSchema),
 });
 
 export const updateRecipeSchema = insertRecipeSchema.partial();
+
+export const insertSavedRecipeSchema = createInsertSchema(savedRecipes).omit({
+  id: true,
+  savedAt: true,
+});
+
+export const insertRecipeRatingSchema = createInsertSchema(recipeRatings).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  rating: z.number().min(1).max(5),
+});
+
+export const insertRecipeCookSchema = createInsertSchema(recipeCooks).omit({
+  id: true,
+  cookedAt: true,
+});
+
+export const insertRecipeCommentSchema = createInsertSchema(recipeComments).omit({
+  id: true,
+  createdAt: true,
+  isHidden: true,
+});
 
 // Types
 export type Family = typeof families.$inferSelect;
@@ -120,11 +213,37 @@ export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 export type Recipe = typeof recipes.$inferSelect;
 export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
 export type UpdateRecipe = z.infer<typeof updateRecipeSchema>;
+export type SavedRecipe = typeof savedRecipes.$inferSelect;
+export type InsertSavedRecipe = z.infer<typeof insertSavedRecipeSchema>;
+export type RecipeRating = typeof recipeRatings.$inferSelect;
+export type InsertRecipeRating = z.infer<typeof insertRecipeRatingSchema>;
+export type RecipeCook = typeof recipeCooks.$inferSelect;
+export type InsertRecipeCook = z.infer<typeof insertRecipeCookSchema>;
+export type RecipeComment = typeof recipeComments.$inferSelect;
+export type InsertRecipeComment = z.infer<typeof insertRecipeCommentSchema>;
 
 // Extended recipe type with creator info
 export type RecipeWithCreator = Recipe & {
   creatorFirstName?: string | null;
   creatorLastName?: string | null;
+};
+
+// Extended recipe type with all social stats
+export type RecipeWithStats = RecipeWithCreator & {
+  averageRating?: number | null;
+  ratingCount: number;
+  cookCount: number;
+  commentCount: number;
+  isSaved?: boolean;
+  userRating?: number | null;
+  canCookAgain?: boolean;
+};
+
+// Comment with user info
+export type CommentWithUser = RecipeComment & {
+  userFirstName?: string | null;
+  userLastName?: string | null;
+  userProfileImageUrl?: string | null;
 };
 
 // Family with members type

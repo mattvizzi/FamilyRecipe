@@ -428,6 +428,254 @@ shallow depth of field, food styling.`;
     }
   });
 
+  // Get recipe with stats (enhanced detail page)
+  app.get("/api/recipes/:id/stats", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      
+      const recipe = await storage.getRecipeWithStats(id, userId);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      // Check if user has access (either member of family or recipe is public)
+      const isMember = await storage.isFamilyMember(recipe.familyId, userId);
+      if (!isMember && !recipe.isPublic) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Increment view count
+      await storage.incrementViewCount(id);
+      
+      res.json(recipe);
+    } catch (error) {
+      console.error("Error fetching recipe with stats:", error);
+      res.status(500).json({ message: "Failed to fetch recipe" });
+    }
+  });
+
+  // Get public recipes (all or by category)
+  app.get("/api/public/recipes", async (req: Request, res: Response) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const recipes = await storage.getPublicRecipes(category);
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error fetching public recipes:", error);
+      res.status(500).json({ message: "Failed to fetch public recipes" });
+    }
+  });
+
+  // Get saved recipes
+  app.get("/api/recipes/saved", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const recipes = await storage.getSavedRecipes(userId);
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error fetching saved recipes:", error);
+      res.status(500).json({ message: "Failed to fetch saved recipes" });
+    }
+  });
+
+  // Save a recipe
+  app.post("/api/recipes/:id/save", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      
+      const recipe = await storage.getRecipe(id);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      const saved = await storage.saveRecipe(userId, id);
+      res.status(201).json(saved);
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      res.status(500).json({ message: "Failed to save recipe" });
+    }
+  });
+
+  // Unsave a recipe
+  app.delete("/api/recipes/:id/save", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      
+      await storage.unsaveRecipe(userId, id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error unsaving recipe:", error);
+      res.status(500).json({ message: "Failed to unsave recipe" });
+    }
+  });
+
+  // Rate a recipe
+  app.post("/api/recipes/:id/rate", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      const { rating } = req.body;
+      
+      if (typeof rating !== "number" || rating < 1 || rating > 5) {
+        return res.status(400).json({ message: "Rating must be between 1 and 5" });
+      }
+      
+      const recipe = await storage.getRecipe(id);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      const result = await storage.rateRecipe(userId, id, rating);
+      res.status(201).json(result);
+    } catch (error) {
+      console.error("Error rating recipe:", error);
+      res.status(500).json({ message: "Failed to rate recipe" });
+    }
+  });
+
+  // Mark recipe as cooked
+  app.post("/api/recipes/:id/cook", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      
+      const recipe = await storage.getRecipe(id);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      const canCook = await storage.canUserCookAgain(userId, id);
+      if (!canCook) {
+        return res.status(429).json({ message: "You can only mark a recipe as cooked once every 24 hours" });
+      }
+      
+      const result = await storage.markCooked(userId, id);
+      res.status(201).json(result);
+    } catch (error) {
+      console.error("Error marking recipe as cooked:", error);
+      res.status(500).json({ message: "Failed to mark recipe as cooked" });
+    }
+  });
+
+  // Get comments for a recipe
+  app.get("/api/recipes/:id/comments", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      
+      const recipe = await storage.getRecipe(id);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      // Show hidden comments only to recipe owner
+      const showHidden = recipe.createdById === userId;
+      const comments = await storage.getComments(id, showHidden);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // Simple profanity filter word list
+  const profanityList = [
+    "fuck", "shit", "damn", "ass", "bitch", "crap", "bastard", "dick", "cock", 
+    "pussy", "cunt", "whore", "slut", "nigger", "faggot", "retard", "idiot",
+    "stupid", "dumb", "hate", "kill", "die", "ugly", "fat", "loser"
+  ];
+
+  function containsProfanity(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    return profanityList.some(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
+      return regex.test(lowerText);
+    });
+  }
+
+  // Add a comment to a recipe
+  app.post("/api/recipes/:id/comments", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      const { content } = req.body;
+      
+      if (!content || typeof content !== "string" || content.trim().length === 0) {
+        return res.status(400).json({ message: "Comment content is required" });
+      }
+      
+      if (content.length > 1000) {
+        return res.status(400).json({ message: "Comment is too long (max 1000 characters)" });
+      }
+      
+      const recipe = await storage.getRecipe(id);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      // Check for profanity
+      if (containsProfanity(content)) {
+        return res.status(400).json({ message: "Comment contains inappropriate language" });
+      }
+      
+      const comment = await storage.addComment(userId, id, content.trim());
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      res.status(500).json({ message: "Failed to add comment" });
+    }
+  });
+
+  // Hide a comment (recipe owner only)
+  app.patch("/api/recipes/:recipeId/comments/:commentId/hide", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { commentId } = req.params;
+      
+      const success = await storage.hideComment(parseInt(commentId), userId);
+      if (!success) {
+        return res.status(403).json({ message: "Cannot hide this comment" });
+      }
+      
+      res.status(200).json({ message: "Comment hidden" });
+    } catch (error) {
+      console.error("Error hiding comment:", error);
+      res.status(500).json({ message: "Failed to hide comment" });
+    }
+  });
+
+  // Toggle recipe visibility (public/private)
+  app.patch("/api/recipes/:id/visibility", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const { id } = req.params;
+      const { isPublic } = req.body;
+      
+      if (typeof isPublic !== "boolean") {
+        return res.status(400).json({ message: "isPublic must be a boolean" });
+      }
+      
+      const recipe = await storage.getRecipe(id);
+      if (!recipe) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      
+      // Only recipe creator can change visibility
+      if (recipe.createdById !== userId) {
+        return res.status(403).json({ message: "Only the recipe creator can change visibility" });
+      }
+      
+      const updated = await storage.updateRecipe(id, { isPublic });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating recipe visibility:", error);
+      res.status(500).json({ message: "Failed to update recipe visibility" });
+    }
+  });
+
   // Export recipe as PDF
   app.get("/api/recipes/:id/pdf", isAuthenticated, async (req: AuthRequest, res: Response) => {
     try {
