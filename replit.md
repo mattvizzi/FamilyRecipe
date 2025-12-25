@@ -6,6 +6,19 @@ Recipe Tracker is a family recipe management application that allows users to or
 
 ## Recent Changes (December 2024)
 
+### December 25, 2024
+- **CRITICAL CSRF fix**: Fixed AI recipe processing by replacing raw fetch() with apiRequest() helper that handles CSRF tokens
+- **Rate limiting**: Added express-rate-limit on expensive endpoints:
+  - `/api/recipes/process` (AI processing): 10 requests per 15 minutes per user
+  - `/api/recipes/:id/pdf` (PDF export): 20 requests per 5 minutes per user
+- **SEO improvements**: Added JSON-LD structured data (schema.org Recipe) to recipe detail pages with:
+  - Recipe metadata (author, times, yield, category)
+  - Ingredients and HowToStep instructions
+  - Optional aggregateRating and image
+  - Dynamic meta descriptions and canonical URLs
+- **Cache invalidation fix**: Added `/api/recipes/saved` to invalidateRecipeQueries() helper
+
+### Earlier in December
 - **OpenSea-inspired design rebrand**: Dark minimal aesthetic with flat design, 1px borders for depth, no shadows/glows
 - Updated color system: dark neutrals (#0c0c0d base, #1a1a1d cards, #2a2a2d borders), electric blue primary (#2081e2)
 - Added monospace font utility (`.font-data`) for numerical data display (times, servings, recipe IDs)
