@@ -25,38 +25,40 @@ if (process.env.NODE_ENV === "production") {
     next();
   });
 
+  // Route mapping from old admin paths to new paths
+  const ADMIN_ROUTE_MAP: Record<string, string> = {
+    "/admin": "/dashboard",
+    "/admin/": "/dashboard",
+    "/admin/users": "/objects/users",
+    "/admin/families": "/objects/families",
+    "/admin/recipes": "/objects/recipes",
+    "/admin/comments": "/objects/comments",
+    "/admin/hubspot": "/integrations/hubspot",
+  };
+
   app.use((req, res, next) => {
     const host = req.hostname || req.get("host")?.split(":")[0] || "";
     const path = req.path;
+    const queryString = req.originalUrl.includes("?") 
+      ? req.originalUrl.substring(req.originalUrl.indexOf("?")) 
+      : "";
     
     // If on main domain and accessing /admin/*, redirect to admin subdomain with new path structure
     if (host === MAIN_DOMAIN && path.startsWith("/admin")) {
-      // Map /admin to /dashboard, /admin/users to /objects/users, etc.
-      let newPath = path;
-      if (path === "/admin" || path === "/admin/") {
-        newPath = "/dashboard";
-      } else if (path === "/admin/users") {
-        newPath = "/objects/users";
-      } else if (path === "/admin/families") {
-        newPath = "/objects/families";
-      } else if (path === "/admin/recipes") {
-        newPath = "/objects/recipes";
-      } else if (path === "/admin/comments") {
-        newPath = "/objects/comments";
-      } else if (path === "/admin/hubspot") {
-        newPath = "/integrations/hubspot";
-      } else {
-        newPath = path.replace("/admin", "/dashboard");
+      // Only redirect known admin routes, otherwise 404
+      const newPath = ADMIN_ROUTE_MAP[path];
+      if (newPath) {
+        const redirectUrl = `https://${ADMIN_DOMAIN}${newPath}${queryString}`;
+        return res.redirect(301, redirectUrl);
       }
-      const redirectUrl = `https://${ADMIN_DOMAIN}${newPath}`;
-      return res.redirect(301, redirectUrl);
+      // Unknown admin path - let it 404 naturally
     }
     
     // If on admin subdomain
     if (host === ADMIN_DOMAIN) {
       // Redirect root to /dashboard
       if (path === "/" || path === "") {
-        return res.redirect(301, "/dashboard");
+        return res.redirect(301, `/dashboard${queryString}`);
       }
       
       // Allow admin paths, API, and static assets
@@ -64,7 +66,7 @@ if (process.env.NODE_ENV === "production") {
       const isApiOrAsset = path.startsWith("/api") || path.startsWith("/assets") || path.startsWith("/@");
       
       if (!isAdminPath && !isApiOrAsset) {
-        // Redirect non-admin paths back to main domain
+        // Redirect non-admin paths back to main domain (preserve query string)
         const redirectUrl = `https://${MAIN_DOMAIN}${req.originalUrl}`;
         return res.redirect(301, redirectUrl);
       }

@@ -1,5 +1,5 @@
 import { Switch, Route, Redirect, useLocation } from "wouter";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState, useEffect, useMemo } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,6 +10,29 @@ import { useAdmin } from "@/hooks/use-admin";
 import { useQuery } from "@tanstack/react-query";
 import type { Family } from "@shared/schema";
 import { Header } from "@/components/header";
+
+// Helper to detect if we're on the admin subdomain (memoized for stability)
+const ADMIN_DOMAIN = "admin.familyrecipe.app";
+const MAIN_DOMAIN = "familyrecipe.app";
+
+// Cache the result at module level to avoid recalculating
+let _isAdminSubdomain: boolean | null = null;
+
+function isAdminSubdomain(): boolean {
+  if (_isAdminSubdomain !== null) return _isAdminSubdomain;
+  if (typeof window === "undefined") return false;
+  _isAdminSubdomain = window.location.hostname === ADMIN_DOMAIN;
+  return _isAdminSubdomain;
+}
+
+function getMainDomainUrl(path: string = "/"): string {
+  if (typeof window === "undefined") return path;
+  const isProduction = window.location.hostname.includes("familyrecipe.app");
+  if (isProduction) {
+    return `https://${MAIN_DOMAIN}${path}`;
+  }
+  return path;
+}
 
 // Eagerly loaded pages (critical path)
 import Landing from "@/pages/landing";
@@ -45,20 +68,68 @@ function PageLoader() {
 
 function AdminRouter() {
   const { isAdmin, isLoading } = useAdmin();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const onAdminSubdomain = isAdminSubdomain();
+  const [redirected, setRedirected] = useState(false);
 
-  if (isLoading) {
+  // Handle cross-domain redirects in useEffect to avoid render-time side effects
+  useEffect(() => {
+    if (authLoading || isLoading || redirected) return;
+    
+    if (onAdminSubdomain) {
+      if (!user) {
+        setRedirected(true);
+        window.location.href = getMainDomainUrl("/");
+      } else if (!isAdmin) {
+        setRedirected(true);
+        window.location.href = getMainDomainUrl("/home");
+      }
+    }
+  }, [user, isAdmin, authLoading, isLoading, onAdminSubdomain, redirected]);
+
+  // Wait for auth to fully load before making decisions
+  if (isLoading || authLoading) {
     return <PageLoader />;
   }
 
+  // If we're about to redirect, show loader
+  if (redirected) {
+    return <PageLoader />;
+  }
+
+  // Redirect unauthorized users
   if (!user) {
+    if (onAdminSubdomain) {
+      return <PageLoader />; // useEffect will handle redirect
+    }
     return <Redirect to="/" />;
   }
 
   if (!isAdmin) {
+    if (onAdminSubdomain) {
+      return <PageLoader />; // useEffect will handle redirect
+    }
     return <Redirect to="/home" />;
   }
 
+  // On admin subdomain, use new path structure
+  if (onAdminSubdomain) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/dashboard" component={AdminDashboard} />
+          <Route path="/objects/users" component={AdminUsers} />
+          <Route path="/objects/families" component={AdminFamilies} />
+          <Route path="/objects/recipes" component={AdminRecipes} />
+          <Route path="/objects/comments" component={AdminComments} />
+          <Route path="/integrations/hubspot" component={AdminHubSpot} />
+          <Route>{() => <Redirect to="/dashboard" />}</Route>
+        </Switch>
+      </Suspense>
+    );
+  }
+
+  // Legacy routes for non-production or direct access
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
@@ -140,10 +211,9 @@ function Router() {
   }
 
   // Admin routes have their own router with admin checks
-  if (location?.startsWith("/admin")) {
-    if (!user) {
-      return <Redirect to="/" />;
-    }
+  // On admin subdomain, all routes go through AdminRouter
+  const onAdminSubdomain = isAdminSubdomain();
+  if (onAdminSubdomain || location?.startsWith("/admin")) {
     return <AdminRouter />;
   }
 

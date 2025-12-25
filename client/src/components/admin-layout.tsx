@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -27,21 +27,55 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const objectItems = [
+// Helper to detect if we're on the admin subdomain (cached at module level)
+const ADMIN_DOMAIN = "admin.familyrecipe.app";
+const MAIN_DOMAIN = "familyrecipe.app";
+
+let _isAdminSubdomain: boolean | null = null;
+
+function isAdminSubdomain(): boolean {
+  if (_isAdminSubdomain !== null) return _isAdminSubdomain;
+  if (typeof window === "undefined") return false;
+  _isAdminSubdomain = window.location.hostname === ADMIN_DOMAIN;
+  return _isAdminSubdomain;
+}
+
+function getMainDomainUrl(path: string = "/"): string {
+  if (typeof window === "undefined") return path;
+  const isProduction = window.location.hostname.includes("familyrecipe.app");
+  if (isProduction) {
+    return `https://${MAIN_DOMAIN}${path}`;
+  }
+  return path;
+}
+
+// Pre-compute navigation items at module level (stable across renders)
+const onAdminSubdomain = typeof window !== "undefined" && window.location.hostname === ADMIN_DOMAIN;
+
+const OBJECT_ITEMS = onAdminSubdomain ? [
+  { title: "Users", href: "/objects/users", icon: Users },
+  { title: "Families", href: "/objects/families", icon: HomeIcon },
+  { title: "Recipes", href: "/objects/recipes", icon: ChefHat },
+  { title: "Comments", href: "/objects/comments", icon: MessageSquare },
+] : [
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Families", href: "/admin/families", icon: HomeIcon },
   { title: "Recipes", href: "/admin/recipes", icon: ChefHat },
   { title: "Comments", href: "/admin/comments", icon: MessageSquare },
 ];
 
-const integrationItems = [
+const INTEGRATION_ITEMS = onAdminSubdomain ? [
+  { title: "HubSpot", href: "/integrations/hubspot", icon: RefreshCw },
+] : [
   { title: "HubSpot", href: "/admin/hubspot", icon: RefreshCw },
 ];
 
-const allNavItems = [
-  { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  ...objectItems,
-  ...integrationItems,
+const DASHBOARD_HREF = onAdminSubdomain ? "/dashboard" : "/admin";
+
+const ALL_NAV_ITEMS = [
+  { title: "Dashboard", href: DASHBOARD_HREF, icon: LayoutDashboard },
+  ...OBJECT_ITEMS,
+  ...INTEGRATION_ITEMS,
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -50,6 +84,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [open, setOpen] = useState(false);
   const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  
+  // Use pre-computed module-level constants for stable navigation
+  const objectItems = OBJECT_ITEMS;
+  const integrationItems = INTEGRATION_ITEMS;
+  const allNavItems = ALL_NAV_ITEMS;
+  const dashboardHref = DASHBOARD_HREF;
+  const isOnAdminSubdomain = onAdminSubdomain;
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -88,7 +129,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
             <div className="flex items-center gap-6">
-              <Link href="/admin">
+              <Link href={dashboardHref}>
                 <div className="flex items-center cursor-pointer" data-testid="link-admin-home">
                   <span className="text-xl font-bold tracking-tight text-primary">Family</span>
                   <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
@@ -206,10 +247,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link href="/home" className="flex items-center gap-2" data-testid="dropdown-go-to-website">
-                      <ExternalLink className="h-4 w-4" />
-                      Go to Website
-                    </Link>
+                    {isOnAdminSubdomain ? (
+                      <a href={getMainDomainUrl("/home")} className="flex items-center gap-2" data-testid="dropdown-go-to-website">
+                        <ExternalLink className="h-4 w-4" />
+                        Go to Website
+                      </a>
+                    ) : (
+                      <Link href="/home" className="flex items-center gap-2" data-testid="dropdown-go-to-website">
+                        <ExternalLink className="h-4 w-4" />
+                        Go to Website
+                      </Link>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={toggleTheme}
@@ -267,7 +315,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </CommandGroup>
           <CommandGroup heading="Quick Actions">
             <CommandItem
-              onSelect={() => runCommand(() => navigate("/home"))}
+              onSelect={() => {
+                if (isOnAdminSubdomain) {
+                  window.location.href = getMainDomainUrl("/home");
+                } else {
+                  runCommand(() => navigate("/home"));
+                }
+              }}
               data-testid="command-go-to-website"
             >
               <ExternalLink className="mr-2 h-4 w-4" />
