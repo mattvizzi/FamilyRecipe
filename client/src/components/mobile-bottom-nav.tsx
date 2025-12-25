@@ -108,11 +108,11 @@ export function MobileBottomNav() {
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border sm:hidden pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-14">
+        <div className="grid grid-cols-5 h-14">
           {/* Menu */}
           <button
             onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-muted-foreground hover-elevate active-elevate-2"
+            className="flex flex-col items-center justify-center gap-0.5 text-muted-foreground active:bg-muted/50"
             data-testid="mobile-nav-menu"
           >
             <Menu className="h-5 w-5" />
@@ -120,37 +120,33 @@ export function MobileBottomNav() {
           </button>
 
           {/* Recipes */}
-          <Link href="/recipes">
-            <button
-              className={`flex flex-col items-center justify-center flex-1 h-full gap-0.5 hover-elevate active-elevate-2 ${
-                isActive("/recipes") ? "text-primary" : "text-muted-foreground"
-              }`}
-              data-testid="mobile-nav-recipes"
-            >
-              <Globe className="h-5 w-5" />
-              <span className="text-[10px]">Recipes</span>
-            </button>
-          </Link>
+          <button
+            onClick={() => setLocation("/recipes")}
+            className={`flex flex-col items-center justify-center gap-0.5 active:bg-muted/50 ${
+              isActive("/recipes") ? "text-primary" : "text-muted-foreground"
+            }`}
+            data-testid="mobile-nav-recipes"
+          >
+            <Globe className="h-5 w-5" />
+            <span className="text-[10px]">Recipes</span>
+          </button>
 
           {/* Add Recipe - Prominent center button */}
-          <Link href="/add-recipe">
-            <button
-              className={`flex flex-col items-center justify-center flex-1 h-full gap-0.5 hover-elevate active-elevate-2 ${
-                isActive("/add-recipe") ? "text-primary" : "text-muted-foreground"
-              }`}
-              data-testid="mobile-nav-add"
-            >
-              <div className="bg-primary rounded-full p-1.5 -mt-1">
-                <Plus className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-[10px]">Add</span>
-            </button>
-          </Link>
+          <button
+            onClick={() => setLocation("/add-recipe")}
+            className="flex flex-col items-center justify-center gap-0.5 text-muted-foreground"
+            data-testid="mobile-nav-add"
+          >
+            <div className="bg-primary rounded-full p-2 -mt-3 shadow-lg">
+              <Plus className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-[10px] -mt-0.5">Add</span>
+          </button>
 
           {/* Notifications */}
           <button
             onClick={() => setNotificationsOpen(true)}
-            className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-muted-foreground hover-elevate active-elevate-2 relative"
+            className="flex flex-col items-center justify-center gap-0.5 text-muted-foreground active:bg-muted/50"
             data-testid="mobile-nav-notifications"
           >
             <div className="relative">
@@ -170,7 +166,7 @@ export function MobileBottomNav() {
           {/* Profile */}
           <button
             onClick={() => setProfileOpen(true)}
-            className="flex flex-col items-center justify-center flex-1 h-full gap-0.5 text-muted-foreground hover-elevate active-elevate-2"
+            className="flex flex-col items-center justify-center gap-0.5 text-muted-foreground active:bg-muted/50"
             data-testid="mobile-nav-profile"
           >
             <Avatar className="h-5 w-5">
