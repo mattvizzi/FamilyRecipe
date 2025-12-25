@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell } from "lucide-react";
+import { Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -22,6 +22,13 @@ interface Notification {
   createdAt: string;
 }
 
+interface ProcessingJob {
+  id: string;
+  status: string;
+  inputType: string;
+  createdAt: string;
+}
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [, setLocation] = useLocation();
@@ -30,6 +37,11 @@ export function NotificationBell() {
   const { data: unreadCount = 0 } = useQuery<{ count: number }>({
     queryKey: ["/api/notifications/unread-count"],
     refetchInterval: 15000,
+  });
+
+  const { data: activeJobs = [] } = useQuery<ProcessingJob[]>({
+    queryKey: ["/api/jobs/active"],
+    refetchInterval: 10000,
   });
 
   const { data: notifications = [] } = useQuery<Notification[]>({
@@ -51,7 +63,7 @@ export function NotificationBell() {
     }
 
     if (notification.type === "recipe_processed" && notification.data?.recipeId) {
-      setLocation(`/recipes/${notification.data.recipeId}`);
+      setLocation(`/recipe/${notification.data.recipeId}`);
       setOpen(false);
     }
   };
@@ -63,6 +75,7 @@ export function NotificationBell() {
   };
 
   const count = typeof unreadCount === "object" ? unreadCount.count : 0;
+  const hasActiveJobs = activeJobs.length > 0;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -73,7 +86,13 @@ export function NotificationBell() {
           className="relative"
           data-testid="button-notifications"
         >
-          <Bell className="h-5 w-5" />
+          <Bell className={`h-5 w-5 ${hasActiveJobs ? "animate-pulse" : ""}`} />
+          {hasActiveJobs && count === 0 && (
+            <span 
+              className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary animate-pulse"
+              data-testid="badge-processing"
+            />
+          )}
           {count > 0 && (
             <span 
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium"
@@ -99,11 +118,32 @@ export function NotificationBell() {
           )}
         </div>
         <ScrollArea className="max-h-80">
-          {notifications.length === 0 ? (
+          {activeJobs.length > 0 && (
+            <div className="border-b">
+              {activeJobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="p-3 bg-primary/5"
+                  data-testid={`job-processing-${job.id}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm">Processing Recipe</p>
+                      <p className="text-xs text-muted-foreground">
+                        Started {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {notifications.length === 0 && activeJobs.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
               No notifications yet
             </div>
-          ) : (
+          ) : notifications.length === 0 && activeJobs.length > 0 ? null : (
             <div className="divide-y">
               {notifications.map((notification) => (
                 <button
