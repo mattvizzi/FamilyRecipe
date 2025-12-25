@@ -98,9 +98,9 @@ export function Header({ family }: HeaderProps) {
     <>
       {/* Main Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
-          {/* Logo - Left aligned on all screens now that mobile has bottom nav */}
-          <div>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4 relative">
+          {/* Logo - Left aligned */}
+          <div className="z-10">
             <Link href="/home">
               <div className="flex items-center cursor-pointer" data-testid="link-home">
                 <span className="text-2xl font-bold tracking-tight text-primary">Family</span>
@@ -109,8 +109,8 @@ export function Header({ family }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Desktop: Search - Centered */}
-          <div className="hidden sm:flex items-center justify-center flex-1">
+          {/* Desktop: Search - Absolutely centered */}
+          <div className="hidden sm:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Button
               variant="outline"
               size="sm"
@@ -129,7 +129,7 @@ export function Header({ family }: HeaderProps) {
           </div>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 z-10">
             {/* Mobile search - keep since it's not in bottom nav */}
             <Button
               variant="ghost"
