@@ -379,10 +379,13 @@ router.post("/:id/regenerate-image", isAuthenticated, aiProcessingLimiter, async
     }
 
     const imagePrompt = `Professional food photography of ${recipe.name}. 
-Overhead shot on a simple white plate, soft natural lighting, clean presentation. 
-Show the dish as it would naturally appear when served - no added garnishes unless the dish specifically includes them.
-Appetizing, restaurant-quality presentation, cookbook style photography, 
-clean minimal background, 8k quality, shallow depth of field.`;
+Overhead shot, soft natural lighting, restaurant-quality presentation.
+Style the dish appropriately for its type:
+- For main dishes and pastas: show with natural finishing touches like sauce glazes, fresh herbs, or olive oil drizzles that are typically part of serving the dish
+- For baked goods, cookies, or desserts: keep presentation clean and simple without added garnishes
+- For salads and bowls: show vibrant colors and textures as naturally composed
+Present the food as a chef would plate it for service - complete and appetizing.
+Clean minimal background, 8k quality, shallow depth of field.`;
 
     const imageBuffer = await generateImageBuffer(imagePrompt, "1024x1024");
     const base64Data = imageBuffer.toString("base64");
