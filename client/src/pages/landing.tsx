@@ -23,26 +23,19 @@ export default function Landing() {
       </header>
 
       <main className="pt-14">
-        <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          
-          <div className="relative z-10 w-full px-6 py-20">
-            <div className="max-w-7xl mx-auto">
-              <div className="max-w-xl">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-sm text-white/90 mb-8">
-                  <Heart className="h-4 w-4 text-primary" />
+        <section className="py-16 md:py-24 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 text-sm text-primary mb-8">
+                  <Heart className="h-4 w-4" />
                   <span>Made with love for families</span>
                 </div>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
                   Grandma's Recipes,
                   <span className="text-primary block mt-2">Preserved Forever</span>
                 </h1>
-                <p className="text-lg text-white/80 mb-10 leading-relaxed">
+                <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
                   Keep your family's culinary traditions alive. Scan handwritten recipe cards, 
                   organize treasured dishes, and share the love of home cooking across generations.
                 </p>
@@ -53,9 +46,29 @@ export default function Landing() {
                       <ArrowRight className="h-4 w-4" />
                     </a>
                   </Button>
-                  <Button size="lg" variant="outline" asChild className="bg-white/10 border-white/30 text-white" data-testid="button-how-it-works">
+                  <Button size="lg" variant="outline" asChild data-testid="button-how-it-works">
                     <a href="#how-it-works">See How It Works</a>
                   </Button>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-[4/3] rounded-xl overflow-hidden border border-border">
+                  <img 
+                    src={heroImage} 
+                    alt="Home cooking with love" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-4 -left-4 bg-card border border-border rounded-lg p-4 hidden md:block">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Heart className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Family Favorites</p>
+                      <p className="text-xs text-muted-foreground">Passed down for generations</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
