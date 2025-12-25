@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ChefHat, Users, ArrowRight, Loader2 } from "lucide-react";
+import { Users, ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -41,11 +41,11 @@ export default function FamilyOnboarding() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b h-16">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <ChefHat className="h-7 w-7 text-primary" />
-            <span className="font-semibold text-lg">Recipe Tracker</span>
+          <div className="flex items-center">
+            <span className="text-xl font-bold tracking-tight">Family</span>
+            <span className="text-xl font-light text-primary tracking-tight">Recipe</span>
           </div>
           <ThemeToggle />
         </div>

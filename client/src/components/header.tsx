@@ -12,7 +12,6 @@ import {
 import { LogOut, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { Family } from "@shared/schema";
-import logoImage from "@assets/mom_1766567675287.png";
 
 interface HeaderProps {
   family?: Family | null;
@@ -29,15 +28,12 @@ export function Header({ family }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-16">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">
         <Link href="/">
-          <div className="flex items-center gap-2.5 cursor-pointer group" data-testid="link-home">
-            <img src={logoImage} alt="FamilyRecipe" className="w-9 h-9 rounded-lg object-cover" />
-            <span className="hidden sm:inline">
-              <span className="text-lg font-bold tracking-tight">Family</span>
-              <span className="text-lg font-light text-primary tracking-tight">Recipe</span>
-            </span>
+          <div className="flex items-center cursor-pointer" data-testid="link-home">
+            <span className="text-xl font-bold tracking-tight">Family</span>
+            <span className="text-xl font-light text-primary tracking-tight">Recipe</span>
           </div>
         </Link>
 

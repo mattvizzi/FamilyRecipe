@@ -98,11 +98,12 @@
 ## Component Library
 
 ### Navigation Header
-- Fixed position, bg-background/95 (no blur)
+- Fixed position, bg-background (solid, no blur/glassmorphism)
 - Height: h-14 (56px)
 - Inner padding: px-6
 - Border bottom: border-b border-border
-- Simple logo text, no decorative elements
+- Logo: Text-only "FamilyRecipe" - "Family" in bold + "Recipe" in light primary color
+- No icon logos or decorative elements
 
 ### Recipe Cards (Grid View)
 - Border: border border-border (1px solid)
