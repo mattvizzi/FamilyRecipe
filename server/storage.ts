@@ -11,6 +11,8 @@ import {
   recipeComments,
   admins,
   users,
+  processingJobs,
+  notifications,
   type Family, 
   type FamilyMember, 
   type Recipe, 
@@ -25,6 +27,10 @@ import {
   type RecipeCook,
   type RecipeComment,
   type Admin,
+  type ProcessingJob,
+  type InsertProcessingJob,
+  type Notification,
+  type InsertNotification,
 } from "@shared/schema";
 
 function generateRecipeId(): string {
@@ -146,6 +152,19 @@ export interface IStorage {
   }>>;
   adminToggleCommentHidden(commentId: number): Promise<{ isHidden: boolean } | undefined>;
   adminDeleteComment(commentId: number): Promise<boolean>;
+
+  // Processing job operations
+  createProcessingJob(data: InsertProcessingJob): Promise<ProcessingJob>;
+  getProcessingJob(id: string): Promise<ProcessingJob | undefined>;
+  updateProcessingJobStatus(id: string, status: string, extractedData?: any, errorMessage?: string): Promise<ProcessingJob | undefined>;
+  getActiveJobsForUser(userId: string): Promise<ProcessingJob[]>;
+
+  // Notification operations
+  createNotification(data: InsertNotification): Promise<Notification>;
+  getNotificationsForUser(userId: string, limit?: number): Promise<Notification[]>;
+  getUnreadCountForUser(userId: string): Promise<number>;
+  markNotificationRead(id: number, userId: string): Promise<boolean>;
+  markAllNotificationsRead(userId: string): Promise<void>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -883,6 +902,110 @@ class DatabaseStorage implements IStorage {
       .where(eq(recipeComments.id, commentId))
       .returning({ id: recipeComments.id });
     return result.length > 0;
+  }
+
+  // Processing job operations
+  async createProcessingJob(data: InsertProcessingJob): Promise<ProcessingJob> {
+    const [job] = await db
+      .insert(processingJobs)
+      .values(data)
+      .returning();
+    return job;
+  }
+
+  async getProcessingJob(id: string): Promise<ProcessingJob | undefined> {
+    const [job] = await db
+      .select()
+      .from(processingJobs)
+      .where(eq(processingJobs.id, id));
+    return job;
+  }
+
+  async updateProcessingJobStatus(
+    id: string, 
+    status: string, 
+    extractedData?: any, 
+    errorMessage?: string
+  ): Promise<ProcessingJob | undefined> {
+    const updateData: any = { status };
+    if (extractedData !== undefined) {
+      updateData.extractedData = extractedData;
+    }
+    if (errorMessage !== undefined) {
+      updateData.errorMessage = errorMessage;
+    }
+    if (status === "completed" || status === "failed") {
+      updateData.completedAt = new Date();
+    }
+    
+    const [job] = await db
+      .update(processingJobs)
+      .set(updateData)
+      .where(eq(processingJobs.id, id))
+      .returning();
+    return job;
+  }
+
+  async getActiveJobsForUser(userId: string): Promise<ProcessingJob[]> {
+    return db
+      .select()
+      .from(processingJobs)
+      .where(and(
+        eq(processingJobs.userId, userId),
+        or(
+          eq(processingJobs.status, "pending"),
+          eq(processingJobs.status, "processing")
+        )
+      ))
+      .orderBy(desc(processingJobs.createdAt));
+  }
+
+  // Notification operations
+  async createNotification(data: InsertNotification): Promise<Notification> {
+    const [notification] = await db
+      .insert(notifications)
+      .values(data)
+      .returning();
+    return notification;
+  }
+
+  async getNotificationsForUser(userId: string, limit: number = 20): Promise<Notification[]> {
+    return db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
+  }
+
+  async getUnreadCountForUser(userId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.isRead, false)
+      ));
+    return result?.count ?? 0;
+  }
+
+  async markNotificationRead(id: number, userId: string): Promise<boolean> {
+    const result = await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(and(
+        eq(notifications.id, id),
+        eq(notifications.userId, userId)
+      ))
+      .returning({ id: notifications.id });
+    return result.length > 0;
+  }
+
+  async markAllNotificationsRead(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.userId, userId));
   }
 }
 

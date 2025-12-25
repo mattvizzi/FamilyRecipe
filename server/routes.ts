@@ -9,6 +9,8 @@ import familyRouter from "./routes/family";
 import recipesRouter, { publicRecipesRouter } from "./routes/recipes";
 import adminRouter from "./routes/admin";
 import userRouter from "./routes/user";
+import notificationsRouter from "./routes/notifications";
+import jobsRouter from "./routes/jobs";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -37,6 +39,8 @@ export async function registerRoutes(
   app.use("/api/family", familyRouter);
   app.use("/api/recipes", recipesRouter);
   app.use("/api/admin", adminRouter);
+  app.use("/api/notifications", notificationsRouter);
+  app.use("/api/jobs", jobsRouter);
 
   return httpServer;
 }

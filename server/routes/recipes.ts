@@ -302,6 +302,224 @@ clean minimal background, 8k quality, shallow depth of field.`;
   }
 });
 
+async function processRecipeInBackground(
+  jobId: string,
+  userId: string,
+  familyId: string,
+  familyName: string,
+  method: string,
+  content: string
+) {
+  try {
+    await storage.updateProcessingJobStatus(jobId, "processing");
+    
+    const extractionPrompt = `
+Extract the recipe from the following content. Return a JSON object with this exact structure:
+{
+  "name": "Recipe Name",
+  "category": "Breakfast" | "Lunch" | "Dinner" | "Snack" | "Appetizer" | "Drink" | "Dessert",
+  "prepTime": number (in minutes) or null,
+  "cookTime": number (in minutes) or null,
+  "servings": number,
+  "groups": [
+    {
+      "name": "Main" (or section name for complex recipes),
+      "ingredients": [
+        { "name": "ingredient name", "amount": "1", "unit": "cup" }
+      ],
+      "instructions": ["Step 1...", "Step 2..."]
+    }
+  ],
+  "metaDescription": "A compelling 150-160 character SEO description that entices users to try this recipe. Include key ingredients and cooking method.",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+}
+
+For complex recipes like "Spaghetti and Meatballs", create separate groups for each component.
+Use fractions for amounts where appropriate (e.g., "1/2", "1 1/2").
+Choose the most appropriate category based on the recipe.
+
+SEO Guidelines:
+- metaDescription: Write an enticing 150-160 character description focusing on taste, key ingredients, and ease of preparation. Use action words like "discover", "savor", "enjoy".
+- seoKeywords: Generate 5-8 relevant search keywords including cuisine type, main ingredients, cooking method, dietary info (if applicable), occasion, and related search terms users might use.
+`;
+
+    type ContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+    let messages: Array<{ role: "user"; content: ContentPart[] }>;
+    
+    if ((method === "photo" || method === "camera") && content.includes("data:image")) {
+      const images = content.split("|||IMAGE_SEPARATOR|||").filter((img: string) => img.trim());
+      const contentParts: ContentPart[] = [
+        { type: "text", text: extractionPrompt }
+      ];
+      
+      for (const imageData of images) {
+        contentParts.push({ type: "image_url", image_url: { url: imageData.trim() } });
+      }
+      
+      messages = [{
+        role: "user",
+        content: contentParts
+      }];
+    } else {
+      messages = [{
+        role: "user",
+        content: [{ type: "text", text: extractionPrompt + "\n\nContent to extract:\n" + content }]
+      }];
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages,
+      response_format: { type: "json_object" },
+    });
+
+    const extractedJson = completion.choices[0]?.message?.content;
+    if (!extractedJson) {
+      throw new Error("Failed to extract recipe");
+    }
+
+    let extracted;
+    try {
+      extracted = JSON.parse(extractedJson);
+    } catch {
+      throw new Error("Failed to parse recipe data");
+    }
+
+    if (!extracted.name || !Array.isArray(extracted.groups) || extracted.groups.length === 0) {
+      throw new Error("Could not extract valid recipe from content");
+    }
+
+    for (const group of extracted.groups) {
+      if (!group.name || !Array.isArray(group.ingredients) || !Array.isArray(group.instructions)) {
+        throw new Error("Invalid recipe structure");
+      }
+      group.ingredients = group.ingredients.filter((ing: any) => ing && ing.name);
+      for (const ing of group.ingredients) {
+        ing.amount = ing.amount || "1";
+        ing.unit = ing.unit || "";
+      }
+      group.instructions = group.instructions.filter((step: any) => step && typeof step === "string" && step.trim());
+    }
+
+    if (!recipeCategories.includes(extracted.category)) {
+      extracted.category = "Dinner";
+    }
+
+    const imagePrompt = `Professional food photography of ${extracted.name}. 
+Overhead shot on a simple white plate, soft natural lighting, clean presentation. 
+Show the dish as it would naturally appear when served - no added garnishes unless specifically mentioned in the recipe.
+Appetizing, restaurant-quality presentation, cookbook style photography, 
+clean minimal background, 8k quality, shallow depth of field.`;
+
+    let imageUrl: string | undefined;
+    let imageAltText: string | undefined;
+    try {
+      const imageBuffer = await generateImageBuffer(imagePrompt, "1024x1024");
+      const base64Data = imageBuffer.toString("base64");
+      const tempId = `temp-${Date.now()}`;
+      imageUrl = await uploadRecipeImage(base64Data, tempId);
+      
+      try {
+        const altTextCompletion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: `Generate a concise, SEO-friendly alt text (max 125 characters) for this recipe image of "${extracted.name}". Focus on describing the dish's appearance, key ingredients visible, and presentation style. Do not include phrases like "image of" or "photo of".` },
+              { type: "image_url", image_url: { url: `data:image/png;base64,${base64Data}` } }
+            ]
+          }],
+        });
+        imageAltText = altTextCompletion.choices[0]?.message?.content?.trim();
+      } catch (altTextError) {
+        console.error("Alt text generation failed:", altTextError);
+        imageAltText = `${extracted.name} - beautifully plated and ready to serve`;
+      }
+    } catch (imageError) {
+      console.error("Image generation failed:", imageError);
+    }
+
+    const recipe = await storage.createRecipe(familyId, userId, {
+      name: extracted.name,
+      category: extracted.category,
+      prepTime: extracted.prepTime || null,
+      cookTime: extracted.cookTime || null,
+      servings: extracted.servings || 4,
+      imageUrl,
+      groups: extracted.groups,
+      metaDescription: extracted.metaDescription || null,
+      seoKeywords: Array.isArray(extracted.seoKeywords) ? extracted.seoKeywords : null,
+      imageAltText: imageAltText || null,
+    });
+
+    syncRecipeToHubSpot(recipe, familyName).catch(err => {
+      console.error("Failed to sync recipe to HubSpot:", err);
+    });
+
+    await storage.updateProcessingJobStatus(jobId, "completed", {
+      recipeId: recipe.id,
+      recipeName: recipe.name,
+    });
+
+    await storage.createNotification({
+      userId,
+      type: "recipe_processed",
+      title: "Recipe Ready",
+      message: `Your recipe "${recipe.name}" has been processed and is ready to view.`,
+      data: { recipeId: recipe.id, recipeName: recipe.name },
+    });
+
+  } catch (error) {
+    console.error("Background processing failed:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    await storage.updateProcessingJobStatus(jobId, "failed", undefined, errorMessage);
+    
+    await storage.createNotification({
+      userId,
+      type: "recipe_failed",
+      title: "Processing Failed",
+      message: `Failed to process your recipe: ${errorMessage}`,
+      data: { jobId, error: errorMessage },
+    });
+  }
+}
+
+router.post("/process-background", isAuthenticated, aiProcessingLimiter, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.claims.sub;
+    const family = await getUserFamily(userId);
+    
+    if (!family) {
+      return res.status(404).json({ message: "No family found" });
+    }
+    
+    const method = req.body.method || "text";
+    const content = req.body.content || "";
+    
+    if (!content) {
+      return res.status(400).json({ message: "Recipe content is required" });
+    }
+    
+    const job = await storage.createProcessingJob({
+      userId,
+      inputType: method,
+      inputData: { content: content.substring(0, 1000) },
+    });
+    
+    processRecipeInBackground(job.id, userId, family.id, family.name, method, content);
+    
+    res.status(202).json({
+      jobId: job.id,
+      status: "pending",
+      message: "Recipe processing started. You can leave this page and check back later.",
+    });
+  } catch (error) {
+    console.error("Error starting background processing:", error);
+    res.status(500).json({ message: "Failed to start recipe processing" });
+  }
+});
+
 router.patch("/:id", isAuthenticated, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.claims.sub;

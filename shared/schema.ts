@@ -140,6 +140,48 @@ export const admins = pgTable("admins", {
   index("admins_user_id_idx").on(table.userId),
 ]);
 
+// Processing job statuses
+export const processingJobStatuses = ["pending", "processing", "completed", "failed"] as const;
+export type ProcessingJobStatus = typeof processingJobStatuses[number];
+
+// Processing jobs table (for background AI recipe processing)
+export const processingJobs = pgTable("processing_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  familyId: varchar("family_id").notNull().references(() => families.id, { onDelete: "cascade" }),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  inputType: varchar("input_type", { length: 20 }).notNull(), // "image", "url", "text"
+  inputData: text("input_data"), // URL, text content, or base64 image
+  inputImageUrl: text("input_image_url"), // Uploaded image URL if applicable
+  extractedData: jsonb("extracted_data"), // AI-extracted recipe data
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("processing_jobs_user_id_idx").on(table.userId),
+  index("processing_jobs_status_idx").on(table.status),
+]);
+
+// Notification types
+export const notificationTypes = ["processing_started", "processing_completed", "processing_failed"] as const;
+export type NotificationType = typeof notificationTypes[number];
+
+// User notifications table
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message"),
+  linkUrl: text("link_url"), // URL to navigate to when clicked
+  relatedJobId: varchar("related_job_id").references(() => processingJobs.id, { onDelete: "cascade" }),
+  isRead: boolean("is_read").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("notifications_user_id_idx").on(table.userId),
+  index("notifications_user_id_is_read_idx").on(table.userId, table.isRead),
+]);
+
 // Relations
 export const familiesRelations = relations(families, ({ many }) => ({
   members: many(familyMembers),
@@ -313,3 +355,24 @@ export type FamilyWithMembers = Family & {
 // Admin types
 export type Admin = typeof admins.$inferSelect;
 export type InsertAdmin = { userId: string };
+
+// Processing job types
+export type ProcessingJob = typeof processingJobs.$inferSelect;
+export type InsertProcessingJob = {
+  userId: string;
+  familyId: string;
+  inputType: string;
+  inputData?: string | null;
+  inputImageUrl?: string | null;
+};
+
+// Notification types
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = {
+  userId: string;
+  type: string;
+  title: string;
+  message?: string | null;
+  linkUrl?: string | null;
+  relatedJobId?: string | null;
+};

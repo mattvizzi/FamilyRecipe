@@ -44,13 +44,15 @@ export default function AddRecipe() {
   const [progressMessage, setProgressMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [createdRecipeId, setCreatedRecipeId] = useState<string | null>(null);
+  const [isBackgroundProcessing, setIsBackgroundProcessing] = useState(false);
+  const [pendingContent, setPendingContent] = useState<{ method: string; content: string } | null>(null);
 
   const { data: family } = useQuery<Family>({
     queryKey: ["/api/family"],
   });
 
   useEffect(() => {
-    if (step === "processing") {
+    if (step === "processing" && !isBackgroundProcessing) {
       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
         e.preventDefault();
         e.returnValue = "Recipe is still being processed. Are you sure you want to leave?";
@@ -59,7 +61,7 @@ export default function AddRecipe() {
       window.addEventListener("beforeunload", handleBeforeUnload);
       return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }
-  }, [step]);
+  }, [step, isBackgroundProcessing]);
 
   const processRecipeMutation = useMutation({
     mutationFn: async (data: { method: string; content: string }) => {
@@ -89,6 +91,32 @@ export default function AddRecipe() {
       toast({ title: "Error", description: "Failed to set visibility", variant: "destructive" });
     },
   });
+
+  const backgroundProcessMutation = useMutation({
+    mutationFn: async (data: { method: string; content: string }) => {
+      const response = await apiRequest("POST", "/api/recipes/process-background", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ 
+        title: "Processing in Background", 
+        description: "You can leave this page. We'll notify you when your recipe is ready.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
+      navigate("/home");
+    },
+    onError: (error: Error) => {
+      setIsBackgroundProcessing(false);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleBackgroundProcess = () => {
+    if (pendingContent) {
+      setIsBackgroundProcessing(true);
+      backgroundProcessMutation.mutate(pendingContent);
+    }
+  };
 
   const handleMethodSelect = (method: InputMethod) => {
     setInputMethod(method);
@@ -249,20 +277,35 @@ export default function AddRecipe() {
       }
     }
 
+    const processData = {
+      method: inputMethod || "text",
+      content,
+    };
+    setPendingContent(processData);
+
     setProgressMessage("AI is analyzing your recipe...");
     setProgress(50);
+  };
 
+  const handleForegroundProcess = async () => {
+    if (!pendingContent) return;
+    
     try {
-      await processRecipeMutation.mutateAsync({
-        method: inputMethod || "text",
-        content,
-      });
+      await processRecipeMutation.mutateAsync(pendingContent);
       setProgress(100);
       setProgressMessage("Complete!");
     } catch {
       // Error handled by mutation
     }
   };
+
+  // Auto-start foreground processing when content is ready
+  useEffect(() => {
+    if (step === "processing" && pendingContent && !isBackgroundProcessing && !processRecipeMutation.isPending) {
+      handleForegroundProcess();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, pendingContent]);
 
   const reset = () => {
     setStep("select");
@@ -303,9 +346,28 @@ export default function AddRecipe() {
             <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
           
-          <p className="text-xs text-muted-foreground">
-            Please don't close this page while processing.
-          </p>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              This may take a minute. You can wait here or continue in the background.
+            </p>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackgroundProcess}
+              disabled={backgroundProcessMutation.isPending || !pendingContent}
+              data-testid="button-process-background"
+            >
+              {backgroundProcessMutation.isPending ? (
+                "Starting..."
+              ) : (
+                "Continue in Background"
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              We'll notify you when your recipe is ready
+            </p>
+          </div>
         </div>
       </div>
     );

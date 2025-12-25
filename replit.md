@@ -7,6 +7,13 @@ Recipe Tracker is a family recipe management application that allows users to or
 ## Recent Changes (December 2024)
 
 ### December 25, 2024
+- **Background AI Processing**: Users can now leave the page during recipe extraction:
+  - Database tables: `processingJobs` (tracks job status) and `notifications` (user notifications)
+  - API endpoints: `/api/notifications` (list, mark read), `/api/jobs/:id/status` (poll status)
+  - Background processor: `/api/recipes/process-background` creates job, runs AI extraction asynchronously
+  - Notification bell in header: Shows unread count badge, polls every 15s, links to completed recipes
+  - Add-recipe page: Shows "Continue in Background" button during processing
+  - Notifications created on job completion (success) or failure (with error message)
 - **Route Architecture Refactor**: Split monolithic 1,460-line `routes.ts` into domain-specific routers:
   - `server/routes.ts` - Main entry point (~35 lines), mounts domain routers
   - `server/routes/family.ts` - Family CRUD, invite codes, join operations (6 routes)

@@ -30,6 +30,7 @@ import {
 import { LogOut, Users, ChefHat, Search, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp, Menu, Sun, Moon, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAdmin } from "@/features/admin/use-admin";
+import { NotificationBell } from "@/components/notification-bell";
 import { useQuery } from "@tanstack/react-query";
 import type { Family, RecipeWithCreator } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
@@ -152,6 +153,8 @@ export function Header({ family }: HeaderProps) {
             >
               <Search className="h-4 w-4" />
             </Button>
+
+            <NotificationBell />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
