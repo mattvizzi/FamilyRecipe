@@ -7,12 +7,18 @@ Recipe Tracker is a family recipe management application that allows users to or
 ## Recent Changes (December 2024)
 
 ### December 25, 2024
-- **Admin Management System**: Complete admin section at `/admin/*` routes:
-  - Admin Dashboard: Platform-wide statistics (users, families, recipes, public recipe percentage)
-  - Users Management: View all users with family associations and recipe counts
-  - Families Management: View all family groups with member/recipe counts and invite codes
-  - Recipes Management: Browse all recipes with visibility status and view counts
-  - HubSpot Sync: Monitor CRM synchronization status
+- **Admin Subdomain Routing**: Production admin hosted on `admin.familyrecipe.app` with new URL structure:
+  - `/dashboard` - Platform-wide statistics (users, families, recipes, public recipe percentage)
+  - `/objects/users` - View all users with family associations and recipe counts
+  - `/objects/families` - View all family groups with member/recipe counts and invite codes
+  - `/objects/recipes` - Browse all recipes with visibility status and view counts
+  - `/objects/comments` - View all recipe comments
+  - `/integrations/hubspot` - Monitor CRM synchronization status
+  - Server middleware redirects old `/admin/*` paths to new subdomain routes with query string preservation
+  - Client-side routing detects hostname and uses appropriate paths
+  - Cross-domain redirects use `useEffect` to avoid React render-time side effects
+  - Unauthorized users are redirected to main domain (`familyrecipe.app`)
+- **Admin Management System**: Complete admin section with PostgreSQL authentication:
   - Admin authentication via `admins` PostgreSQL table (just stores userId)
   - Hidden from search engines via `X-Robots-Tag: noindex` headers and meta tags
   - Bidirectional navigation: "Go to Admin" in main site profile dropdown for admins, "Go to Website" in admin area
