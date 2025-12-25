@@ -803,7 +803,6 @@ export default function RecipeDetail() {
             )}
           </div>
         </div>
-      </div>
 
       <RecipeEditDrawer 
         recipe={recipe} 
