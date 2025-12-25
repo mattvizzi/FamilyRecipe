@@ -514,7 +514,7 @@ export default function RecipeDetail() {
               <Badge variant="secondary" data-testid="badge-category">
                 {recipe.category}
               </Badge>
-              {recipe.isPublic && (
+              {isOwner && recipe.isPublic && (
                 <Badge variant="success" className="gap-1" data-testid="badge-public">
                   <Globe className="h-3 w-3" />
                   Public

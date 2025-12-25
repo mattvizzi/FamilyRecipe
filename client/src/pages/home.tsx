@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { Header } from "@/components/header";
 import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
+import { useAuth } from "@/hooks/use-auth";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export default function Home() {
   const params = useParams<{ category?: string }>();
   const [, navigate] = useLocation();
   const category = params.category || "all";
+  const { user } = useAuth();
   
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -213,14 +215,18 @@ export default function Home() {
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
                   : "grid grid-cols-1 md:grid-cols-2 gap-4"
                 }`}>
-                  {filteredRecipes.map((recipe) => (
-                    <RecipeCard 
-                      key={recipe.id} 
-                      recipe={recipe} 
-                      viewMode={viewMode}
-                      showCreator
-                    />
-                  ))}
+                  {filteredRecipes.map((recipe) => {
+                    const isOwner = recipe.createdById === user?.id;
+                    return (
+                      <RecipeCard 
+                        key={recipe.id} 
+                        recipe={recipe} 
+                        viewMode={viewMode}
+                        showCreator={isOwner}
+                        showVisibility={isOwner}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </>

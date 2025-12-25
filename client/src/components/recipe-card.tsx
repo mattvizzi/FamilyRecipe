@@ -9,9 +9,10 @@ interface RecipeCardProps {
   recipe: RecipeWithCreator;
   viewMode: "grid" | "list";
   showCreator?: boolean;
+  showVisibility?: boolean;
 }
 
-export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCardProps) {
+export function RecipeCard({ recipe, viewMode, showCreator = false, showVisibility = false }: RecipeCardProps) {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
   if (viewMode === "list") {
@@ -43,7 +44,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
                 <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
                   {recipe.category}
                 </Badge>
-                {recipe.isPublic && (
+                {showVisibility && recipe.isPublic && (
                   <Badge variant="success" className="text-xs gap-1" data-testid={`badge-public-${recipe.id}`}>
                     <Globe className="h-3 w-3" />
                     Public
@@ -62,7 +63,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
                   </div>
                 )}
               </div>
-              {recipe.creatorFirstName && (
+              {showCreator && recipe.creatorFirstName && (
                 <p className="text-xs text-muted-foreground">
                   by {recipe.creatorFirstName} {recipe.creatorLastName}
                 </p>
@@ -102,7 +103,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCard
               <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
                 {recipe.category}
               </Badge>
-              {recipe.isPublic && (
+              {showVisibility && recipe.isPublic && (
                 <Badge variant="success" className="text-xs gap-1" data-testid={`badge-public-${recipe.id}`}>
                   <Globe className="h-3 w-3" />
                 </Badge>

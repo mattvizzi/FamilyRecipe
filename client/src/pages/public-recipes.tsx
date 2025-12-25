@@ -170,7 +170,6 @@ export default function PublicRecipes() {
                       key={recipe.id} 
                       recipe={recipe} 
                       viewMode={viewMode}
-                      showCreator
                     />
                   ))}
                 </div>
