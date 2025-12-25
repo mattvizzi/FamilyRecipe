@@ -109,12 +109,12 @@ export function Header({ family }: HeaderProps) {
             </Link>
           </div>
 
-          {/* Desktop: Search */}
-          <div className="hidden sm:flex items-center gap-4 flex-1">
+          {/* Desktop: Search - Centered */}
+          <div className="hidden sm:flex items-center justify-center flex-1">
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center gap-2 text-muted-foreground w-52 justify-between"
+              className="flex items-center gap-2 text-muted-foreground w-64 justify-between"
               onClick={() => setOpen(true)}
               data-testid="button-search"
             >
