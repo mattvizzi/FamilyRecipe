@@ -79,41 +79,18 @@ export function RecipeShowcaseCarousel() {
 
     animationId = requestAnimationFrame(scroll);
 
-    const handleMouseEnter = () => {
-      cancelAnimationFrame(animationId);
-    };
-
-    const handleMouseLeave = () => {
-      animationId = requestAnimationFrame(scroll);
-    };
-
-    scrollContainer.addEventListener("mouseenter", handleMouseEnter);
-    scrollContainer.addEventListener("mouseleave", handleMouseLeave);
-
     return () => {
       cancelAnimationFrame(animationId);
-      scrollContainer.removeEventListener("mouseenter", handleMouseEnter);
-      scrollContainer.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
   const doubledRecipes = [...recipes, ...recipes];
 
   return (
-    <section className="py-12 overflow-hidden">
-      <div className="text-center mb-8 px-6">
-        <p className="text-sm font-medium text-primary mb-2">RECIPE COLLECTION</p>
-        <h2 className="text-2xl md:text-3xl font-bold mb-3">
-          Beautiful recipes, beautifully organized
-        </h2>
-        <p className="text-muted-foreground max-w-xl mx-auto">
-          See how your family recipes will look in the app
-        </p>
-      </div>
-      
+    <section className="overflow-hidden">
       <div 
         ref={scrollRef}
-        className="flex gap-4 overflow-x-hidden px-4"
+        className="flex gap-4 overflow-x-hidden"
         style={{ scrollBehavior: "auto" }}
       >
         {doubledRecipes.map((recipe, index) => (
@@ -128,10 +105,6 @@ export function RecipeShowcaseCarousel() {
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-            </div>
-            <div className="p-3">
-              <p className="text-xs text-muted-foreground mb-1">{recipe.category}</p>
-              <h3 className="font-semibold text-sm truncate">{recipe.title}</h3>
             </div>
           </Card>
         ))}
