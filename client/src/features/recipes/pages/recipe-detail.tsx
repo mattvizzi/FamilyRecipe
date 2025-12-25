@@ -726,6 +726,77 @@ export default function RecipeDetail() {
                 </Button>
               </div>
             )}
+
+            {/* Mobile Action Buttons - show in hero on mobile when not editing */}
+            {!isEditing && (
+              <div className="absolute top-4 right-4 flex items-center gap-1 sm:hidden">
+                {!isOwner && (
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    className="bg-background border border-border"
+                    onClick={() => saveMutation.mutate()}
+                    disabled={saveMutation.isPending}
+                    data-testid="button-save-mobile"
+                    aria-label={recipe.isSaved ? "Remove from saved recipes" : "Save recipe"}
+                  >
+                    <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
+                  </Button>
+                )}
+                <Button variant="outline" size="icon" type="button" className="bg-background border border-border" onClick={copyToClipboard} data-testid="button-copy-mobile" aria-label="Copy recipe to clipboard">
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" type="button" className="bg-background border border-border" onClick={exportToPDF} data-testid="button-export-pdf-mobile" aria-label="Export recipe as PDF">
+                  <FileDown className="h-4 w-4" />
+                </Button>
+                {isOwner && (
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    type="button"
+                    className="bg-background border border-border"
+                    onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
+                    disabled={visibilityMutation.isPending}
+                    data-testid="button-visibility-mobile"
+                    aria-label={recipe.isPublic ? "Make recipe private" : "Make recipe public"}
+                  >
+                    {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                  </Button>
+                )}
+                {isOwner && (
+                  <Button variant="outline" size="icon" type="button" className="bg-background border border-border" onClick={startEditing} data-testid="button-edit-mobile" aria-label="Edit recipe">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+                {isOwner && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="icon" type="button" className="bg-background border border-border" data-testid="button-delete-mobile" aria-label="Delete recipe">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete "{recipe.name}".
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => deleteMutation.mutate()}
+                          className="bg-destructive text-destructive-foreground"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Floating Edit Mode Bar */}
@@ -912,9 +983,9 @@ export default function RecipeDetail() {
                 </div>
               </div>
 
-              {/* Primary Actions - Compact (hide when editing) */}
+              {/* Primary Actions - Compact (hide when editing, hidden on mobile - shown in hero) */}
               {!isEditing && (
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
                   {!isOwner && (
                     <Tooltip>
                       <TooltipTrigger asChild>
