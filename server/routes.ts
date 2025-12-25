@@ -1,7 +1,5 @@
-import type { Express, Request, Response, NextFunction, RequestHandler } from "express";
-import { createServer, type Server } from "http";
-import { randomBytes } from "crypto";
-import rateLimit from "express-rate-limit";
+import type { Express, Response } from "express";
+import { type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth/replitAuth";
 import { registerAuthRoutes } from "./replit_integrations/auth/routes";
@@ -29,130 +27,19 @@ import {
 } from "./hubspot";
 import { uploadRecipeImage, isBase64Image } from "./imageStorage";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-
-// Rate limiters for expensive operations
-const aiProcessingLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 AI processing requests per 15 minutes per user
-  message: { message: "Too many recipe processing requests. Please wait before trying again." },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false, // Disable all validation warnings
-  keyGenerator: (req: Request) => {
-    const authReq = req as AuthRequest;
-    return authReq.user?.claims?.sub || req.ip || 'unknown';
-  },
-});
-
-const pdfExportLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 20, // 20 PDF exports per 5 minutes per user
-  message: { message: "Too many PDF export requests. Please wait before trying again." },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  keyGenerator: (req: Request) => {
-    const authReq = req as AuthRequest;
-    return authReq.user?.claims?.sub || req.ip || 'unknown';
-  },
-});
-
-// Rate limiter for public endpoints (no auth required)
-const publicRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per 15 minutes per IP
-  message: { message: "Too many requests. Please try again later." },
-  standardHeaders: true,
-  legacyHeaders: false,
-  validate: false,
-  keyGenerator: (req: Request) => req.ip || 'unknown',
-});
 import { scaleAmount } from "@shared/lib/fraction";
-
-interface AuthRequest extends Request {
-  user?: {
-    claims: {
-      sub: string;
-    };
-  };
-  session?: {
-    csrfToken?: string;
-    viewedRecipes?: string[]; // Track viewed recipes to prevent view count inflation
-  } & Request['session'];
-}
-
-// Admin authentication middleware
-const isAdmin: RequestHandler = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  if (!req.user?.claims?.sub) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-  
-  const userId = req.user.claims.sub;
-  const adminStatus = await storage.isAdmin(userId);
-  
-  if (!adminStatus) {
-    return res.status(403).json({ message: "Admin access required" });
-  }
-  
-  next();
-};
-
-// CSRF token generation
-function generateCsrfToken(): string {
-  return randomBytes(32).toString('hex');
-}
-
-// CSRF validation middleware for mutating requests
-const validateCsrf: RequestHandler = (req: AuthRequest, res: Response, next: NextFunction) => {
-  // Only validate for state-changing methods
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-    const sessionToken = req.session?.csrfToken;
-    const headerToken = req.headers['x-csrf-token'] as string;
-    
-    // Reject if no session token exists (user must fetch /api/csrf-token first)
-    if (!sessionToken) {
-      return res.status(403).json({ message: 'CSRF token not initialized. Please refresh and try again.' });
-    }
-    
-    // Reject if header token doesn't match session token
-    if (sessionToken !== headerToken) {
-      return res.status(403).json({ message: 'Invalid CSRF token' });
-    }
-  }
-  next();
-};
-
-// Helper to get user's family
-async function getUserFamily(userId: string) {
-  return storage.getFamilyByMember(userId);
-}
-
-// Helper to check if user can access a recipe (family member OR public recipe)
-async function canAccessRecipe(userId: string, recipeId: string): Promise<{ canAccess: boolean; recipe: Awaited<ReturnType<typeof storage.getRecipe>> }> {
-  const recipe = await storage.getRecipe(recipeId);
-  if (!recipe) {
-    return { canAccess: false, recipe: undefined };
-  }
-  
-  // Public recipes are accessible to all authenticated users
-  if (recipe.isPublic) {
-    return { canAccess: true, recipe };
-  }
-  
-  // Otherwise, must be a family member
-  const isMember = await storage.isFamilyMember(recipe.familyId, userId);
-  return { canAccess: isMember, recipe };
-}
-
-// Input sanitization helper - removes potential XSS vectors
-function sanitizeHtml(input: string): string {
-  return input
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
-}
+import {
+  type AuthRequest,
+  aiProcessingLimiter,
+  pdfExportLimiter,
+  publicRateLimiter,
+  isAdmin,
+  validateCsrf,
+  generateCsrfToken,
+  getUserFamily,
+  canAccessRecipe,
+  sanitizeHtml
+} from "./middleware";
 
 export async function registerRoutes(
   httpServer: Server,
