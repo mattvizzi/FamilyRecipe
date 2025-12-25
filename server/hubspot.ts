@@ -1,103 +1,33 @@
 // HubSpot Integration Service
-// Connected via Replit HubSpot connection
+// Uses custom HUBSPOT_ACCESS_TOKEN from private app
 
 import { Client } from '@hubspot/api-client';
 import type { User } from '@shared/models/auth';
 import type { Family, Recipe } from '@shared/schema';
 
-let connectionSettings: any;
-
-async function getAccessToken() {
-  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
-  }
-
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=hubspot',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
-
-  if (!connectionSettings || !accessToken) {
-    throw new Error('HubSpot not connected');
+function getAccessToken(): string {
+  const accessToken = process.env.HUBSPOT_ACCESS_TOKEN;
+  if (!accessToken) {
+    throw new Error('HUBSPOT_ACCESS_TOKEN not configured. Please add your HubSpot private app access token.');
   }
   return accessToken;
 }
 
-async function getHubSpotClient() {
-  const accessToken = await getAccessToken();
+function getHubSpotClient() {
+  const accessToken = getAccessToken();
   return new Client({ accessToken });
 }
 
-// Pipeline and stage configuration
-const FAMILY_RECIPE_PIPELINE = 'FamilyRecipe';
+// FamilyRecipe Pipeline configuration (pre-configured in HubSpot)
+const PIPELINE_ID = '845703566';
+const STAGE_PRIVATE = '1258285422';
+const STAGE_PUBLIC = '1258285423';
 
-// Store pipeline ID after first lookup
-let pipelineId: string | null = null;
-let publicStageId: string | null = null;
-let privateStageId: string | null = null;
-
-async function ensurePipelineExists(): Promise<void> {
-  if (pipelineId && publicStageId && privateStageId) return;
-  
-  const client = await getHubSpotClient();
-  
-  try {
-    // Try to find existing pipeline
-    const pipelines = await client.crm.pipelines.pipelinesApi.getAll('deals');
-    const existing = pipelines.results.find(p => p.label === FAMILY_RECIPE_PIPELINE);
-    
-    if (existing) {
-      pipelineId = existing.id;
-      const publicStage = existing.stages.find(s => s.label === 'Public');
-      const privateStage = existing.stages.find(s => s.label === 'Private');
-      publicStageId = publicStage?.id || null;
-      privateStageId = privateStage?.id || null;
-      
-      if (!publicStageId || !privateStageId) {
-        console.warn('FamilyRecipe pipeline exists but missing Public/Private stages');
-      }
-      return;
-    }
-    
-    // Create new pipeline with Public and Private stages
-    const newPipeline = await client.crm.pipelines.pipelinesApi.create('deals', {
-      label: FAMILY_RECIPE_PIPELINE,
-      displayOrder: 0,
-      stages: [
-        { label: 'Private', displayOrder: 0, metadata: { probability: '0.0' } },
-        { label: 'Public', displayOrder: 1, metadata: { probability: '1.0' } }
-      ]
-    });
-    
-    pipelineId = newPipeline.id;
-    const publicStage = newPipeline.stages.find(s => s.label === 'Public');
-    const privateStage = newPipeline.stages.find(s => s.label === 'Private');
-    publicStageId = publicStage?.id || null;
-    privateStageId = privateStage?.id || null;
-    
-    console.log('Created FamilyRecipe pipeline in HubSpot');
-  } catch (error) {
-    console.error('Error ensuring pipeline exists:', error);
-    throw error;
-  }
+function getPipelineStage(isPublic: boolean): { pipelineId: string; stageId: string } {
+  return {
+    pipelineId: PIPELINE_ID,
+    stageId: isPublic ? STAGE_PUBLIC : STAGE_PRIVATE
+  };
 }
 
 // ============ CONTACTS (Users) ============
@@ -109,7 +39,7 @@ export async function syncUserToHubSpot(user: User): Promise<string | null> {
   }
   
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     const properties: Record<string, string> = {
       email: user.email,
@@ -157,7 +87,7 @@ export async function syncUserToHubSpot(user: User): Promise<string | null> {
 
 export async function syncFamilyToHubSpot(family: Family): Promise<string | null> {
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     const properties: Record<string, string> = {
       name: family.name,
@@ -203,21 +133,15 @@ export async function syncFamilyToHubSpot(family: Family): Promise<string | null
 
 export async function syncRecipeToHubSpot(recipe: Recipe, familyName: string): Promise<string | null> {
   try {
-    await ensurePipelineExists();
+    const { pipelineId, stageId } = getPipelineStage(recipe.isPublic);
     
-    if (!pipelineId || !publicStageId || !privateStageId) {
-      console.error('Pipeline not properly configured');
-      return null;
-    }
-    
-    const client = await getHubSpotClient();
-    const stageId = recipe.isPublic ? publicStageId : privateStageId;
+    const client = getHubSpotClient();
     
     const properties: Record<string, string> = {
       dealname: recipe.name,
       pipeline: pipelineId,
       dealstage: stageId,
-      description: `Recipe ID: ${recipe.id} | Family: ${familyName} | Category: ${recipe.category}`,
+      description: `Recipe ID: ${recipe.id} | Family: ${familyName} | Category: ${recipe.category} | ${recipe.isPublic ? 'Public' : 'Private'}`,
     };
     
     // Search for existing deal by description (which contains our ID)
@@ -259,7 +183,7 @@ export async function syncRecipeToHubSpot(recipe: Recipe, familyName: string): P
 
 export async function associateContactWithCompany(contactId: string, companyId: string): Promise<boolean> {
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     await client.crm.associations.v4.basicApi.create(
       'contacts',
@@ -279,7 +203,7 @@ export async function associateContactWithCompany(contactId: string, companyId: 
 
 export async function associateDealWithCompany(dealId: string, companyId: string): Promise<boolean> {
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     await client.crm.associations.v4.basicApi.create(
       'deals',
@@ -305,7 +229,7 @@ export async function triggerEmailViaPropertyUpdate(
   triggerValue: string = 'true'
 ): Promise<boolean> {
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     // Find contact by email
     const contacts = await client.crm.contacts.searchApi.doSearch({
@@ -344,7 +268,7 @@ export async function triggerEmailViaPropertyUpdate(
 
 export async function getHubSpotContactByEmail(email: string): Promise<string | null> {
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     const contacts = await client.crm.contacts.searchApi.doSearch({
       filterGroups: [{
@@ -367,7 +291,7 @@ export async function getHubSpotContactByEmail(email: string): Promise<string | 
 
 export async function getHubSpotCompanyByFamilyId(familyId: string): Promise<string | null> {
   try {
-    const client = await getHubSpotClient();
+    const client = getHubSpotClient();
     
     const companies = await client.crm.companies.searchApi.doSearch({
       filterGroups: [{
