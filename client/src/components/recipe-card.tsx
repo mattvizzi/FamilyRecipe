@@ -8,9 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface RecipeCardProps {
   recipe: RecipeWithCreator;
   viewMode: "grid" | "list";
+  showCreator?: boolean;
 }
 
-export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
+export function RecipeCard({ recipe, viewMode, showCreator = false }: RecipeCardProps) {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
   if (viewMode === "list") {
@@ -90,7 +91,7 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
           <h3 className="font-semibold truncate mb-2" data-testid={`text-recipe-name-${recipe.id}`}>
             {recipe.name}
           </h3>
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 mb-2">
             <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${recipe.id}`}>
               {recipe.category}
             </Badge>
@@ -109,6 +110,11 @@ export function RecipeCard({ recipe, viewMode }: RecipeCardProps) {
               )}
             </div>
           </div>
+          {showCreator && recipe.creatorFirstName && (
+            <p className="text-xs text-muted-foreground">
+              by {recipe.creatorFirstName} {recipe.creatorLastName}
+            </p>
+          )}
         </CardContent>
       </Card>
     </Link>

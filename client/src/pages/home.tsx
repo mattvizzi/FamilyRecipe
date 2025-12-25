@@ -12,29 +12,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutGrid, List, Search, Plus } from "lucide-react";
 import { Link } from "wouter";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 
+type RecipeFilter = "all" | "my-recipes" | "saved";
+
 export default function Home() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<RecipeCategory | "all">("all");
+  const [recipeFilter, setRecipeFilter] = useState<RecipeFilter>("all");
 
   const { data: family, isLoading: familyLoading } = useQuery<Family>({
     queryKey: ["/api/family"],
   });
 
-  const { data: recipes = [], isLoading: recipesLoading } = useQuery<RecipeWithCreator[]>({
+  const { data: familyRecipes = [], isLoading: familyRecipesLoading } = useQuery<RecipeWithCreator[]>({
     queryKey: ["/api/recipes"],
     enabled: !!family,
   });
 
-  const isLoading = familyLoading || recipesLoading;
+  const { data: savedRecipes = [], isLoading: savedRecipesLoading } = useQuery<RecipeWithCreator[]>({
+    queryKey: ["/api/recipes/saved"],
+    enabled: !!family,
+  });
+
+  const isLoading = familyLoading || familyRecipesLoading || savedRecipesLoading;
+
+  // Combine recipes based on filter
+  const allRecipes = (() => {
+    switch (recipeFilter) {
+      case "my-recipes":
+        return familyRecipes;
+      case "saved":
+        return savedRecipes;
+      case "all":
+      default:
+        // Combine family recipes and saved recipes, avoiding duplicates
+        const savedIds = new Set(savedRecipes.map(r => r.id));
+        return [...familyRecipes, ...savedRecipes.filter(r => !familyRecipes.some(fr => fr.id === r.id))];
+    }
+  })();
 
   // Filter and sort recipes
-  const filteredRecipes = recipes
+  const filteredRecipes = allRecipes
     .filter((recipe) => {
       const matchesSearch = recipe.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = categoryFilter === "all" || recipe.category === categoryFilter;
@@ -66,10 +90,18 @@ export default function Home() {
                 ))}
               </div>
             </>
-          ) : recipes.length === 0 ? (
+          ) : familyRecipes.length === 0 && savedRecipes.length === 0 ? (
             <EmptyState familyName={family?.name || "Your Family"} />
           ) : (
             <>
+              <Tabs value={recipeFilter} onValueChange={(v) => setRecipeFilter(v as RecipeFilter)} className="mb-6">
+                <TabsList>
+                  <TabsTrigger value="all" data-testid="tab-all-recipes">All Recipes</TabsTrigger>
+                  <TabsTrigger value="my-recipes" data-testid="tab-my-recipes">My Recipes</TabsTrigger>
+                  <TabsTrigger value="saved" data-testid="tab-saved-recipes">Saved</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -128,8 +160,17 @@ export default function Home() {
               {filteredRecipes.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-muted-foreground" data-testid="text-no-results">
-                    No recipes match your search
+                    {recipeFilter === "saved" 
+                      ? "You haven't saved any recipes yet" 
+                      : searchQuery || categoryFilter !== "all"
+                        ? "No recipes match your search"
+                        : "No recipes found"}
                   </p>
+                  {recipeFilter === "saved" && (
+                    <p className="text-muted-foreground/70 text-sm mt-2">
+                      Browse public recipes and save your favorites!
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className={`animate-stagger ${viewMode === "grid" 

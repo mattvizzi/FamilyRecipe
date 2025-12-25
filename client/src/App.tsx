@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,6 +10,7 @@ import type { Family } from "@shared/schema";
 
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
+import PublicRecipes from "@/pages/public-recipes";
 import RecipeDetail from "@/pages/recipe-detail";
 import AddRecipe from "@/pages/add-recipe";
 import ManualRecipe from "@/pages/manual-recipe";
@@ -42,7 +43,10 @@ function AuthenticatedRouter() {
 
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/">{() => <Redirect to="/my-recipes" />}</Route>
+      <Route path="/my-recipes" component={Home} />
+      <Route path="/recipes" component={PublicRecipes} />
+      <Route path="/recipes/:category" component={PublicRecipes} />
       <Route path="/recipe/:id" component={RecipeDetail} />
       <Route path="/add-recipe" component={AddRecipe} />
       <Route path="/add-recipe/manual" component={ManualRecipe} />

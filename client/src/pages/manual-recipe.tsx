@@ -24,7 +24,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Globe, Lock } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Family } from "@shared/schema";
@@ -49,6 +51,7 @@ const formSchema = z.object({
   cookTime: z.coerce.number().min(0).optional(),
   servings: z.coerce.number().min(1).default(4),
   groups: z.array(recipeGroupSchema).min(1, "Add at least one recipe section"),
+  isPublic: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -69,6 +72,7 @@ export default function ManualRecipe() {
       prepTime: undefined,
       cookTime: undefined,
       servings: 4,
+      isPublic: false,
       groups: [
         {
           name: "Main",
@@ -254,6 +258,44 @@ export default function ManualRecipe() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="isPublic"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Visibility</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={(value) => field.onChange(value === "public")}
+                            defaultValue={field.value ? "public" : "private"}
+                            className="flex gap-4"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="private" id="private" data-testid="radio-private" />
+                              <Label htmlFor="private" className="flex items-center gap-1.5 cursor-pointer">
+                                <Lock className="h-4 w-4" />
+                                Private
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="public" id="public" data-testid="radio-public" />
+                              <Label htmlFor="public" className="flex items-center gap-1.5 cursor-pointer">
+                                <Globe className="h-4 w-4" />
+                                Public
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          {field.value 
+                            ? "Anyone can discover and save this recipe" 
+                            : "Only your family can see this recipe"}
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </CardContent>
               </Card>
 

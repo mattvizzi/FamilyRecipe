@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Users } from "lucide-react";
+import { LogOut, Users, ChefHat, Search, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { Family } from "@shared/schema";
+import { recipeCategories } from "@shared/schema";
 
 interface HeaderProps {
   family?: Family | null;
@@ -19,6 +20,7 @@ interface HeaderProps {
 
 export function Header({ family }: HeaderProps) {
   const { user, logout, isLoggingOut } = useAuth();
+  const [location] = useLocation();
 
   const getInitials = () => {
     if (!user) return "?";
@@ -27,15 +29,64 @@ export function Header({ family }: HeaderProps) {
     return (first + last).toUpperCase() || user.email?.[0]?.toUpperCase() || "?";
   };
 
+  const isMyRecipes = location === "/my-recipes" || location === "/";
+  const isBrowsing = location?.startsWith("/recipes") ?? false;
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-primary h-14">
       <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between gap-4">
-        <Link href="/">
-          <div className="flex items-center cursor-pointer" data-testid="link-home">
-            <span className="text-xl font-bold tracking-tight text-white">Family</span>
-            <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
-          </div>
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link href="/">
+            <div className="flex items-center cursor-pointer" data-testid="link-home">
+              <span className="text-xl font-bold tracking-tight text-white">Family</span>
+              <span className="text-xl font-light text-white/90 tracking-tight">Recipe</span>
+            </div>
+          </Link>
+
+          <nav className="hidden sm:flex items-center gap-1">
+            <Link href="/my-recipes">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`text-white/80 hover:text-white hover:bg-white/10 ${isMyRecipes ? "bg-white/10 text-white" : ""}`}
+                data-testid="nav-my-recipes"
+              >
+                <ChefHat className="h-4 w-4 mr-1.5" />
+                My Recipes
+              </Button>
+            </Link>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={`text-white/80 hover:text-white hover:bg-white/10 ${isBrowsing ? "bg-white/10 text-white" : ""}`}
+                  data-testid="nav-browse-dropdown"
+                >
+                  <Search className="h-4 w-4 mr-1.5" />
+                  Browse
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-40">
+                <DropdownMenuItem asChild>
+                  <Link href="/recipes" className="cursor-pointer" data-testid="nav-all-recipes">
+                    All Recipes
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {recipeCategories.map((cat) => (
+                  <DropdownMenuItem key={cat} asChild>
+                    <Link href={`/recipes/${cat.toLowerCase()}`} className="cursor-pointer" data-testid={`nav-category-${cat.toLowerCase()}`}>
+                      {cat}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+        </div>
 
         <div className="flex items-center gap-2">
           <ThemeToggle className="text-white hover:bg-white/10" />

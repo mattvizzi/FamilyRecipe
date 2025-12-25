@@ -18,6 +18,8 @@ import {
   ArrowRight,
   Check,
   AlertCircle,
+  Globe,
+  Lock,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -25,7 +27,7 @@ import type { Family, InsertRecipe } from "@shared/schema";
 import { Link } from "wouter";
 
 type InputMethod = "photo" | "camera" | "url" | "text" | null;
-type WizardStep = "select" | "input" | "processing" | "complete" | "error";
+type WizardStep = "select" | "input" | "processing" | "visibility" | "complete" | "error";
 
 export default function AddRecipe() {
   const [, navigate] = useLocation();
@@ -75,12 +77,25 @@ export default function AddRecipe() {
     },
     onSuccess: (data) => {
       setCreatedRecipeId(data.id);
-      setStep("complete");
+      setStep("visibility");
       queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
     },
     onError: (error: Error) => {
       setErrorMessage(error.message);
       setStep("error");
+    },
+  });
+
+  const visibilityMutation = useMutation({
+    mutationFn: async (isPublic: boolean) => {
+      return apiRequest("PATCH", `/api/recipes/${createdRecipeId}/visibility`, { isPublic });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
+      setStep("complete");
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to set visibility", variant: "destructive" });
     },
   });
 
@@ -412,6 +427,71 @@ export default function AddRecipe() {
                         Process with AI
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {step === "visibility" && (
+              <motion.div
+                key="visibility"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card>
+                  <CardContent className="p-8">
+                    <div className="text-center mb-6">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", damping: 10, stiffness: 100 }}
+                        className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4"
+                      >
+                        <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                      </motion.div>
+                      <h2 className="text-xl font-bold mb-2">Recipe Extracted!</h2>
+                      <p className="text-muted-foreground">
+                        One last step: Choose who can see this recipe.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                      <button
+                        onClick={() => visibilityMutation.mutate(false)}
+                        disabled={visibilityMutation.isPending}
+                        className="p-6 rounded-lg border-2 border-border hover:border-primary bg-background hover-elevate active-elevate-2 text-center transition-colors"
+                        data-testid="button-visibility-private"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                          <Lock className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <p className="font-semibold mb-1">Keep Private</p>
+                        <p className="text-sm text-muted-foreground">
+                          Only your family can see this recipe
+                        </p>
+                      </button>
+
+                      <button
+                        onClick={() => visibilityMutation.mutate(true)}
+                        disabled={visibilityMutation.isPending}
+                        className="p-6 rounded-lg border-2 border-border hover:border-primary bg-background hover-elevate active-elevate-2 text-center transition-colors"
+                        data-testid="button-visibility-public"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                          <Globe className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                        <p className="font-semibold mb-1">Make Public</p>
+                        <p className="text-sm text-muted-foreground">
+                          Anyone can discover and save this recipe
+                        </p>
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-center text-muted-foreground">
+                      You can change this later from the recipe page.
+                    </p>
                   </CardContent>
                 </Card>
               </motion.div>

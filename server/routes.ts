@@ -179,6 +179,18 @@ export async function registerRoutes(
     }
   });
 
+  // Get saved recipes - MUST be before /api/recipes/:id to avoid matching "saved" as an id
+  app.get("/api/recipes/saved", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const recipes = await storage.getSavedRecipes(userId);
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error fetching saved recipes:", error);
+      res.status(500).json({ message: "Failed to fetch saved recipes" });
+    }
+  });
+
   // Get single recipe
   app.get("/api/recipes/:id", isAuthenticated, async (req: AuthRequest, res: Response) => {
     try {
@@ -464,18 +476,6 @@ shallow depth of field, food styling.`;
     } catch (error) {
       console.error("Error fetching public recipes:", error);
       res.status(500).json({ message: "Failed to fetch public recipes" });
-    }
-  });
-
-  // Get saved recipes
-  app.get("/api/recipes/saved", isAuthenticated, async (req: AuthRequest, res: Response) => {
-    try {
-      const userId = req.user!.claims.sub;
-      const recipes = await storage.getSavedRecipes(userId);
-      res.json(recipes);
-    } catch (error) {
-      console.error("Error fetching saved recipes:", error);
-      res.status(500).json({ message: "Failed to fetch saved recipes" });
     }
   });
 
