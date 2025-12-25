@@ -212,7 +212,7 @@ export function Header({ family }: HeaderProps) {
       {/* Desktop Sub-navigation bar with categories */}
       <nav className="fixed top-14 left-0 right-0 z-40 hidden sm:block shadow-md bg-[#1E3A5F]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-6 h-10 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-6 h-8 overflow-x-auto scrollbar-hide">
             <Link href="/family-recipes">
               <span 
                 className="text-white cursor-pointer hover:underline uppercase font-bold text-[12px]"
