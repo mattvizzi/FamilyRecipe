@@ -64,16 +64,7 @@ export default function AddRecipe() {
 
   const processRecipeMutation = useMutation({
     mutationFn: async (data: { method: string; content: string }) => {
-      const response = await fetch("/api/recipes/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to process recipe");
-      }
+      const response = await apiRequest("POST", "/api/recipes/process", data);
       return response.json();
     },
     onSuccess: (data) => {

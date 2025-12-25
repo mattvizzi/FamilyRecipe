@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import { randomBytes } from "crypto";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth/replitAuth";
 import { registerAuthRoutes } from "./replit_integrations/auth/routes";
@@ -16,6 +17,31 @@ import {
   type RecipeGroup 
 } from "@shared/schema";
 import PDFDocument from "pdfkit";
+
+// Rate limiters for expensive operations
+const aiProcessingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 AI processing requests per 15 minutes per user
+  message: { message: "Too many recipe processing requests. Please wait before trying again." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => {
+    const authReq = req as AuthRequest;
+    return authReq.user?.claims?.sub || req.ip || 'unknown';
+  },
+});
+
+const pdfExportLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 20, // 20 PDF exports per 5 minutes per user
+  message: { message: "Too many PDF export requests. Please wait before trying again." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => {
+    const authReq = req as AuthRequest;
+    return authReq.user?.claims?.sub || req.ip || 'unknown';
+  },
+});
 import { scaleAmount } from "@shared/lib/fraction";
 
 interface AuthRequest extends Request {
@@ -319,7 +345,7 @@ export async function registerRoutes(
   });
 
   // Process recipe with AI
-  app.post("/api/recipes/process", isAuthenticated, async (req: AuthRequest, res: Response) => {
+  app.post("/api/recipes/process", isAuthenticated, aiProcessingLimiter, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user!.claims.sub;
       const family = await getUserFamily(userId);
@@ -780,7 +806,7 @@ shallow depth of field, food styling.`;
   });
 
   // Export recipe as PDF
-  app.get("/api/recipes/:id/pdf", isAuthenticated, async (req: AuthRequest, res: Response) => {
+  app.get("/api/recipes/:id/pdf", isAuthenticated, pdfExportLimiter, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user!.claims.sub;
       const { id } = req.params;

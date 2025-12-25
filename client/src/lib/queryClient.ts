@@ -101,6 +101,7 @@ export const queryClient = new QueryClient({
 // Helper to invalidate recipe-related queries after mutations
 export function invalidateRecipeQueries() {
   queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/recipes/saved"] });
   queryClient.invalidateQueries({ queryKey: ["/api/public/recipes"] });
 }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Header } from "@/components/header";
@@ -90,6 +90,91 @@ export default function RecipeDetail() {
     },
     enabled: !!recipeId,
   });
+
+  // JSON-LD structured data for SEO
+  useEffect(() => {
+    if (!recipe) return;
+
+    const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
+    const allIngredients = recipe.groups.flatMap(g => 
+      g.ingredients.map(i => `${i.amount} ${i.unit} ${i.name}`.trim())
+    );
+    const allInstructions = recipe.groups.flatMap(g => g.instructions);
+
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "Recipe",
+      name: recipe.name,
+      author: {
+        "@type": "Person",
+        name: `${recipe.creatorFirstName || ""} ${recipe.creatorLastName || ""}`.trim() || "Family Member",
+      },
+      datePublished: recipe.createdAt,
+      description: `${recipe.name} - A family recipe in the ${recipe.category} category`,
+      prepTime: recipe.prepTime ? `PT${recipe.prepTime}M` : undefined,
+      cookTime: recipe.cookTime ? `PT${recipe.cookTime}M` : undefined,
+      totalTime: totalTime > 0 ? `PT${totalTime}M` : undefined,
+      recipeYield: `${recipe.servings} servings`,
+      recipeCategory: recipe.category,
+      recipeIngredient: allIngredients,
+      recipeInstructions: allInstructions.map((step, idx) => ({
+        "@type": "HowToStep",
+        position: idx + 1,
+        text: step,
+      })),
+      ...(recipe.averageRating && recipe.ratingCount && recipe.ratingCount > 0 ? {
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: recipe.averageRating.toFixed(1),
+          ratingCount: recipe.ratingCount,
+          bestRating: 5,
+          worstRating: 1,
+        },
+      } : {}),
+      ...(recipe.image ? { image: recipe.image } : {}),
+    };
+
+    // Remove undefined values
+    const cleanJsonLd = JSON.parse(JSON.stringify(jsonLd));
+
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "recipe-jsonld";
+    script.textContent = JSON.stringify(cleanJsonLd);
+
+    // Remove existing script if any
+    const existing = document.getElementById("recipe-jsonld");
+    if (existing) existing.remove();
+
+    document.head.appendChild(script);
+
+    // Update document title and meta description
+    document.title = `${recipe.name} | Family Recipe Book`;
+    
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.setAttribute("name", "description");
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute("content", 
+      `${recipe.name} - ${recipe.category} recipe. ${totalTime > 0 ? `Ready in ${totalTime} minutes.` : ""} Serves ${recipe.servings}.`
+    );
+
+    // Add canonical URL to prevent duplicate content issues
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute("href", `${window.location.origin}/recipe/${recipeId}`);
+
+    return () => {
+      const el = document.getElementById("recipe-jsonld");
+      if (el) el.remove();
+    };
+  }, [recipe, recipeId]);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
