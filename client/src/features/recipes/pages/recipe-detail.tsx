@@ -637,6 +637,7 @@ export default function RecipeDetail() {
   }
 
   const isOwner = recipe.createdById === user?.id;
+  const isFamilyMember = recipe.familyId === family?.id;
 
   return (
     <main className="pt-16 sm:pt-20 pb-12">
@@ -750,7 +751,7 @@ export default function RecipeDetail() {
                 <Button variant="outline" size="icon" type="button" className="bg-background border border-border" onClick={exportToPDF} data-testid="button-export-pdf-mobile" aria-label="Export recipe as PDF">
                   <FileDown className="h-4 w-4" />
                 </Button>
-                {isOwner && (
+                {isFamilyMember && (
                   <Button 
                     variant="outline"
                     size="icon"
@@ -764,12 +765,12 @@ export default function RecipeDetail() {
                     {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                   </Button>
                 )}
-                {isOwner && (
+                {isFamilyMember && (
                   <Button variant="outline" size="icon" type="button" className="bg-background border border-border" onClick={startEditing} data-testid="button-edit-mobile" aria-label="Edit recipe">
                     <Pencil className="h-4 w-4" />
                   </Button>
                 )}
-                {isOwner && (
+                {isFamilyMember && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="outline" size="icon" type="button" className="bg-background border border-border" data-testid="button-delete-mobile" aria-label="Delete recipe">
@@ -960,7 +961,7 @@ export default function RecipeDetail() {
                       <Badge variant="secondary" data-testid="badge-category">
                         {recipe.category}
                       </Badge>
-                      {isOwner && recipe.isPublic && (
+                      {isFamilyMember && recipe.isPublic && (
                         <Badge variant="success" className="gap-1" data-testid="badge-public">
                           <Globe className="h-3 w-3" />
                           Public
@@ -1020,7 +1021,7 @@ export default function RecipeDetail() {
                     </TooltipTrigger>
                     <TooltipContent>Export as PDF</TooltipContent>
                   </Tooltip>
-                  {isOwner && (
+                  {isFamilyMember && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button 
@@ -1038,7 +1039,7 @@ export default function RecipeDetail() {
                       <TooltipContent>{recipe.isPublic ? "Make private" : "Make public"}</TooltipContent>
                     </Tooltip>
                   )}
-                  {isOwner && (
+                  {isFamilyMember && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button variant="ghost" size="icon" type="button" onClick={startEditing} data-testid="button-edit" aria-label="Edit recipe">
@@ -1048,7 +1049,7 @@ export default function RecipeDetail() {
                       <TooltipContent>Edit recipe</TooltipContent>
                     </Tooltip>
                   )}
-                  {isOwner && (
+                  {isFamilyMember && (
                     <AlertDialog>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1535,7 +1536,7 @@ export default function RecipeDetail() {
                                     )}
                                   </div>
                                   <p className="text-sm">{comment.content}</p>
-                                  {isOwner && !comment.isHidden && (
+                                  {isFamilyMember && !comment.isHidden && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
