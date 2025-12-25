@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot, MessageSquare } from "lucide-react";
+import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot, MessageSquare, ChevronDown, Database, Puzzle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
 import { AdminAISidebar } from "@/components/admin-ai-sidebar";
@@ -27,13 +27,21 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const adminNavItems = [
-  { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+const objectItems = [
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Families", href: "/admin/families", icon: HomeIcon },
   { title: "Recipes", href: "/admin/recipes", icon: ChefHat },
   { title: "Comments", href: "/admin/comments", icon: MessageSquare },
-  { title: "HubSpot Sync", href: "/admin/hubspot", icon: RefreshCw },
+];
+
+const integrationItems = [
+  { title: "HubSpot", href: "/admin/hubspot", icon: RefreshCw },
+];
+
+const allNavItems = [
+  { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  ...objectItems,
+  ...integrationItems,
 ];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
@@ -89,19 +97,55 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </Link>
 
               <nav className="hidden md:flex items-center gap-1">
-                {adminNavItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={location === item.href ? "bg-accent" : ""}
-                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
+                      className={objectItems.some(item => location === item.href) ? "bg-accent" : ""}
+                      data-testid="nav-objects-dropdown"
                     >
-                      <item.icon className="h-4 w-4 mr-2" />
-                      {item.title}
+                      <Database className="h-4 w-4 mr-2" />
+                      Objects
+                      <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
-                  </Link>
-                ))}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    {objectItems.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                        <Link href={item.href} className="flex items-center gap-2" data-testid={`nav-${item.title.toLowerCase()}`}>
+                          <item.icon className="h-4 w-4" />
+                          {item.title}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={integrationItems.some(item => location === item.href) ? "bg-accent" : ""}
+                      data-testid="nav-integrations-dropdown"
+                    >
+                      <Puzzle className="h-4 w-4 mr-2" />
+                      Integrations
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    {integrationItems.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                        <Link href={item.href} className="flex items-center gap-2" data-testid={`nav-${item.title.toLowerCase()}`}>
+                          <item.icon className="h-4 w-4" />
+                          {item.title}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </nav>
             </div>
 
@@ -210,7 +254,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Admin Pages">
-            {adminNavItems.map((item) => (
+            {allNavItems.map((item) => (
               <CommandItem
                 key={item.href}
                 onSelect={() => runCommand(() => navigate(item.href))}
