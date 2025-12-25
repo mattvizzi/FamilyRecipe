@@ -401,57 +401,80 @@ export default function RecipeDetail() {
               {recipe.name}
             </h1>
             
-            <div className="flex flex-wrap items-center gap-2 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
               <Badge variant="secondary" data-testid="badge-category">
                 {recipe.category}
               </Badge>
-              {recipe.isPublic ? (
-                <Badge variant="outline" className="gap-1">
-                  <Globe className="h-3 w-3" />
-                  Public
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="gap-1">
-                  <Lock className="h-3 w-3" />
-                  Private
-                </Badge>
-              )}
-              {(recipe.prepTime || 0) > 0 && (
-                <Badge variant="outline" className="gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span className="font-data">{recipe.prepTime}m</span> prep
-                </Badge>
-              )}
-              {(recipe.cookTime || 0) > 0 && (
-                <Badge variant="outline" className="gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span className="font-data">{recipe.cookTime}m</span> cook
-                </Badge>
-              )}
-              <Badge variant="outline" className="gap-1">
-                <Users className="h-3 w-3" />
-                <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
-              </Badge>
-              {recipe.creatorFirstName && (
-                <Badge variant="outline">
-                  by {recipe.creatorFirstName} {recipe.creatorLastName}
-                </Badge>
-              )}
-              <Badge variant="outline" className="gap-1">
-                <Eye className="h-3 w-3" />
-                <span className="font-data">{recipe.viewCount}</span> views
-              </Badge>
-              <Badge variant="outline" className="gap-1">
-                <ChefHat className="h-3 w-3" />
-                <span className="font-data">{recipe.cookCount}</span> cooked
-              </Badge>
-              {recipe.averageRating !== null && (
-                <Badge variant="outline" className="gap-1">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="font-data">{recipe.averageRating.toFixed(1)}</span>
-                  <span className="text-muted-foreground">({recipe.ratingCount})</span>
-                </Badge>
-              )}
+              
+              <span className="text-border">|</span>
+              
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                {(recipe.prepTime || 0) > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="font-data">{recipe.prepTime}m</span> prep
+                  </span>
+                )}
+                {(recipe.cookTime || 0) > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="font-data">{recipe.cookTime}m</span> cook
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
+                </span>
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3.5 w-3.5" />
+                  <span className="font-data">{recipe.viewCount}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <ChefHat className="h-3.5 w-3.5" />
+                  <span className="font-data">{recipe.cookCount}</span>
+                </span>
+              </div>
+              
+              <span className="text-border">|</span>
+              
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => rateMutation.mutate(star)}
+                    className="p-0.5"
+                    data-testid={`button-rate-${star}`}
+                  >
+                    <Star 
+                      className={`h-4 w-4 transition-colors ${
+                        star <= (hoverRating || recipe.userRating || 0)
+                          ? "fill-amber-400 text-amber-400"
+                          : recipe.averageRating && star <= Math.round(recipe.averageRating)
+                            ? "fill-amber-400/50 text-amber-400/50"
+                            : "text-muted-foreground/40"
+                      }`}
+                    />
+                  </button>
+                ))}
+                {recipe.ratingCount > 0 && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    ({recipe.ratingCount})
+                  </span>
+                )}
+              </div>
+              
+              <Button 
+                onClick={() => cookMutation.mutate()}
+                disabled={!recipe.canCookAgain || cookMutation.isPending}
+                size="sm"
+                variant={recipe.canCookAgain ? "default" : "secondary"}
+                data-testid="button-mark-cooked"
+              >
+                <ChefHat className="h-4 w-4 mr-1" />
+                {recipe.canCookAgain ? "I Made This" : "Cooked"}
+              </Button>
             </div>
           </div>
 
@@ -553,44 +576,6 @@ export default function RecipeDetail() {
                 </CollapsibleContent>
               </Collapsible>
             ))}
-
-            <div className="border-t border-border pt-8">
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-muted-foreground">Rate this recipe</p>
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onMouseEnter={() => setHoverRating(star)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        onClick={() => rateMutation.mutate(star)}
-                        className="p-0.5"
-                        data-testid={`button-rate-${star}`}
-                      >
-                        <Star 
-                          className={`h-5 w-5 transition-colors ${
-                            star <= (hoverRating || recipe.userRating || 0)
-                              ? "fill-amber-400 text-amber-400"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => cookMutation.mutate()}
-                  disabled={!recipe.canCookAgain || cookMutation.isPending}
-                  size="sm"
-                  variant={recipe.canCookAgain ? "default" : "secondary"}
-                  data-testid="button-mark-cooked"
-                >
-                  <ChefHat className="h-4 w-4 mr-2" />
-                  {recipe.canCookAgain ? "I Made This!" : "Cooked Today"}
-                </Button>
-              </div>
-            </div>
 
             {recipe.isPublic && (
               <div className="border-t border-border pt-8">
