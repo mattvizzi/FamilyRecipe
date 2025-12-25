@@ -133,6 +133,7 @@ The backend is organized into:
 ### Authentication
 - **Replit Auth**: OpenID Connect provider requiring `ISSUER_URL`, `REPL_ID`, and `SESSION_SECRET` environment variables
 - **PRODUCTION_DOMAIN**: Required in production for session cookies to work across subdomains. Set to the apex domain without a leading dot (e.g., `familyrecipe.app`). The system automatically prepends a dot to share cookies across subdomains like `admin.familyrecipe.app`.
+- **Cookie Configuration**: In production, session cookies use `SameSite=None; Secure` to support cross-site OAuth redirects from Replit's OIDC provider. Desktop Chrome requires this for the OAuth callback to set cookies correctly.
 
 ### AI Services
 - **OpenAI API**: Via Replit AI Integrations for recipe parsing and image generation

@@ -47,9 +47,11 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: isProduction, // Only require secure in production
+      // SameSite=None requires Secure=true (Chrome will reject cookies otherwise)
+      // Use "none" in production for cross-site OAuth redirects from Replit's OIDC provider
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction ? true : false, // Must be true when sameSite is "none"
       maxAge: sessionTtl,
-      sameSite: "lax", // CSRF protection: prevents cross-site cookie sending
       domain: cookieDomain, // Share cookie across subdomains when configured
     },
   });
