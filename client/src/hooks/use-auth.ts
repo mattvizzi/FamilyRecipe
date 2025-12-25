@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { User } from "@shared/models/auth";
+import { clearCsrfToken } from "@/lib/queryClient";
 
 async function fetchUser(): Promise<User | null> {
   const response = await fetch("/api/auth/user", {
@@ -18,6 +20,7 @@ async function fetchUser(): Promise<User | null> {
 }
 
 async function logout(): Promise<void> {
+  clearCsrfToken();
   window.location.href = "/api/logout";
 }
 
@@ -29,6 +32,13 @@ export function useAuth() {
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Pre-fetch CSRF token when user is authenticated
+  useEffect(() => {
+    if (user) {
+      fetch('/api/csrf-token', { credentials: 'include' }).catch(() => {});
+    }
+  }, [user]);
 
   const logoutMutation = useMutation({
     mutationFn: logout,

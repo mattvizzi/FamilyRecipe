@@ -1,10 +1,24 @@
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
 const app = express();
 const httpServer = createServer(app);
+
+// Enable gzip compression for all responses
+app.use(compression({
+  level: 6, // balanced compression level
+  threshold: 1024, // only compress responses > 1KB
+  filter: (req, res) => {
+    // Skip compression for event-stream
+    if (req.headers['accept'] === 'text/event-stream') {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
 
 declare module "http" {
   interface IncomingMessage {

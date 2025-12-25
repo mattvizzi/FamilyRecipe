@@ -1,10 +1,20 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction, RequestHandler } from "express";
 import { createServer, type Server } from "http";
+import { randomBytes } from "crypto";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replit_integrations/auth/replitAuth";
 import { registerAuthRoutes } from "./replit_integrations/auth/routes";
 import { openai, generateImageBuffer } from "./replit_integrations/image/client";
-import { insertRecipeSchema, updateRecipeSchema, recipeCategories, type RecipeGroup } from "@shared/schema";
+import { 
+  insertRecipeSchema, 
+  updateRecipeSchema, 
+  recipeCategories, 
+  familyNameSchema,
+  insertCommentContentSchema,
+  insertRatingSchema,
+  visibilitySchema,
+  type RecipeGroup 
+} from "@shared/schema";
 import PDFDocument from "pdfkit";
 import { scaleAmount } from "@shared/lib/fraction";
 
@@ -14,11 +24,66 @@ interface AuthRequest extends Request {
       sub: string;
     };
   };
+  session?: {
+    csrfToken?: string;
+  } & Request['session'];
 }
+
+// CSRF token generation
+function generateCsrfToken(): string {
+  return randomBytes(32).toString('hex');
+}
+
+// CSRF validation middleware for mutating requests
+const validateCsrf: RequestHandler = (req: AuthRequest, res: Response, next: NextFunction) => {
+  // Only validate for state-changing methods
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    const sessionToken = req.session?.csrfToken;
+    const headerToken = req.headers['x-csrf-token'] as string;
+    
+    // Reject if no session token exists (user must fetch /api/csrf-token first)
+    if (!sessionToken) {
+      return res.status(403).json({ message: 'CSRF token not initialized. Please refresh and try again.' });
+    }
+    
+    // Reject if header token doesn't match session token
+    if (sessionToken !== headerToken) {
+      return res.status(403).json({ message: 'Invalid CSRF token' });
+    }
+  }
+  next();
+};
 
 // Helper to get user's family
 async function getUserFamily(userId: string) {
   return storage.getFamilyByMember(userId);
+}
+
+// Helper to check if user can access a recipe (family member OR public recipe)
+async function canAccessRecipe(userId: string, recipeId: string): Promise<{ canAccess: boolean; recipe: Awaited<ReturnType<typeof storage.getRecipe>> }> {
+  const recipe = await storage.getRecipe(recipeId);
+  if (!recipe) {
+    return { canAccess: false, recipe: undefined };
+  }
+  
+  // Public recipes are accessible to all authenticated users
+  if (recipe.isPublic) {
+    return { canAccess: true, recipe };
+  }
+  
+  // Otherwise, must be a family member
+  const isMember = await storage.isFamilyMember(recipe.familyId, userId);
+  return { canAccess: isMember, recipe };
+}
+
+// Input sanitization helper - removes potential XSS vectors
+function sanitizeHtml(input: string): string {
+  return input
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
 }
 
 export async function registerRoutes(
@@ -29,6 +94,19 @@ export async function registerRoutes(
   // Initialize authentication
   await setupAuth(app);
   registerAuthRoutes(app);
+  
+  // ============ CSRF TOKEN ROUTE ============
+  
+  // Get or create CSRF token for the session
+  app.get("/api/csrf-token", isAuthenticated, (req: AuthRequest, res: Response) => {
+    if (!req.session!.csrfToken) {
+      req.session!.csrfToken = generateCsrfToken();
+    }
+    res.json({ csrfToken: req.session!.csrfToken });
+  });
+  
+  // Apply CSRF validation to all authenticated mutating routes
+  app.use("/api", validateCsrf);
   
   // ============ FAMILY ROUTES ============
   
@@ -69,10 +147,11 @@ export async function registerRoutes(
   app.post("/api/family", isAuthenticated, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user!.claims.sub;
-      const { name } = req.body;
       
-      if (!name || typeof name !== "string") {
-        return res.status(400).json({ message: "Family name is required" });
+      // Validate with Zod schema
+      const parseResult = familyNameSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid family name" });
       }
       
       // Check if user already has a family
@@ -81,7 +160,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: "You already belong to a family" });
       }
       
-      const family = await storage.createFamily(name.trim(), userId);
+      const family = await storage.createFamily(parseResult.data.name, userId);
       res.status(201).json(family);
     } catch (error) {
       console.error("Error creating family:", error);
@@ -93,10 +172,11 @@ export async function registerRoutes(
   app.patch("/api/family", isAuthenticated, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user!.claims.sub;
-      const { name } = req.body;
       
-      if (!name || typeof name !== "string") {
-        return res.status(400).json({ message: "Family name is required" });
+      // Validate with Zod schema
+      const parseResult = familyNameSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid family name" });
       }
       
       const family = await getUserFamily(userId);
@@ -104,7 +184,7 @@ export async function registerRoutes(
         return res.status(404).json({ message: "No family found" });
       }
       
-      const updated = await storage.updateFamily(family.id, name.trim());
+      const updated = await storage.updateFamily(family.id, parseResult.data.name);
       res.json(updated);
     } catch (error) {
       console.error("Error updating family:", error);
@@ -485,9 +565,13 @@ shallow depth of field, food styling.`;
       const userId = req.user!.claims.sub;
       const { id } = req.params;
       
-      const recipe = await storage.getRecipe(id);
+      // Check if user can access this recipe
+      const { canAccess, recipe } = await canAccessRecipe(userId, id);
       if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
+      }
+      if (!canAccess) {
+        return res.status(403).json({ message: "Access denied" });
       }
       
       const saved = await storage.saveRecipe(userId, id);
@@ -504,6 +588,8 @@ shallow depth of field, food styling.`;
       const userId = req.user!.claims.sub;
       const { id } = req.params;
       
+      // User can only unsave their own saved recipes - no need to check recipe access
+      // since we're just removing from their saved list
       await storage.unsaveRecipe(userId, id);
       res.status(204).send();
     } catch (error) {
@@ -517,18 +603,23 @@ shallow depth of field, food styling.`;
     try {
       const userId = req.user!.claims.sub;
       const { id } = req.params;
-      const { rating } = req.body;
       
-      if (typeof rating !== "number" || rating < 1 || rating > 5) {
-        return res.status(400).json({ message: "Rating must be between 1 and 5" });
+      // Validate with Zod schema
+      const parseResult = insertRatingSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid rating" });
       }
       
-      const recipe = await storage.getRecipe(id);
+      // Check if user can access this recipe
+      const { canAccess, recipe } = await canAccessRecipe(userId, id);
       if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
       }
+      if (!canAccess) {
+        return res.status(403).json({ message: "Access denied" });
+      }
       
-      const result = await storage.rateRecipe(userId, id, rating);
+      const result = await storage.rateRecipe(userId, id, parseResult.data.rating);
       res.status(201).json(result);
     } catch (error) {
       console.error("Error rating recipe:", error);
@@ -542,9 +633,13 @@ shallow depth of field, food styling.`;
       const userId = req.user!.claims.sub;
       const { id } = req.params;
       
-      const recipe = await storage.getRecipe(id);
+      // Check if user can access this recipe
+      const { canAccess, recipe } = await canAccessRecipe(userId, id);
       if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
+      }
+      if (!canAccess) {
+        return res.status(403).json({ message: "Access denied" });
       }
       
       const canCook = await storage.canUserCookAgain(userId, id);
@@ -566,9 +661,13 @@ shallow depth of field, food styling.`;
       const userId = req.user!.claims.sub;
       const { id } = req.params;
       
-      const recipe = await storage.getRecipe(id);
+      // Check if user can access this recipe
+      const { canAccess, recipe } = await canAccessRecipe(userId, id);
       if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
+      }
+      if (!canAccess) {
+        return res.status(403).json({ message: "Access denied" });
       }
       
       // Show hidden comments only to recipe owner
@@ -601,27 +700,30 @@ shallow depth of field, food styling.`;
     try {
       const userId = req.user!.claims.sub;
       const { id } = req.params;
-      const { content } = req.body;
       
-      if (!content || typeof content !== "string" || content.trim().length === 0) {
-        return res.status(400).json({ message: "Comment content is required" });
+      // Validate with Zod schema
+      const parseResult = insertCommentContentSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid comment" });
       }
       
-      if (content.length > 1000) {
-        return res.status(400).json({ message: "Comment is too long (max 1000 characters)" });
-      }
-      
-      const recipe = await storage.getRecipe(id);
+      // Check if user can access this recipe
+      const { canAccess, recipe } = await canAccessRecipe(userId, id);
       if (!recipe) {
         return res.status(404).json({ message: "Recipe not found" });
       }
+      if (!canAccess) {
+        return res.status(403).json({ message: "Access denied" });
+      }
       
       // Check for profanity
-      if (containsProfanity(content)) {
+      if (containsProfanity(parseResult.data.content)) {
         return res.status(400).json({ message: "Comment contains inappropriate language" });
       }
       
-      const comment = await storage.addComment(userId, id, content.trim());
+      // Sanitize content to prevent XSS
+      const sanitizedContent = sanitizeHtml(parseResult.data.content);
+      const comment = await storage.addComment(userId, id, sanitizedContent);
       res.status(201).json(comment);
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -652,10 +754,11 @@ shallow depth of field, food styling.`;
     try {
       const userId = req.user!.claims.sub;
       const { id } = req.params;
-      const { isPublic } = req.body;
       
-      if (typeof isPublic !== "boolean") {
-        return res.status(400).json({ message: "isPublic must be a boolean" });
+      // Validate with Zod schema
+      const parseResult = visibilitySchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid visibility value" });
       }
       
       const recipe = await storage.getRecipe(id);
@@ -668,7 +771,7 @@ shallow depth of field, food styling.`;
         return res.status(403).json({ message: "Only the recipe creator can change visibility" });
       }
       
-      const updated = await storage.updateRecipe(id, { isPublic });
+      const updated = await storage.updateRecipe(id, { isPublic: parseResult.data.isPublic });
       res.json(updated);
     } catch (error) {
       console.error("Error updating recipe visibility:", error);

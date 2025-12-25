@@ -1,5 +1,5 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, serial, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, serial, jsonb, boolean, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -34,7 +34,10 @@ export const familyMembers = pgTable("family_members", {
   familyId: varchar("family_id").notNull().references(() => families.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull(),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("family_members_family_id_idx").on(table.familyId),
+  index("family_members_user_id_idx").on(table.userId),
+]);
 
 // Ingredient schema for recipe groups
 export const ingredientSchema = z.object({
@@ -70,7 +73,12 @@ export const recipes = pgTable("recipes", {
   viewCount: integer("view_count").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("recipes_family_id_idx").on(table.familyId),
+  index("recipes_category_idx").on(table.category),
+  index("recipes_is_public_idx").on(table.isPublic),
+  index("recipes_created_by_id_idx").on(table.createdById),
+]);
 
 // Saved recipes table (users saving other people's recipes)
 export const savedRecipes = pgTable("saved_recipes", {
@@ -78,7 +86,10 @@ export const savedRecipes = pgTable("saved_recipes", {
   userId: varchar("user_id").notNull(),
   recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
   savedAt: timestamp("saved_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("saved_recipes_user_id_idx").on(table.userId),
+  index("saved_recipes_recipe_id_idx").on(table.recipeId),
+]);
 
 // Recipe ratings table
 export const recipeRatings = pgTable("recipe_ratings", {
@@ -87,7 +98,10 @@ export const recipeRatings = pgTable("recipe_ratings", {
   recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
   rating: integer("rating").notNull(), // 1-5
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("recipe_ratings_recipe_id_idx").on(table.recipeId),
+  index("recipe_ratings_user_id_idx").on(table.userId),
+]);
 
 // Recipe cooks table (tracking when users cook a recipe)
 export const recipeCooks = pgTable("recipe_cooks", {
@@ -95,7 +109,10 @@ export const recipeCooks = pgTable("recipe_cooks", {
   userId: varchar("user_id").notNull(),
   recipeId: varchar("recipe_id").notNull().references(() => recipes.id, { onDelete: "cascade" }),
   cookedAt: timestamp("cooked_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("recipe_cooks_recipe_id_idx").on(table.recipeId),
+  index("recipe_cooks_user_id_cooked_at_idx").on(table.userId, table.cookedAt),
+]);
 
 // Recipe comments table
 export const recipeComments = pgTable("recipe_comments", {
@@ -105,7 +122,10 @@ export const recipeComments = pgTable("recipe_comments", {
   content: text("content").notNull(),
   isHidden: boolean("is_hidden").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("recipe_comments_recipe_id_idx").on(table.recipeId),
+  index("recipe_comments_user_id_idx").on(table.userId),
+]);
 
 // Relations
 export const familiesRelations = relations(families, ({ many }) => ({
@@ -164,6 +184,26 @@ export const insertFamilySchema = createInsertSchema(families).omit({
   id: true,
   createdAt: true,
   inviteCode: true,
+});
+
+// Family name validation schema
+export const familyNameSchema = z.object({
+  name: z.string().min(1, "Family name is required").max(255, "Family name is too long").trim(),
+});
+
+// Comment validation schema
+export const insertCommentContentSchema = z.object({
+  content: z.string().min(1, "Comment is required").max(1000, "Comment is too long (max 1000 characters)").trim(),
+});
+
+// Rating validation schema
+export const insertRatingSchema = z.object({
+  rating: z.number().int().min(1, "Rating must be at least 1").max(5, "Rating cannot exceed 5"),
+});
+
+// Visibility validation schema
+export const visibilitySchema = z.object({
+  isPublic: z.boolean(),
 });
 
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
