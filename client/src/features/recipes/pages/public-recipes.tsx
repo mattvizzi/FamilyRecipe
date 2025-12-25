@@ -63,7 +63,7 @@ export default function PublicRecipes() {
           {/* Page Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
-              Community Recipes
+              {category === "all" ? "All Recipes" : `${category.charAt(0).toUpperCase() + category.slice(1)} Recipes`}
             </h1>
           </div>
 

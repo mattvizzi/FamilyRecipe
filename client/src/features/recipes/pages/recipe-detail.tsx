@@ -270,7 +270,7 @@ export default function RecipeDetail() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
-      navigate("/my-recipes");
+      navigate("/family-recipes");
       toast({ title: "Deleted", description: "Recipe deleted successfully" });
     },
     onError: () => {
@@ -629,7 +629,7 @@ export default function RecipeDetail() {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
           <Button asChild>
-            <a href="/my-recipes">Go Back Home</a>
+            <a href="/family-recipes">Go Back Home</a>
           </Button>
         </div>
       </main>
@@ -672,7 +672,7 @@ export default function RecipeDetail() {
                 } else if (window.history.length > 1) {
                   window.history.back();
                 } else {
-                  navigate("/my-recipes");
+                  navigate("/family-recipes");
                 }
               }}
               data-testid="button-back"

@@ -173,15 +173,15 @@ export function Header({ family }: HeaderProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/my-recipes" className="flex items-center gap-2" data-testid="dropdown-my-recipes">
+                  <Link href="/family-recipes" className="flex items-center gap-2" data-testid="dropdown-family-recipes">
                     <ChefHat className="h-4 w-4" />
-                    My Recipes
+                    Family Recipes
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/recipes" className="flex items-center gap-2" data-testid="dropdown-public-recipes">
+                  <Link href="/recipes" className="flex items-center gap-2" data-testid="dropdown-all-recipes">
                     <Globe className="h-4 w-4" />
-                    Public Recipes
+                    All Recipes
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -247,7 +247,7 @@ export function Header({ family }: HeaderProps) {
                 className={`text-primary-foreground hover:bg-primary-foreground/10 ${location === "/recipes" ? "bg-primary-foreground/20" : ""}`}
                 data-testid="subnav-all-recipes"
               >
-                Public Recipes
+                All Recipes
               </Button>
             </Link>
             {recipeCategories.map((cat) => (
@@ -329,18 +329,18 @@ export function Header({ family }: HeaderProps) {
               Add New Recipe
             </CommandItem>
             <CommandItem
-              onSelect={() => runCommand(() => navigate("/my-recipes"))}
-              data-testid="command-my-recipes"
+              onSelect={() => runCommand(() => navigate("/family-recipes"))}
+              data-testid="command-family-recipes"
             >
               <ChefHat className="mr-2 h-4 w-4" />
-              My Recipes
+              Family Recipes
             </CommandItem>
             <CommandItem
               onSelect={() => runCommand(() => navigate("/recipes"))}
               data-testid="command-browse"
             >
               <Globe className="mr-2 h-4 w-4" />
-              Public Recipes
+              All Recipes
             </CommandItem>
             <CommandItem
               onSelect={() => runCommand(() => navigate("/home"))}
@@ -391,14 +391,14 @@ export function Header({ family }: HeaderProps) {
           <nav className="flex flex-col gap-1">
             {/* Primary: View Recipes */}
             <SheetClose asChild>
-              <Link href="/my-recipes">
+              <Link href="/family-recipes">
                 <Button 
                   variant="ghost" 
                   className="w-full justify-start gap-3"
-                  data-testid="mobile-nav-my-recipes"
+                  data-testid="mobile-nav-family-recipes"
                 >
                   <ChefHat className="h-4 w-4" />
-                  My Recipes
+                  Family Recipes
                 </Button>
               </Link>
             </SheetClose>
@@ -410,7 +410,7 @@ export function Header({ family }: HeaderProps) {
                   data-testid="mobile-nav-browse"
                 >
                   <Globe className="h-4 w-4" />
-                  Public Recipes
+                  All Recipes
                 </Button>
               </Link>
             </SheetClose>

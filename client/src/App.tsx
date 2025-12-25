@@ -222,8 +222,8 @@ function AuthenticatedRouter() {
           <Switch>
             <Route path="/">{() => <Redirect to="/home" />}</Route>
             <Route path="/home" component={Dashboard} />
-            <Route path="/my-recipes" component={Home} />
-            <Route path="/my-recipes/:category" component={Home} />
+            <Route path="/family-recipes" component={Home} />
+            <Route path="/family-recipes/:category" component={Home} />
             <Route path="/recipes" component={PublicRecipes} />
             <Route path="/recipes/:category" component={PublicRecipes} />
             <Route path="/recipe/:id" component={RecipeDetail} />
@@ -231,7 +231,7 @@ function AuthenticatedRouter() {
             <Route path="/add-recipe/manual" component={ManualRecipe} />
             <Route path="/family" component={FamilySettings} />
             <Route path="/join/:code" component={JoinFamily} />
-            <Route path="/create-family">{() => <Redirect to="/my-recipes" />}</Route>
+            <Route path="/create-family">{() => <Redirect to="/family-recipes" />}</Route>
             <Route component={NotFound} />
           </Switch>
         </div>

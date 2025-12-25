@@ -214,8 +214,14 @@ export default function Dashboard() {
     .filter(r => r.id !== featuredRecipe?.id)
     .slice(0, 8);
 
-  // Quick meals (under 30 min cook time)
-  const quickMeals = [...familyRecipes, ...publicRecipes]
+  // Quick meals (under 30 min cook time) - deduplicate by id
+  const allRecipesDeduped = [...familyRecipes];
+  publicRecipes.forEach(r => {
+    if (!allRecipesDeduped.some(fr => fr.id === r.id)) {
+      allRecipesDeduped.push(r);
+    }
+  });
+  const quickMeals = allRecipesDeduped
     .filter(r => r.cookTime && r.cookTime <= 30 && r.id !== featuredRecipe?.id)
     .slice(0, 8);
 
@@ -258,7 +264,7 @@ export default function Dashboard() {
           title="From Your Family"
           recipes={recentFamilyRecipes}
           isLoading={familyLoading}
-          viewAllLink="/my-recipes"
+          viewAllLink="/family-recipes"
         />
 
         {savedRecipesList.length > 0 && (

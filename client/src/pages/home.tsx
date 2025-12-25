@@ -13,11 +13,11 @@ import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 import { SEO } from "@/components/seo";
 
-type RecipeFilter = "all" | "my-recipes" | "saved";
+type RecipeFilter = "all" | "family" | "saved";
 
 const filterLabels: Record<RecipeFilter, string> = {
   "all": "All",
-  "my-recipes": "Family",
+  "family": "Family",
   "saved": "Saved",
 };
 
@@ -49,7 +49,7 @@ export default function Home() {
 
   const allRecipes = (() => {
     switch (recipeFilter) {
-      case "my-recipes":
+      case "family":
         return familyRecipes;
       case "saved":
         return savedRecipes;
@@ -69,14 +69,14 @@ export default function Home() {
 
   const handleCategoryChange = (cat: string) => {
     if (cat === "all") {
-      navigate("/my-recipes");
+      navigate("/family-recipes");
     } else {
-      navigate(`/my-recipes/${cat.toLowerCase()}`);
+      navigate(`/family-recipes/${cat.toLowerCase()}`);
     }
   };
 
   const pageTitle = category === "all" 
-    ? "My Recipes" 
+    ? "Family Recipes" 
     : `${category.charAt(0).toUpperCase() + category.slice(1)} Recipes`;
 
   return (
@@ -91,7 +91,7 @@ export default function Home() {
           {/* Page Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
-              My Recipes
+              Family Recipes
             </h1>
           </div>
 
@@ -99,7 +99,7 @@ export default function Home() {
           <Tabs value={recipeFilter} onValueChange={(v) => setRecipeFilter(v as RecipeFilter)} className="mb-4">
             <TabsList className="grid w-full max-w-xs grid-cols-3">
               <TabsTrigger value="all" data-testid="tab-all">All</TabsTrigger>
-              <TabsTrigger value="my-recipes" data-testid="tab-my-recipes">Family</TabsTrigger>
+              <TabsTrigger value="family" data-testid="tab-family">Family</TabsTrigger>
               <TabsTrigger value="saved" data-testid="tab-saved">Saved</TabsTrigger>
             </TabsList>
           </Tabs>
