@@ -285,19 +285,19 @@ export default function AddRecipe() {
 
   if (step === "processing") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6" role="status" aria-live="polite" aria-busy="true">
         <div className="max-w-sm w-full text-center">
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-              <Sparkles className="h-8 w-8 text-primary animate-pulse" />
+              <Sparkles className="h-8 w-8 text-primary animate-pulse" aria-hidden="true" />
             </div>
             <h2 className="text-lg font-semibold mb-2">Processing Recipe</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground" aria-live="assertive">
               {progressMessage || "Our AI is extracting your recipe..."}
             </p>
           </div>
           
-          <div className="flex items-center justify-center gap-1.5 mb-6">
+          <div className="flex items-center justify-center gap-1.5 mb-6" aria-hidden="true">
             <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
             <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
             <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />

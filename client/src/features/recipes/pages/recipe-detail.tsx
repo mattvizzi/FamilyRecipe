@@ -420,6 +420,7 @@ export default function RecipeDetail() {
                       onClick={() => saveMutation.mutate()}
                       disabled={saveMutation.isPending}
                       data-testid="button-save"
+                      aria-label={recipe.isSaved ? "Remove from saved recipes" : "Save recipe"}
                     >
                       <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
                     </Button>
@@ -429,7 +430,7 @@ export default function RecipeDetail() {
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy">
+                  <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy" aria-label="Copy recipe to clipboard">
                     <Copy className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -437,7 +438,7 @@ export default function RecipeDetail() {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf">
+                  <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf" aria-label="Export recipe as PDF">
                     <FileDown className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -452,6 +453,7 @@ export default function RecipeDetail() {
                       onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
                       disabled={visibilityMutation.isPending}
                       data-testid="button-visibility"
+                      aria-label={recipe.isPublic ? "Make recipe private" : "Make recipe public"}
                     >
                       {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
                     </Button>
@@ -462,7 +464,7 @@ export default function RecipeDetail() {
               {isOwner && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit">
+                    <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit" aria-label="Edit recipe">
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
@@ -474,7 +476,7 @@ export default function RecipeDetail() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" data-testid="button-delete">
+                        <Button variant="ghost" size="icon" data-testid="button-delete" aria-label="Delete recipe">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>

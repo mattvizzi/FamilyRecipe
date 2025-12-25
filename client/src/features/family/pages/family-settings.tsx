@@ -138,11 +138,13 @@ export default function FamilySettings() {
                     value={inviteLink}
                     readOnly
                     className="flex-1 font-mono text-sm"
+                    aria-label="Family invite link"
                     data-testid="input-invite-link"
                   />
                   <Button 
                     variant="outline"
                     onClick={copyInviteLink}
+                    aria-label={copied ? "Link copied" : "Copy invite link"}
                     data-testid="button-copy-invite"
                   >
                     {copied ? (
@@ -166,11 +168,11 @@ export default function FamilySettings() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {family.members.map((member) => (
                     <div 
                       key={member.id} 
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted hover-elevate transition-colors"
                       data-testid={`member-${member.userId}`}
                     >
                       <Avatar className="h-10 w-10">

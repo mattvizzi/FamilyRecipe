@@ -136,6 +136,17 @@ function AdminRouter() {
   );
 }
 
+function SkipToMainContent() {
+  return (
+    <a 
+      href="#main-content" 
+      className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:rounded-md focus:border focus:border-border"
+    >
+      Skip to main content
+    </a>
+  );
+}
+
 function AuthenticatedRouter() {
   const { data: family, isLoading: familyLoading } = useQuery<Family>({
     queryKey: ["/api/family"],
@@ -163,27 +174,30 @@ function AuthenticatedRouter() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SkipToMainContent />
       <Header family={family} />
       <Suspense fallback={
         <div className="pt-20 flex items-center justify-center" style={{ minHeight: 'calc(100vh - 5rem)' }}>
           <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
       }>
-        <Switch>
-          <Route path="/">{() => <Redirect to="/home" />}</Route>
-          <Route path="/home" component={Dashboard} />
-          <Route path="/my-recipes" component={Home} />
-          <Route path="/my-recipes/:category" component={Home} />
-          <Route path="/recipes" component={PublicRecipes} />
-          <Route path="/recipes/:category" component={PublicRecipes} />
-          <Route path="/recipe/:id" component={RecipeDetail} />
-          <Route path="/add-recipe" component={AddRecipe} />
-          <Route path="/add-recipe/manual" component={ManualRecipe} />
-          <Route path="/family" component={FamilySettings} />
-          <Route path="/join/:code" component={JoinFamily} />
-          <Route path="/create-family">{() => <Redirect to="/my-recipes" />}</Route>
-          <Route component={NotFound} />
-        </Switch>
+        <div id="main-content">
+          <Switch>
+            <Route path="/">{() => <Redirect to="/home" />}</Route>
+            <Route path="/home" component={Dashboard} />
+            <Route path="/my-recipes" component={Home} />
+            <Route path="/my-recipes/:category" component={Home} />
+            <Route path="/recipes" component={PublicRecipes} />
+            <Route path="/recipes/:category" component={PublicRecipes} />
+            <Route path="/recipe/:id" component={RecipeDetail} />
+            <Route path="/add-recipe" component={AddRecipe} />
+            <Route path="/add-recipe/manual" component={ManualRecipe} />
+            <Route path="/family" component={FamilySettings} />
+            <Route path="/join/:code" component={JoinFamily} />
+            <Route path="/create-family">{() => <Redirect to="/my-recipes" />}</Route>
+            <Route component={NotFound} />
+          </Switch>
+        </div>
       </Suspense>
     </div>
   );

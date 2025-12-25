@@ -19,7 +19,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false, showVisibili
     return (
       <Link href={`/recipe/${recipe.id}`}>
         <Card 
-          className="group cursor-pointer border border-border"
+          className="group cursor-pointer border border-border hover-elevate active-elevate-2"
           data-testid={`card-recipe-${recipe.id}`}
         >
           <CardContent className="p-4 flex gap-4">
@@ -79,10 +79,10 @@ export function RecipeCard({ recipe, viewMode, showCreator = false, showVisibili
   return (
     <Link href={`/recipe/${recipe.id}`}>
       <Card 
-        className="group overflow-hidden cursor-pointer border border-border"
+        className="group overflow-visible cursor-pointer border border-border hover-elevate active-elevate-2"
         data-testid={`card-recipe-${recipe.id}`}
       >
-        <div className="aspect-[4/3] bg-muted overflow-hidden">
+        <div className="aspect-[4/3] bg-muted overflow-hidden rounded-t-lg">
           {recipe.imageUrl ? (
             <img
               src={recipe.imageUrl}

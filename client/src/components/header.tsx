@@ -104,6 +104,7 @@ export function Header({ family }: HeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setMobileNavOpen(true)}
+              aria-label="Open navigation menu"
               data-testid="button-mobile-menu"
             >
               <Menu className="h-5 w-5" />
@@ -146,6 +147,7 @@ export function Header({ family }: HeaderProps) {
               size="icon"
               className="sm:hidden"
               onClick={() => setOpen(true)}
+              aria-label="Search recipes"
               data-testid="button-search-mobile"
             >
               <Search className="h-4 w-4" />
@@ -153,7 +155,7 @@ export function Header({ family }: HeaderProps) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-lg" data-testid="button-user-menu">
+                <Button variant="ghost" size="icon" className="rounded-lg" aria-label="User menu" data-testid="button-user-menu">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.profileImageUrl || undefined} alt="Profile" />
                     <AvatarFallback className="text-sm font-medium bg-muted">{getInitials()}</AvatarFallback>
