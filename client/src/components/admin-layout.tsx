@@ -18,7 +18,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot, MessageSquare, ChevronDown, Database, Puzzle } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot, MessageSquare, ChevronDown, Database, Puzzle, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
 import { AdminAISidebar } from "@/components/admin-ai-sidebar";
@@ -77,6 +84,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   
   // Use pre-computed module-level constants for stable navigation
@@ -122,7 +130,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen bg-background">
         <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
-            <div className="flex items-center gap-6">
+            {/* Mobile: Hamburger Left */}
+            <div className="flex items-center gap-2 md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileNavOpen(true)}
+                data-testid="button-admin-mobile-menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Logo - Centered on mobile, left on desktop */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 md:relative md:left-0 md:transform-none">
               <Link href={dashboardHref}>
                 <div className="flex items-center cursor-pointer" data-testid="link-admin-home">
                   <span className="text-xl font-bold tracking-tight text-primary">Family</span>
@@ -130,8 +151,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <span className="ml-2 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
                 </div>
               </Link>
+            </div>
 
-              <nav className="hidden md:flex items-center gap-1">
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-6">
+              <nav className="flex items-center gap-1">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -324,6 +348,120 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
+
+      {/* Mobile Navigation Sheet */}
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="left" className="w-72 p-0">
+          <SheetHeader className="p-4 border-b border-border">
+            <SheetTitle className="flex items-center">
+              <span className="text-xl font-bold tracking-tight text-primary">Family</span>
+              <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
+              <span className="ml-2 text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">Admin</span>
+            </SheetTitle>
+          </SheetHeader>
+          <div className="py-4">
+            {/* Dashboard */}
+            <div className="px-3 mb-2">
+              <SheetClose asChild>
+                <Link href={dashboardHref}>
+                  <Button
+                    variant="ghost"
+                    className={`w-full justify-start gap-3 ${location === dashboardHref ? "bg-accent" : ""}`}
+                    data-testid="mobile-nav-dashboard"
+                  >
+                    <LayoutDashboard className="h-4 w-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+              </SheetClose>
+            </div>
+
+            {/* Objects Section */}
+            <div className="px-3 py-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-3">Objects</p>
+              {objectItems.map((item) => (
+                <SheetClose key={item.href} asChild>
+                  <Link href={item.href}>
+                    <Button
+                      variant="ghost"
+                      className={`w-full justify-start gap-3 mb-1 ${location === item.href ? "bg-accent" : ""}`}
+                      data-testid={`mobile-nav-${item.title.toLowerCase()}`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.title}
+                    </Button>
+                  </Link>
+                </SheetClose>
+              ))}
+            </div>
+
+            {/* Integrations Section */}
+            <div className="px-3 py-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-3">Integrations</p>
+              {integrationItems.map((item) => (
+                <SheetClose key={item.href} asChild>
+                  <Link href={item.href}>
+                    <Button
+                      variant="ghost"
+                      className={`w-full justify-start gap-3 mb-1 ${location === item.href ? "bg-accent" : ""}`}
+                      data-testid={`mobile-nav-${item.title.toLowerCase()}`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {item.title}
+                    </Button>
+                  </Link>
+                </SheetClose>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-border my-2" />
+
+            {/* Quick Actions */}
+            <div className="px-3 py-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-3">Quick Actions</p>
+              <SheetClose asChild>
+                {isOnAdminSubdomain ? (
+                  <a href={getMainDomainUrl("/home")}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-3"
+                      data-testid="mobile-nav-go-to-website"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Go to Website
+                    </Button>
+                  </a>
+                ) : (
+                  <Link href="/home">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-3"
+                      data-testid="mobile-nav-go-to-website"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Go to Website
+                    </Button>
+                  </Link>
+                )}
+              </SheetClose>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3"
+                onClick={toggleTheme}
+                data-testid="mobile-nav-theme-toggle"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                {theme === "dark" ? "Light Mode" : "Dark Mode"}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
