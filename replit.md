@@ -45,7 +45,7 @@ The frontend follows a page-based architecture with:
 The backend is organized into:
 - `server/routes.ts` - Main API routes
 - `server/storage.ts` - Database abstraction layer
-- `server/replit_integrations/` - Modular integrations for auth, chat, image generation, and object storage
+- `server/replit_integrations/` - Modular integrations for auth and image generation
 
 ### Data Model
 - **Families**: Groups of users who share recipes (with invite codes)
@@ -57,7 +57,7 @@ The backend is organized into:
 1. **Family-based multi-tenancy**: Recipes belong to families, not individual users, enabling collaborative recipe management
 2. **Grouped recipe structure**: Recipes support multiple ingredient/instruction groups (e.g., "Spaghetti" and "Meatballs" as separate groups within one recipe)
 3. **AI recipe extraction**: Uses OpenAI integration for parsing recipes from photos, URLs, or raw text
-4. **Fraction handling**: Custom utilities for converting between decimals and cooking fractions (1/2, 1/4, etc.)
+4. **Fraction handling**: Shared utilities in `shared/lib/fraction.ts` for converting between decimals and cooking fractions (1/2, 1/4, etc.)
 
 ## External Dependencies
 
