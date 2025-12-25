@@ -7,6 +7,12 @@ Recipe Tracker is a family recipe management application that allows users to or
 ## Recent Changes (December 2024)
 
 ### December 25, 2024
+- **Route Architecture Refactor**: Split monolithic 1,460-line `routes.ts` into domain-specific routers:
+  - `server/routes.ts` - Main entry point (~35 lines), mounts domain routers
+  - `server/routes/family.ts` - Family CRUD, invite codes, join operations (6 routes)
+  - `server/routes/recipes.ts` - Recipe CRUD, AI processing, comments, ratings, PDF export (18+ routes)
+  - `server/routes/admin.ts` - Admin dashboard, HubSpot sync, AI chat (17+ routes)
+  - `server/middleware.ts` - Centralized middleware: rate limiters, auth checks, helper utilities
 - **Admin Subdomain Routing**: Production admin hosted on `admin.familyrecipe.app` with new URL structure:
   - `/dashboard` - Platform-wide statistics (users, families, recipes, public recipe percentage)
   - `/objects/users` - View all users with family associations and recipe counts
@@ -87,8 +93,13 @@ The frontend follows a page-based architecture with:
 - **File Storage**: Google Cloud Storage integration for recipe images
 
 The backend is organized into:
-- `server/routes.ts` - Main API routes
+- `server/routes.ts` - Main entry point (~35 lines), mounts domain routers
+- `server/routes/family.ts` - Family CRUD, invite codes, join operations
+- `server/routes/recipes.ts` - Recipe CRUD, AI processing, comments, ratings, PDF export
+- `server/routes/admin.ts` - Admin dashboard, HubSpot sync, AI chat
+- `server/middleware.ts` - Centralized middleware: rate limiters, auth checks, helper utilities
 - `server/storage.ts` - Database abstraction layer
+- `server/hubspot.ts` - HubSpot CRM integration service
 - `server/replit_integrations/` - Modular integrations for auth and image generation
 
 ### Data Model
