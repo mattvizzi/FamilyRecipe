@@ -125,7 +125,7 @@ export async function setupAuth(app: Express) {
     
     passport.authenticate(`replitauth:${req.hostname}`, {
       successReturnToOrRedirect: returnTo,
-      failureRedirect: "/api/login",
+      failureRedirect: "/",
     })(req, res, next);
   });
 
