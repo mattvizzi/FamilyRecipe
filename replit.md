@@ -7,6 +7,15 @@ Recipe Tracker is a family recipe management application that allows users to or
 ## Recent Changes (December 2024)
 
 ### December 25, 2024
+- **Admin Management System**: Complete admin section at `/admin/*` routes:
+  - Admin Dashboard: Platform-wide statistics (users, families, recipes, public recipe percentage)
+  - Users Management: View all users with family associations and recipe counts
+  - Families Management: View all family groups with member/recipe counts and invite codes
+  - Recipes Management: Browse all recipes with visibility status and view counts
+  - HubSpot Sync: Monitor CRM synchronization status
+  - Admin authentication via `admins` PostgreSQL table (just stores userId)
+  - Hidden from search engines via `X-Robots-Tag: noindex` headers and meta tags
+  - Bidirectional navigation: "Go to Admin" in main site profile dropdown for admins, "Go to Website" in admin area
 - **HubSpot CRM Integration**: Automatic sync of app data to HubSpot:
   - Users sync as Contacts when they register
   - Families sync as Companies when created or updated

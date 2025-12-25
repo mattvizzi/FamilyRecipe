@@ -9,6 +9,7 @@ import {
   recipeRatings,
   recipeCooks,
   recipeComments,
+  admins,
   users,
   type Family, 
   type FamilyMember, 
@@ -23,6 +24,7 @@ import {
   type RecipeRating,
   type RecipeCook,
   type RecipeComment,
+  type Admin,
 } from "@shared/schema";
 
 function generateRecipeId(): string {
@@ -80,6 +82,53 @@ export interface IStorage {
   addComment(userId: string, recipeId: string, content: string): Promise<RecipeComment>;
   getComments(recipeId: string, showHidden?: boolean): Promise<CommentWithUser[]>;
   hideComment(commentId: number, recipeOwnerId: string): Promise<boolean>;
+
+  // Admin operations
+  isAdmin(userId: string): Promise<boolean>;
+  addAdmin(userId: string): Promise<Admin>;
+  removeAdmin(userId: string): Promise<boolean>;
+  getAllAdmins(): Promise<Admin[]>;
+
+  // Admin data operations
+  getAdminStats(): Promise<{
+    totalUsers: number;
+    totalFamilies: number;
+    totalRecipes: number;
+    publicRecipes: number;
+    recentUsers: number;
+    recentRecipes: number;
+  }>;
+  getAllUsers(): Promise<Array<{
+    id: string;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    profileImageUrl: string | null;
+    createdAt: Date;
+    familyId: string | null;
+    familyName: string | null;
+    recipeCount: number;
+  }>>;
+  getAllFamiliesWithStats(): Promise<Array<{
+    id: string;
+    name: string;
+    createdById: string;
+    inviteCode: string;
+    createdAt: Date;
+    memberCount: number;
+    recipeCount: number;
+    creatorName: string | null;
+  }>>;
+  getAllRecipesAdmin(): Promise<Array<{
+    id: string;
+    name: string;
+    category: string;
+    isPublic: boolean;
+    viewCount: number;
+    createdAt: Date;
+    familyName: string | null;
+    creatorName: string | null;
+  }>>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -535,6 +584,192 @@ class DatabaseStorage implements IStorage {
       .set({ isHidden: true })
       .where(eq(recipeComments.id, commentId));
     return true;
+  }
+
+  // Admin operations
+  async isAdmin(userId: string): Promise<boolean> {
+    const [admin] = await db.select().from(admins).where(eq(admins.userId, userId));
+    return !!admin;
+  }
+
+  async addAdmin(userId: string): Promise<Admin> {
+    const existing = await this.isAdmin(userId);
+    if (existing) {
+      const [admin] = await db.select().from(admins).where(eq(admins.userId, userId));
+      return admin;
+    }
+    const [admin] = await db.insert(admins).values({ userId }).returning();
+    return admin;
+  }
+
+  async removeAdmin(userId: string): Promise<boolean> {
+    await db.delete(admins).where(eq(admins.userId, userId));
+    return true;
+  }
+
+  async getAllAdmins(): Promise<Admin[]> {
+    return db.select().from(admins);
+  }
+
+  // Admin data operations
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    totalFamilies: number;
+    totalRecipes: number;
+    publicRecipes: number;
+    recentUsers: number;
+    recentRecipes: number;
+  }> {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [userCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
+    const [familyCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(families);
+    const [recipeCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(recipes);
+    const [publicCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(recipes).where(eq(recipes.isPublic, true));
+    const [recentUserCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(gte(users.createdAt, sevenDaysAgo));
+    const [recentRecipeCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(recipes).where(gte(recipes.createdAt, sevenDaysAgo));
+
+    return {
+      totalUsers: Number(userCount?.count ?? 0),
+      totalFamilies: Number(familyCount?.count ?? 0),
+      totalRecipes: Number(recipeCount?.count ?? 0),
+      publicRecipes: Number(publicCount?.count ?? 0),
+      recentUsers: Number(recentUserCount?.count ?? 0),
+      recentRecipes: Number(recentRecipeCount?.count ?? 0),
+    };
+  }
+
+  async getAllUsers(): Promise<Array<{
+    id: string;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    profileImageUrl: string | null;
+    createdAt: Date;
+    familyId: string | null;
+    familyName: string | null;
+    recipeCount: number;
+  }>> {
+    const results = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        createdAt: users.createdAt,
+        familyId: familyMembers.familyId,
+        familyName: families.name,
+      })
+      .from(users)
+      .leftJoin(familyMembers, eq(users.id, familyMembers.userId))
+      .leftJoin(families, eq(familyMembers.familyId, families.id))
+      .orderBy(desc(users.createdAt));
+
+    const usersWithRecipes = await Promise.all(
+      results.map(async (user) => {
+        const [count] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(recipes)
+          .where(eq(recipes.createdById, user.id));
+        return { ...user, recipeCount: Number(count?.count ?? 0) };
+      })
+    );
+
+    return usersWithRecipes;
+  }
+
+  async getAllFamiliesWithStats(): Promise<Array<{
+    id: string;
+    name: string;
+    createdById: string;
+    inviteCode: string;
+    createdAt: Date;
+    memberCount: number;
+    recipeCount: number;
+    creatorName: string | null;
+  }>> {
+    const allFamilies = await db
+      .select({
+        id: families.id,
+        name: families.name,
+        createdById: families.createdById,
+        inviteCode: families.inviteCode,
+        createdAt: families.createdAt,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName,
+      })
+      .from(families)
+      .leftJoin(users, eq(families.createdById, users.id))
+      .orderBy(desc(families.createdAt));
+
+    const familiesWithStats = await Promise.all(
+      allFamilies.map(async (family) => {
+        const [memberCount] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(familyMembers)
+          .where(eq(familyMembers.familyId, family.id));
+        const [recipeCount] = await db
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(recipes)
+          .where(eq(recipes.familyId, family.id));
+        return {
+          id: family.id,
+          name: family.name,
+          createdById: family.createdById,
+          inviteCode: family.inviteCode,
+          createdAt: family.createdAt,
+          memberCount: Number(memberCount?.count ?? 0),
+          recipeCount: Number(recipeCount?.count ?? 0),
+          creatorName: family.creatorFirstName && family.creatorLastName
+            ? `${family.creatorFirstName} ${family.creatorLastName}`
+            : family.creatorFirstName || null,
+        };
+      })
+    );
+
+    return familiesWithStats;
+  }
+
+  async getAllRecipesAdmin(): Promise<Array<{
+    id: string;
+    name: string;
+    category: string;
+    isPublic: boolean;
+    viewCount: number;
+    createdAt: Date;
+    familyName: string | null;
+    creatorName: string | null;
+  }>> {
+    const results = await db
+      .select({
+        id: recipes.id,
+        name: recipes.name,
+        category: recipes.category,
+        isPublic: recipes.isPublic,
+        viewCount: recipes.viewCount,
+        createdAt: recipes.createdAt,
+        familyName: families.name,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName,
+      })
+      .from(recipes)
+      .leftJoin(families, eq(recipes.familyId, families.id))
+      .leftJoin(users, eq(recipes.createdById, users.id))
+      .orderBy(desc(recipes.createdAt));
+
+    return results.map((r) => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      isPublic: r.isPublic,
+      viewCount: r.viewCount,
+      createdAt: r.createdAt,
+      familyName: r.familyName,
+      creatorName: r.creatorFirstName && r.creatorLastName
+        ? `${r.creatorFirstName} ${r.creatorLastName}`
+        : r.creatorFirstName || null,
+    }));
   }
 }
 

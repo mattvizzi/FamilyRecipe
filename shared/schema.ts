@@ -127,6 +127,15 @@ export const recipeComments = pgTable("recipe_comments", {
   index("recipe_comments_user_id_idx").on(table.userId),
 ]);
 
+// Admin users table
+export const admins = pgTable("admins", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("admins_user_id_idx").on(table.userId),
+]);
+
 // Relations
 export const familiesRelations = relations(families, ({ many }) => ({
   members: many(familyMembers),
@@ -296,3 +305,7 @@ export type FamilyWithMembers = Family & {
     profileImageUrl?: string | null;
   }>;
 };
+
+// Admin types
+export type Admin = typeof admins.$inferSelect;
+export type InsertAdmin = { userId: string };

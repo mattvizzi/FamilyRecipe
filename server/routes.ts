@@ -80,6 +80,22 @@ interface AuthRequest extends Request {
   } & Request['session'];
 }
 
+// Admin authentication middleware
+const isAdmin: RequestHandler = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user?.claims?.sub) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  
+  const userId = req.user.claims.sub;
+  const adminStatus = await storage.isAdmin(userId);
+  
+  if (!adminStatus) {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  
+  next();
+};
+
 // CSRF token generation
 function generateCsrfToken(): string {
   return randomBytes(32).toString('hex');
@@ -1020,6 +1036,74 @@ shallow depth of field, food styling.`;
       console.error("Error exporting PDF:", error);
       res.status(500).json({ message: "Failed to export PDF" });
     }
+  });
+
+  // ============ ADMIN ROUTES ============
+  
+  // Check if current user is admin
+  app.get("/api/admin/check", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const adminStatus = await storage.isAdmin(userId);
+      if (!adminStatus) {
+        res.status(403).json({ isAdmin: false, message: "Forbidden" });
+        return;
+      }
+      res.json({ isAdmin: true });
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      res.status(500).json({ message: "Failed to check admin status" });
+    }
+  });
+
+  // Admin dashboard stats
+  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // Get all users (admin only)
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Get all families (admin only)
+  app.get("/api/admin/families", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const families = await storage.getAllFamiliesWithStats();
+      res.json(families);
+    } catch (error) {
+      console.error("Error fetching families:", error);
+      res.status(500).json({ message: "Failed to fetch families" });
+    }
+  });
+
+  // Get all recipes (admin only)
+  app.get("/api/admin/recipes", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const recipes = await storage.getAllRecipesAdmin();
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
+      res.status(500).json({ message: "Failed to fetch recipes" });
+    }
+  });
+
+  // Set noindex header for admin routes (middleware for frontend)
+  app.use("/admin", (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    next();
   });
 
   return httpServer;

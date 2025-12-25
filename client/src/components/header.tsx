@@ -27,8 +27,9 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
-import { LogOut, Users, ChefHat, Search, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp, Menu, Sun, Moon } from "lucide-react";
+import { LogOut, Users, ChefHat, Search, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp, Menu, Sun, Moon, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useAdmin } from "@/hooks/use-admin";
 import { useQuery } from "@tanstack/react-query";
 import type { Family, RecipeWithCreator } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
@@ -40,6 +41,7 @@ interface HeaderProps {
 
 export function Header({ family }: HeaderProps) {
   const { user, logout, isLoggingOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const [location, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -199,6 +201,17 @@ export function Header({ family }: HeaderProps) {
                   )}
                   {theme === "dark" ? "Light Mode" : "Dark Mode"}
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link href="/admin" className="flex items-center gap-2" data-testid="dropdown-go-to-admin">
+                        <Shield className="h-4 w-4" />
+                        Go to Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => logout()}
