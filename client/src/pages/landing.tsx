@@ -9,10 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
+import { SEO } from "@/components/seo";
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Family Recipes, Preserved Forever"
+        description="The smart way to digitize, organize, and share your family's culinary traditions. Use AI to scan recipes from photos, URLs, or handwritten notes. Build your family cookbook together."
+      />
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center">
@@ -43,6 +48,7 @@ export default function Landing() {
                     <img 
                       src={heroImage} 
                       alt="Home cooking with love" 
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -83,6 +89,7 @@ export default function Landing() {
                   <img 
                     src={heroImage} 
                     alt="Home cooking with love" 
+                    loading="lazy"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -339,7 +346,8 @@ export default function Landing() {
                 <div className="aspect-square md:aspect-auto">
                   <img 
                     src={carbonaraImage} 
-                    alt="Spaghetti Carbonara" 
+                    alt="Spaghetti Carbonara"
+                    loading="lazy" 
                     className="w-full h-full object-cover"
                   />
                 </div>

@@ -28,6 +28,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false, showVisibili
                 <img
                   src={recipe.imageUrl}
                   alt={recipe.name}
+                  loading="lazy"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -86,6 +87,7 @@ export function RecipeCard({ recipe, viewMode, showCreator = false, showVisibili
             <img
               src={recipe.imageUrl}
               alt={recipe.name}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (

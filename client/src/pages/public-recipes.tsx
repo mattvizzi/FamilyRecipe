@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LayoutGrid, List, Search, ChefHat, Plus } from "lucide-react";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
+import { SEO } from "@/components/seo";
 
 const categoryLabels: Record<string, string> = {
   all: "All Recipes",
@@ -50,7 +51,12 @@ export default function PublicRecipes() {
   const categoryTitle = categoryLabels[category.toLowerCase()] || "Recipes";
 
   return (
-    <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
+    <>
+      <SEO 
+        title={`${categoryTitle} - Browse Community Recipes`}
+        description={`Discover ${categoryTitle.toLowerCase()} recipes shared by the community. Find inspiration for your next meal from fellow home cooks.`}
+      />
+      <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
@@ -118,7 +124,6 @@ export default function PublicRecipes() {
                     <Button
                       variant={viewMode === "grid" ? "secondary" : "ghost"}
                       size="icon"
-                      className="rounded-none"
                       onClick={() => setViewMode("grid")}
                       data-testid="button-grid-view"
                     >
@@ -127,7 +132,6 @@ export default function PublicRecipes() {
                     <Button
                       variant={viewMode === "list" ? "secondary" : "ghost"}
                       size="icon"
-                      className="rounded-none"
                       onClick={() => setViewMode("list")}
                       data-testid="button-list-view"
                     >
@@ -173,6 +177,7 @@ export default function PublicRecipes() {
             </>
           )}
         </div>
-    </main>
+      </main>
+    </>
   );
 }

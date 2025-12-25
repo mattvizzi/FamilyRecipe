@@ -17,6 +17,7 @@ import { LayoutGrid, List, Search, Plus } from "lucide-react";
 import { Link } from "wouter";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
+import { SEO } from "@/components/seo";
 
 type RecipeFilter = "all" | "my-recipes" | "saved";
 
@@ -80,8 +81,18 @@ export default function Home() {
     }
   };
 
+  const pageTitle = category === "all" 
+    ? "My Recipes" 
+    : `${category.charAt(0).toUpperCase() + category.slice(1)} Recipes`;
+
   return (
-    <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
+    <>
+      <SEO 
+        title={pageTitle}
+        description="Your personal recipe collection. View, organize, and manage your family's favorite recipes."
+        noindex={true}
+      />
+      <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
@@ -153,7 +164,6 @@ export default function Home() {
                     <Button
                       variant={viewMode === "grid" ? "secondary" : "ghost"}
                       size="icon"
-                      className="rounded-none"
                       onClick={() => setViewMode("grid")}
                       data-testid="button-grid-view"
                     >
@@ -162,7 +172,6 @@ export default function Home() {
                     <Button
                       variant={viewMode === "list" ? "secondary" : "ghost"}
                       size="icon"
-                      className="rounded-none"
                       onClick={() => setViewMode("list")}
                       data-testid="button-list-view"
                     >
@@ -228,6 +237,7 @@ export default function Home() {
             </>
           )}
         </div>
-    </main>
+      </main>
+    </>
   );
 }
