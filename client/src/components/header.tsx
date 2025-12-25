@@ -232,7 +232,7 @@ export function Header({ family }: HeaderProps) {
             {recipeCategories.map((cat) => (
               <Link key={cat} href={`/recipes/${cat.toLowerCase()}`}>
                 <span 
-                  className={`text-[10px] text-white cursor-pointer hover:underline whitespace-nowrap uppercase font-bold ${currentCategory === cat.toLowerCase() ? "underline" : ""}`}
+                  className="text-white cursor-pointer hover:underline whitespace-nowrap uppercase font-bold text-[12px]"
                   data-testid={`subnav-category-${cat.toLowerCase()}`}
                 >
                   {cat}
