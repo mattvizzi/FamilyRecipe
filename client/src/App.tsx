@@ -35,8 +35,9 @@ function AuthenticatedRouter() {
   if (!family) {
     return (
       <Switch>
+        <Route path="/create-family" component={FamilyOnboarding} />
         <Route path="/join/:code" component={JoinFamily} />
-        <Route component={FamilyOnboarding} />
+        <Route>{() => <Redirect to="/create-family" />}</Route>
       </Switch>
     );
   }
@@ -53,6 +54,7 @@ function AuthenticatedRouter() {
       <Route path="/add-recipe/manual" component={ManualRecipe} />
       <Route path="/family" component={FamilySettings} />
       <Route path="/join/:code" component={JoinFamily} />
+      <Route path="/create-family">{() => <Redirect to="/my-recipes" />}</Route>
       <Route component={NotFound} />
     </Switch>
   );
