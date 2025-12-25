@@ -312,7 +312,7 @@ export default function AddRecipe() {
   }
 
   return (
-    <main className="pt-20 sm:pt-24 pb-12 px-4 sm:px-6">
+    <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
         <div className="max-w-xl mx-auto">
           <Button 
             variant="ghost" 

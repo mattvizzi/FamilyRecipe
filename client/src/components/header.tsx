@@ -223,7 +223,7 @@ export function Header({ family }: HeaderProps) {
               <Button 
                 variant="ghost" 
                 size="sm"
-                className={`text-primary-foreground hover:bg-primary-foreground/10 ${!currentCategory ? "bg-primary-foreground/20" : ""}`}
+                className={`text-primary-foreground hover:bg-primary-foreground/10 ${location === "/recipes" ? "bg-primary-foreground/20" : ""}`}
                 data-testid="subnav-all-recipes"
               >
                 All Recipes

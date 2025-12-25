@@ -228,7 +228,7 @@ export default function Dashboard() {
   const savedRecipesList = savedRecipes.slice(0, 8);
 
   return (
-    <main className="pt-20 sm:pt-24 pb-12">
+    <main className="pt-20 sm:pt-28 pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {isLoading ? (
           <Skeleton className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl" />
