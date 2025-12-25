@@ -1,10 +1,18 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,13 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { LogOut, Users, ChefHat, Search, ChevronDown, X, Loader2, Globe } from "lucide-react";
+import { LogOut, Users, ChefHat, Search, ChevronDown, Globe, Plus, Settings, BookOpen, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import type { Family, RecipeWithCreator } from "@shared/schema";
@@ -31,38 +33,33 @@ interface HeaderProps {
 export function Header({ family }: HeaderProps) {
   const { user, logout, isLoggingOut } = useAuth();
   const [location, navigate] = useLocation();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
-  // Debounce search query
+  // Keyboard shortcut to open command palette
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((open) => !open);
+      }
+    };
 
-  // Focus input when modal opens
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
+
+  // Clear search when closing
   useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
+    if (!open) {
+      setSearch("");
     }
-  }, [searchOpen]);
+  }, [open]);
 
-  // Clear search when modal closes
-  useEffect(() => {
-    if (!searchOpen) {
-      setSearchQuery("");
-      setDebouncedQuery("");
-    }
-  }, [searchOpen]);
-
-  // Search query
+  // Search query - only fetch when there's a search term
   const { data: searchResults, isLoading: isSearching } = useQuery<RecipeWithCreator[]>({
-    queryKey: ['/api/recipes/search', { q: debouncedQuery, limit: 20 }],
-    enabled: searchOpen && debouncedQuery.length >= 2,
+    queryKey: ['/api/recipes/search', { q: search, limit: 10 }],
+    enabled: open && search.length >= 2,
   });
 
   const getInitials = () => {
@@ -75,14 +72,9 @@ export function Header({ family }: HeaderProps) {
   const isMyRecipes = location === "/my-recipes" || location === "/";
   const isBrowsing = location?.startsWith("/recipes") ?? false;
 
-  const handleRecipeClick = (recipeId: string) => {
-    setSearchOpen(false);
-    navigate(`/recipe/${recipeId}`);
-  };
-
-  const handleSeeMore = () => {
-    setSearchOpen(false);
-    navigate(`/recipes?q=${encodeURIComponent(searchQuery)}`);
+  const runCommand = (command: () => void) => {
+    setOpen(false);
+    command();
   };
 
   return (
@@ -145,19 +137,24 @@ export function Header({ family }: HeaderProps) {
             <Button
               variant="outline"
               size="sm"
-              className="hidden sm:flex items-center gap-2 text-muted-foreground w-48 justify-start"
-              onClick={() => setSearchOpen(true)}
+              className="hidden sm:flex items-center gap-2 text-muted-foreground w-56 justify-between"
+              onClick={() => setOpen(true)}
               data-testid="button-search"
             >
-              <Search className="h-4 w-4" />
-              <span>Search recipes...</span>
+              <span className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Search...
+              </span>
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
             </Button>
 
             <Button
               variant="ghost"
               size="icon"
               className="sm:hidden"
-              onClick={() => setSearchOpen(true)}
+              onClick={() => setOpen(true)}
               data-testid="button-search-mobile"
             >
               <Search className="h-4 w-4" />
@@ -206,98 +203,112 @@ export function Header({ family }: HeaderProps) {
         </div>
       </header>
 
-      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="sm:max-w-lg p-0 gap-0">
-          <DialogHeader className="p-4 pb-0">
-            <DialogTitle className="sr-only">Search Recipes</DialogTitle>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                ref={searchInputRef}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search recipes by name..."
-                className="pl-10 pr-10"
-                data-testid="input-search"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                  onClick={() => setSearchQuery("")}
-                  data-testid="button-clear-search"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </DialogHeader>
-
-          <div className="max-h-[400px] overflow-y-auto">
-            {searchQuery.length < 2 ? (
-              <div className="p-6 text-center text-muted-foreground text-sm">
-                Type at least 2 characters to search
-              </div>
-            ) : isSearching ? (
-              <div className="p-6 flex items-center justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : searchResults && searchResults.length > 0 ? (
-              <div className="p-2">
-                {searchResults.map((recipe) => (
-                  <button
-                    key={recipe.id}
-                    onClick={() => handleRecipeClick(recipe.id)}
-                    className="w-full text-left p-3 rounded-md hover-elevate flex items-center gap-3"
-                    data-testid={`search-result-${recipe.id}`}
-                  >
-                    {recipe.imageUrl ? (
-                      <img
-                        src={recipe.imageUrl}
-                        alt=""
-                        className="w-12 h-12 rounded-md object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
-                        <ChefHat className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{recipe.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="secondary" className="text-xs">
-                          {recipe.category}
-                        </Badge>
-                        {recipe.isPublic && (
-                          <Globe className="h-3 w-3 text-muted-foreground" />
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-                {searchResults.length >= 20 && (
-                  <div className="p-2 border-t border-border mt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full"
-                      onClick={handleSeeMore}
-                      data-testid="button-see-more-results"
+      <CommandDialog open={open} onOpenChange={setOpen}>
+        <CommandInput 
+          placeholder="Search recipes or type a command..." 
+          value={search}
+          onValueChange={setSearch}
+          data-testid="input-command-search"
+        />
+        <CommandList>
+          {search.length >= 2 && (
+            <>
+              {isSearching ? (
+                <div className="py-6 text-center">
+                  <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                </div>
+              ) : searchResults && searchResults.length > 0 ? (
+                <CommandGroup heading="Recipes">
+                  {searchResults.map((recipe) => (
+                    <CommandItem
+                      key={recipe.id}
+                      value={recipe.name}
+                      onSelect={() => runCommand(() => navigate(`/recipe/${recipe.id}`))}
+                      className="flex items-center gap-3"
+                      data-testid={`search-result-${recipe.id}`}
                     >
-                      See more results
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="p-6 text-center text-muted-foreground text-sm">
-                No recipes found for "{searchQuery}"
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+                      {recipe.imageUrl ? (
+                        <img
+                          src={recipe.imageUrl}
+                          alt=""
+                          className="w-8 h-8 rounded object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                          <ChefHat className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="truncate">{recipe.name}</span>
+                      </div>
+                      <Badge variant="secondary" className="text-xs ml-2">
+                        {recipe.category}
+                      </Badge>
+                      {recipe.isPublic && (
+                        <Globe className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ) : (
+                <CommandEmpty>No recipes found.</CommandEmpty>
+              )}
+              <CommandSeparator />
+            </>
+          )}
+
+          <CommandGroup heading="Quick Actions">
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/add-recipe"))}
+              data-testid="command-add-recipe"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Recipe
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/"))}
+              data-testid="command-my-recipes"
+            >
+              <ChefHat className="mr-2 h-4 w-4" />
+              My Family Recipes
+            </CommandItem>
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/recipes"))}
+              data-testid="command-browse"
+            >
+              <BookOpen className="mr-2 h-4 w-4" />
+              Browse All Recipes
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Categories">
+            {recipeCategories.map((cat) => (
+              <CommandItem
+                key={cat}
+                onSelect={() => runCommand(() => navigate(`/recipes/${cat.toLowerCase()}`))}
+                data-testid={`command-category-${cat.toLowerCase()}`}
+              >
+                <BookOpen className="mr-2 h-4 w-4" />
+                {cat}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Settings">
+            <CommandItem
+              onSelect={() => runCommand(() => navigate("/family"))}
+              data-testid="command-family-settings"
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Family Settings
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </>
   );
 }

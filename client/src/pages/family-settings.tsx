@@ -196,7 +196,6 @@ export default function FamilySettings() {
             </Card>
           </div>
         </div>
-      </div>
     </main>
   );
 }
