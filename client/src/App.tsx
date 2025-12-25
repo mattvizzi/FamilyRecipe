@@ -31,6 +31,7 @@ const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
 const AdminUsers = lazy(() => import("@/pages/admin/users"));
 const AdminFamilies = lazy(() => import("@/pages/admin/families"));
 const AdminRecipes = lazy(() => import("@/pages/admin/recipes"));
+const AdminComments = lazy(() => import("@/pages/admin/comments"));
 const AdminHubSpot = lazy(() => import("@/pages/admin/hubspot"));
 
 // Loading fallback component
@@ -65,6 +66,7 @@ function AdminRouter() {
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/families" component={AdminFamilies} />
         <Route path="/admin/recipes" component={AdminRecipes} />
+        <Route path="/admin/comments" component={AdminComments} />
         <Route path="/admin/hubspot" component={AdminHubSpot} />
         <Route>{() => <Redirect to="/admin" />}</Route>
       </Switch>

@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot } from "lucide-react";
+import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
 import { AdminAISidebar } from "@/components/admin-ai-sidebar";
@@ -32,6 +32,7 @@ const adminNavItems = [
   { title: "Users", href: "/admin/users", icon: Users },
   { title: "Families", href: "/admin/families", icon: HomeIcon },
   { title: "Recipes", href: "/admin/recipes", icon: ChefHat },
+  { title: "Comments", href: "/admin/comments", icon: MessageSquare },
   { title: "HubSpot Sync", href: "/admin/hubspot", icon: RefreshCw },
 ];
 

@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { AdminDataGrid, Column, FilterOption } from "@/components/admin-data-grid";
+import { Button } from "@/components/ui/button";
+import { AdminDataGrid, Column } from "@/components/admin-data-grid";
 import { format } from "date-fns";
+import { Shield, ShieldOff } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminUser {
   id: string;
@@ -17,14 +21,29 @@ interface AdminUser {
   familyId: string | null;
   familyName: string | null;
   recipeCount: number;
+  isAdmin: boolean;
 }
 
 export default function AdminUsers() {
+  const { toast } = useToast();
   const { data: users = [], isLoading } = useQuery<AdminUser[]>({
     queryKey: ["/api/admin/users"],
   });
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleAdminMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return apiRequest("POST", `/api/admin/users/${userId}/toggle-admin`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({ title: "Admin status updated" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update admin status", variant: "destructive" });
+    },
+  });
 
   const getInitials = (user: AdminUser) => {
     const first = user.firstName?.[0] || "";
@@ -43,11 +62,16 @@ export default function AdminUsers() {
             <AvatarImage src={user.profileImageUrl || undefined} />
             <AvatarFallback className="text-xs">{getInitials(user)}</AvatarFallback>
           </Avatar>
-          <span className="font-medium">
-            {user.firstName || user.lastName
-              ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
-              : "Unknown User"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium">
+              {user.firstName || user.lastName
+                ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+                : "Unknown User"}
+            </span>
+            {user.isAdmin && (
+              <Badge variant="default" className="text-xs">Admin</Badge>
+            )}
+          </div>
         </div>
       ),
     },
@@ -87,15 +111,25 @@ export default function AdminUsers() {
         </span>
       ),
     },
-  ];
-
-  const filters: FilterOption[] = [
     {
-      key: "familyId",
-      label: "Family",
-      options: [
-        { value: "null", label: "No Family" },
-      ],
+      key: "actions",
+      header: "Actions",
+      render: (user) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => toggleAdminMutation.mutate(user.id)}
+          disabled={toggleAdminMutation.isPending}
+          title={user.isAdmin ? "Remove admin" : "Make admin"}
+          data-testid={`button-toggle-admin-${user.id}`}
+        >
+          {user.isAdmin ? (
+            <ShieldOff className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <Shield className="h-4 w-4" />
+          )}
+        </Button>
+      ),
     },
   ];
 
@@ -124,6 +158,8 @@ export default function AdminUsers() {
               getRowId={(user) => user.id}
               emptyMessage="No users found"
               pageSize={10}
+              exportFilename="users.csv"
+              exportKeys={["id", "email", "firstName", "lastName", "familyName", "recipeCount", "createdAt", "isAdmin"]}
             />
           </CardContent>
         </Card>

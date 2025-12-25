@@ -108,6 +108,7 @@ export interface IStorage {
     familyId: string | null;
     familyName: string | null;
     recipeCount: number;
+    isAdmin: boolean;
   }>>;
   getAllFamiliesWithStats(): Promise<Array<{
     id: string;
@@ -129,6 +130,22 @@ export interface IStorage {
     familyName: string | null;
     creatorName: string | null;
   }>>;
+
+  // Admin moderation operations
+  adminToggleRecipeVisibility(recipeId: string): Promise<{ isPublic: boolean } | undefined>;
+  adminDeleteRecipe(recipeId: string): Promise<boolean>;
+  getAllCommentsAdmin(): Promise<Array<{
+    id: number;
+    userId: string;
+    recipeId: string;
+    content: string;
+    isHidden: boolean;
+    createdAt: Date;
+    userName: string | null;
+    recipeName: string | null;
+  }>>;
+  adminToggleCommentHidden(commentId: number): Promise<{ isHidden: boolean } | undefined>;
+  adminDeleteComment(commentId: number): Promise<boolean>;
 }
 
 class DatabaseStorage implements IStorage {
@@ -649,6 +666,7 @@ class DatabaseStorage implements IStorage {
     familyId: string | null;
     familyName: string | null;
     recipeCount: number;
+    isAdmin: boolean;
   }>> {
     const results = await db
       .select({
@@ -666,13 +684,21 @@ class DatabaseStorage implements IStorage {
       .leftJoin(families, eq(familyMembers.familyId, families.id))
       .orderBy(desc(users.createdAt));
 
+    const adminIds = new Set(
+      (await db.select({ userId: admins.userId }).from(admins)).map(a => a.userId)
+    );
+
     const usersWithRecipes = await Promise.all(
       results.map(async (user) => {
         const [count] = await db
           .select({ count: sql<number>`COUNT(*)` })
           .from(recipes)
           .where(eq(recipes.createdById, user.id));
-        return { ...user, recipeCount: Number(count?.count ?? 0) };
+        return { 
+          ...user, 
+          recipeCount: Number(count?.count ?? 0),
+          isAdmin: adminIds.has(user.id),
+        };
       })
     );
 
@@ -770,6 +796,93 @@ class DatabaseStorage implements IStorage {
         ? `${r.creatorFirstName} ${r.creatorLastName}`
         : r.creatorFirstName || null,
     }));
+  }
+
+  async adminToggleRecipeVisibility(recipeId: string): Promise<{ isPublic: boolean } | undefined> {
+    const recipe = await this.getRecipe(recipeId);
+    if (!recipe) return undefined;
+    
+    const [updated] = await db
+      .update(recipes)
+      .set({ isPublic: !recipe.isPublic, updatedAt: new Date() })
+      .where(eq(recipes.id, recipeId))
+      .returning({ isPublic: recipes.isPublic });
+    
+    return updated;
+  }
+
+  async adminDeleteRecipe(recipeId: string): Promise<boolean> {
+    const result = await db
+      .delete(recipes)
+      .where(eq(recipes.id, recipeId))
+      .returning({ id: recipes.id });
+    return result.length > 0;
+  }
+
+  async getAllCommentsAdmin(): Promise<Array<{
+    id: number;
+    userId: string;
+    recipeId: string;
+    content: string;
+    isHidden: boolean;
+    createdAt: Date;
+    userName: string | null;
+    recipeName: string | null;
+  }>> {
+    const results = await db
+      .select({
+        id: recipeComments.id,
+        userId: recipeComments.userId,
+        recipeId: recipeComments.recipeId,
+        content: recipeComments.content,
+        isHidden: recipeComments.isHidden,
+        createdAt: recipeComments.createdAt,
+        userFirstName: users.firstName,
+        userLastName: users.lastName,
+        recipeName: recipes.name,
+      })
+      .from(recipeComments)
+      .leftJoin(users, eq(recipeComments.userId, users.id))
+      .leftJoin(recipes, eq(recipeComments.recipeId, recipes.id))
+      .orderBy(desc(recipeComments.createdAt));
+
+    return results.map((r) => ({
+      id: r.id,
+      userId: r.userId,
+      recipeId: r.recipeId,
+      content: r.content,
+      isHidden: r.isHidden,
+      createdAt: r.createdAt,
+      userName: r.userFirstName && r.userLastName
+        ? `${r.userFirstName} ${r.userLastName}`
+        : r.userFirstName || null,
+      recipeName: r.recipeName,
+    }));
+  }
+
+  async adminToggleCommentHidden(commentId: number): Promise<{ isHidden: boolean } | undefined> {
+    const [comment] = await db
+      .select({ isHidden: recipeComments.isHidden })
+      .from(recipeComments)
+      .where(eq(recipeComments.id, commentId));
+    
+    if (!comment) return undefined;
+    
+    const [updated] = await db
+      .update(recipeComments)
+      .set({ isHidden: !comment.isHidden })
+      .where(eq(recipeComments.id, commentId))
+      .returning({ isHidden: recipeComments.isHidden });
+    
+    return updated;
+  }
+
+  async adminDeleteComment(commentId: number): Promise<boolean> {
+    const result = await db
+      .delete(recipeComments)
+      .where(eq(recipeComments.id, commentId))
+      .returning({ id: recipeComments.id });
+    return result.length > 0;
   }
 }
 

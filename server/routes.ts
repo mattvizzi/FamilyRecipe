@@ -1106,6 +1106,102 @@ shallow depth of field, food styling.`;
     next();
   });
 
+  // Admin toggle user admin status
+  app.post("/api/admin/users/:id/toggle-admin", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.params.id;
+      const isCurrentlyAdmin = await storage.isAdmin(userId);
+      
+      if (isCurrentlyAdmin) {
+        await storage.removeAdmin(userId);
+        res.json({ isAdmin: false });
+      } else {
+        await storage.addAdmin(userId);
+        res.json({ isAdmin: true });
+      }
+    } catch (error) {
+      console.error("Error toggling admin status:", error);
+      res.status(500).json({ message: "Failed to toggle admin status" });
+    }
+  });
+
+  // Admin toggle recipe visibility
+  app.post("/api/admin/recipes/:id/toggle-visibility", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await storage.adminToggleRecipeVisibility(req.params.id);
+      if (!result) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      res.json(result);
+    } catch (error) {
+      console.error("Error toggling recipe visibility:", error);
+      res.status(500).json({ message: "Failed to toggle visibility" });
+    }
+  });
+
+  // Admin delete recipe
+  app.delete("/api/admin/recipes/:id", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const result = await storage.adminDeleteRecipe(req.params.id);
+      if (!result) {
+        return res.status(404).json({ message: "Recipe not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      res.status(500).json({ message: "Failed to delete recipe" });
+    }
+  });
+
+  // Get all comments (admin only)
+  app.get("/api/admin/comments", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const comments = await storage.getAllCommentsAdmin();
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // Admin toggle comment hidden status
+  app.post("/api/admin/comments/:id/toggle-hidden", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const commentId = parseInt(req.params.id, 10);
+      if (isNaN(commentId)) {
+        return res.status(400).json({ message: "Invalid comment ID" });
+      }
+      
+      const result = await storage.adminToggleCommentHidden(commentId);
+      if (!result) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json(result);
+    } catch (error) {
+      console.error("Error toggling comment hidden:", error);
+      res.status(500).json({ message: "Failed to toggle comment" });
+    }
+  });
+
+  // Admin delete comment
+  app.delete("/api/admin/comments/:id", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const commentId = parseInt(req.params.id, 10);
+      if (isNaN(commentId)) {
+        return res.status(400).json({ message: "Invalid comment ID" });
+      }
+      
+      const result = await storage.adminDeleteComment(commentId);
+      if (!result) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
   // Admin AI Chat endpoint
   app.post("/api/admin/chat", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
     try {

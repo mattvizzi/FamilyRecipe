@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 export interface Column<T> {
   key: string;
@@ -47,6 +47,8 @@ interface AdminDataGridProps<T> {
   onSelectionChange?: (ids: Set<string>) => void;
   getRowId: (item: T) => string;
   emptyMessage?: string;
+  exportFilename?: string;
+  exportKeys?: string[];
 }
 
 type SortDirection = "asc" | "desc" | null;
@@ -64,6 +66,8 @@ export function AdminDataGrid<T>({
   onSelectionChange,
   getRowId,
   emptyMessage = "No data found",
+  exportFilename,
+  exportKeys = [],
 }: AdminDataGridProps<T>) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -186,6 +190,33 @@ export function AdminDataGrid<T>({
     );
   };
 
+  const handleExportCSV = () => {
+    if (filteredData.length === 0) return;
+
+    const keysToExport = exportKeys.length > 0 ? exportKeys : Object.keys(filteredData[0] as object);
+    
+    const csvContent = [
+      keysToExport.join(","),
+      ...filteredData.map((item) =>
+        keysToExport.map((key) => {
+          const value = (item as Record<string, unknown>)[key];
+          if (value === null || value === undefined) return "";
+          if (typeof value === "string" && (value.includes(",") || value.includes('"') || value.includes("\n"))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return String(value);
+        }).join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = exportFilename || "export.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
@@ -224,6 +255,18 @@ export function AdminDataGrid<T>({
             </SelectContent>
           </Select>
         ))}
+        {exportFilename && (
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            disabled={filteredData.length === 0}
+            className="gap-2"
+            data-testid="button-export-csv"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+        )}
       </div>
 
       {selectable && selectedIds.size > 0 && (

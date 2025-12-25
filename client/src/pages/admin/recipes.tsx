@@ -1,11 +1,25 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AdminDataGrid, Column, FilterOption } from "@/components/admin-data-grid";
-import { Globe, Lock, Eye } from "lucide-react";
+import { Globe, Lock, Eye, EyeOff, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface AdminRecipe {
   id: string;
@@ -19,11 +33,39 @@ interface AdminRecipe {
 }
 
 export default function AdminRecipes() {
+  const { toast } = useToast();
   const { data: recipes = [], isLoading } = useQuery<AdminRecipe[]>({
     queryKey: ["/api/admin/recipes"],
   });
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async (recipeId: string) => {
+      return apiRequest("POST", `/api/admin/recipes/${recipeId}/toggle-visibility`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/recipes"] });
+      toast({ title: "Visibility updated" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update visibility", variant: "destructive" });
+    },
+  });
+
+  const deleteRecipeMutation = useMutation({
+    mutationFn: async (recipeId: string) => {
+      return apiRequest("DELETE", `/api/admin/recipes/${recipeId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/recipes"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      toast({ title: "Recipe deleted" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete recipe", variant: "destructive" });
+    },
+  });
 
   const columns: Column<AdminRecipe>[] = [
     {
@@ -93,6 +135,57 @@ export default function AdminRecipes() {
         </span>
       ),
     },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (recipe) => (
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => toggleVisibilityMutation.mutate(recipe.id)}
+            disabled={toggleVisibilityMutation.isPending}
+            title={recipe.isPublic ? "Make private" : "Make public"}
+            data-testid={`button-toggle-visibility-${recipe.id}`}
+          >
+            {recipe.isPublic ? (
+              <EyeOff className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Globe className="h-4 w-4" />
+            )}
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Delete recipe"
+                data-testid={`button-delete-recipe-${recipe.id}`}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Recipe</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{recipe.name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteRecipeMutation.mutate(recipe.id)}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      ),
+    },
   ];
 
   const filters: FilterOption[] = [
@@ -114,8 +207,7 @@ export default function AdminRecipes() {
         { value: "Dessert", label: "Dessert" },
         { value: "Appetizer", label: "Appetizer" },
         { value: "Snack", label: "Snack" },
-        { value: "Beverage", label: "Beverage" },
-        { value: "Other", label: "Other" },
+        { value: "Drink", label: "Drink" },
       ],
     },
   ];
@@ -125,7 +217,7 @@ export default function AdminRecipes() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold" data-testid="text-admin-recipes-title">Recipes</h1>
-          <p className="text-muted-foreground">Browse all recipes on the platform</p>
+          <p className="text-muted-foreground">Manage all recipes on the platform</p>
         </div>
 
         <Card>
@@ -146,6 +238,8 @@ export default function AdminRecipes() {
               getRowId={(recipe) => recipe.id}
               emptyMessage="No recipes found"
               pageSize={10}
+              exportFilename="recipes.csv"
+              exportKeys={["id", "name", "category", "isPublic", "viewCount", "familyName", "creatorName", "createdAt"]}
             />
           </CardContent>
         </Card>

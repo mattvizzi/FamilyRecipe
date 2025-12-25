@@ -97,6 +97,8 @@ export default function AdminFamilies() {
               getRowId={(family) => family.id}
               emptyMessage="No families found"
               pageSize={10}
+              exportFilename="families.csv"
+              exportKeys={["id", "name", "creatorName", "memberCount", "recipeCount", "inviteCode", "createdAt"]}
             />
           </CardContent>
         </Card>
