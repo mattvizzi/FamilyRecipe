@@ -5,7 +5,7 @@ import { Header } from "@/components/header";
 import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LayoutGrid, List, Search, ChefHat } from "lucide-react";
+import { LayoutGrid, List, Search, ChefHat, Plus } from "lucide-react";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 
@@ -138,6 +138,12 @@ export default function PublicRecipes() {
                       <List className="h-4 w-4" />
                     </Button>
                   </div>
+                  <Button asChild className="gap-2" data-testid="button-add-recipe">
+                    <Link href="/add-recipe">
+                      <Plus className="h-4 w-4" />
+                      <span className="hidden sm:inline">Add Recipe</span>
+                    </Link>
+                  </Button>
                 </div>
               </div>
 

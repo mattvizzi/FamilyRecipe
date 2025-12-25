@@ -45,6 +45,7 @@ function AuthenticatedRouter() {
     <Switch>
       <Route path="/">{() => <Redirect to="/my-recipes" />}</Route>
       <Route path="/my-recipes" component={Home} />
+      <Route path="/my-recipes/:category" component={Home} />
       <Route path="/recipes" component={PublicRecipes} />
       <Route path="/recipes/:category" component={PublicRecipes} />
       <Route path="/recipe/:id" component={RecipeDetail} />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useParams, useLocation } from "wouter";
 import { Header } from "@/components/header";
 import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
 import { EmptyState } from "@/components/empty-state";
@@ -12,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutGrid, List, Search, Plus } from "lucide-react";
 import { Link } from "wouter";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
@@ -20,10 +20,19 @@ import { recipeCategories } from "@shared/schema";
 
 type RecipeFilter = "all" | "my-recipes" | "saved";
 
+const filterLabels: Record<RecipeFilter, string> = {
+  "all": "All",
+  "my-recipes": "My Recipes",
+  "saved": "Saved",
+};
+
 export default function Home() {
+  const params = useParams<{ category?: string }>();
+  const [, navigate] = useLocation();
+  const category = params.category || "all";
+  
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<RecipeCategory | "all">("all");
   const [recipeFilter, setRecipeFilter] = useState<RecipeFilter>("all");
 
   const { data: family, isLoading: familyLoading } = useQuery<Family>({
@@ -42,7 +51,6 @@ export default function Home() {
 
   const isLoading = familyLoading || familyRecipesLoading || savedRecipesLoading;
 
-  // Combine recipes based on filter
   const allRecipes = (() => {
     switch (recipeFilter) {
       case "my-recipes":
@@ -51,20 +59,25 @@ export default function Home() {
         return savedRecipes;
       case "all":
       default:
-        // Combine family recipes and saved recipes, avoiding duplicates
-        const savedIds = new Set(savedRecipes.map(r => r.id));
         return [...familyRecipes, ...savedRecipes.filter(r => !familyRecipes.some(fr => fr.id === r.id))];
     }
   })();
 
-  // Filter and sort recipes
   const filteredRecipes = allRecipes
     .filter((recipe) => {
       const matchesSearch = recipe.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = categoryFilter === "all" || recipe.category === categoryFilter;
+      const matchesCategory = category === "all" || recipe.category.toLowerCase() === category.toLowerCase();
       return matchesSearch && matchesCategory;
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const handleCategoryChange = (cat: string) => {
+    if (cat === "all") {
+      navigate("/my-recipes");
+    } else {
+      navigate(`/my-recipes/${cat.toLowerCase()}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,13 +85,45 @@ export default function Home() {
       
       <main className="pt-20 pb-12 px-6">
         <div className="max-w-5xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
+              My Recipes
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Your personal recipe collection
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Button
+              variant={category === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleCategoryChange("all")}
+              data-testid="button-category-all"
+            >
+              All
+            </Button>
+            {recipeCategories.map((cat) => (
+              <Button
+                key={cat}
+                variant={category.toLowerCase() === cat.toLowerCase() ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleCategoryChange(cat)}
+                data-testid={`button-category-${cat.toLowerCase()}`}
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+
           {isLoading ? (
             <>
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="flex-1 h-10 bg-muted rounded-lg animate-pulse" />
                 <div className="flex gap-2">
-                  <div className="w-40 h-10 bg-muted rounded-lg animate-pulse" />
                   <div className="w-20 h-10 bg-muted rounded-lg animate-pulse" />
+                  <div className="w-24 h-10 bg-muted rounded-lg animate-pulse" />
+                  <div className="w-28 h-10 bg-muted rounded-lg animate-pulse" />
                 </div>
               </div>
               <div className={viewMode === "grid" 
@@ -94,14 +139,6 @@ export default function Home() {
             <EmptyState familyName={family?.name || "Your Family"} />
           ) : (
             <>
-              <Tabs value={recipeFilter} onValueChange={(v) => setRecipeFilter(v as RecipeFilter)} className="mb-6">
-                <TabsList>
-                  <TabsTrigger value="all" data-testid="tab-all-recipes">All Recipes</TabsTrigger>
-                  <TabsTrigger value="my-recipes" data-testid="tab-my-recipes">My Recipes</TabsTrigger>
-                  <TabsTrigger value="saved" data-testid="tab-saved-recipes">Saved</TabsTrigger>
-                </TabsList>
-              </Tabs>
-
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -114,20 +151,6 @@ export default function Home() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Select 
-                    value={categoryFilter} 
-                    onValueChange={(v) => setCategoryFilter(v as RecipeCategory | "all")}
-                  >
-                    <SelectTrigger className="w-40" data-testid="select-category-filter">
-                      <SelectValue placeholder="All Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {recipeCategories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <div className="flex border border-border rounded-lg overflow-hidden">
                     <Button
                       variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -148,6 +171,19 @@ export default function Home() {
                       <List className="h-4 w-4" />
                     </Button>
                   </div>
+                  <Select 
+                    value={recipeFilter} 
+                    onValueChange={(v) => setRecipeFilter(v as RecipeFilter)}
+                  >
+                    <SelectTrigger className="w-28" data-testid="select-recipe-filter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="my-recipes">My Recipes</SelectItem>
+                      <SelectItem value="saved">Saved</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button asChild className="gap-2" data-testid="button-add-recipe">
                     <Link href="/add-recipe">
                       <Plus className="h-4 w-4" />
@@ -162,7 +198,7 @@ export default function Home() {
                   <p className="text-muted-foreground" data-testid="text-no-results">
                     {recipeFilter === "saved" 
                       ? "You haven't saved any recipes yet" 
-                      : searchQuery || categoryFilter !== "all"
+                      : searchQuery || category !== "all"
                         ? "No recipes match your search"
                         : "No recipes found"}
                   </p>
@@ -178,7 +214,12 @@ export default function Home() {
                   : "grid grid-cols-1 md:grid-cols-2 gap-4"
                 }`}>
                   {filteredRecipes.map((recipe) => (
-                    <RecipeCard key={recipe.id} recipe={recipe} viewMode={viewMode} />
+                    <RecipeCard 
+                      key={recipe.id} 
+                      recipe={recipe} 
+                      viewMode={viewMode}
+                      showCreator
+                    />
                   ))}
                 </div>
               )}
