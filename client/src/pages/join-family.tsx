@@ -67,7 +67,7 @@ export default function JoinFamily() {
                 You need to sign in to join this family
               </p>
               <Button asChild className="w-full" data-testid="button-login-to-join">
-                <a href="/api/login">Sign In to Continue</a>
+                <a href={`/api/login?returnTo=/join/${inviteCode}`}>Sign In to Continue</a>
               </Button>
             </CardContent>
           </Card>
