@@ -210,7 +210,7 @@ export function Header({ family }: HeaderProps) {
         </div>
       </header>
       {/* Desktop Sub-navigation bar with categories */}
-      <nav className="fixed top-14 left-0 right-0 z-40 dark:bg-white hidden sm:block shadow-md bg-[#fbfaf8]">
+      <nav className="fixed top-14 left-0 right-0 z-40 dark:bg-white hidden sm:block shadow-md bg-[5A7A9E]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-6 h-10 overflow-x-auto scrollbar-hide">
             <Link href="/family-recipes">
