@@ -40,6 +40,7 @@ export default function AddRecipe() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isConvertingHeic, setIsConvertingHeic] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: family } = useQuery<Family>({
     queryKey: ["/api/family"],
@@ -192,6 +193,9 @@ export default function AddRecipe() {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    
     let content = inputValue;
 
     if (selectedFiles.length > 0) {
@@ -205,6 +209,7 @@ export default function AddRecipe() {
       } catch {
         setErrorMessage("Failed to process image. Please try a different photo.");
         setStep("error");
+        setIsSubmitting(false);
         return;
       }
     }
@@ -222,6 +227,7 @@ export default function AddRecipe() {
     setSelectedFiles([]);
     setPreviewUrls([]);
     setErrorMessage("");
+    setIsSubmitting(false);
   };
 
   const inputMethods = [
