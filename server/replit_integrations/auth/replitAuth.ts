@@ -118,11 +118,18 @@ export async function setupAuth(app: Express) {
       (req.session as any).returnTo = returnTo;
     }
     
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
+    // Explicitly save session before OAuth redirect to ensure returnTo is persisted
+    // This prevents race conditions with database-backed session stores in production
+    req.session.save((err) => {
+      if (err) {
+        console.error("Failed to save session before OAuth redirect:", err);
+      }
+      ensureStrategy(req.hostname);
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        prompt: "login consent",
+        scope: ["openid", "email", "profile", "offline_access"],
+      })(req, res, next);
+    });
   });
 
   app.get("/api/callback", (req, res, next) => {
