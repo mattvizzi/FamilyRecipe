@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, sql, desc, gte, or } from "drizzle-orm";
+import { eq, and, sql, desc, gte, or, ilike } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { 
   families, 
@@ -55,6 +55,7 @@ export interface IStorage {
   getRecipeWithStats(id: string, userId?: string): Promise<RecipeWithStats | undefined>;
   getRecipesByFamily(familyId: string): Promise<RecipeWithCreator[]>;
   getPublicRecipes(category?: string): Promise<RecipeWithCreator[]>;
+  searchRecipes(userId: string, query: string, limit?: number): Promise<RecipeWithCreator[]>;
   getSavedRecipes(userId: string): Promise<RecipeWithCreator[]>;
   updateRecipe(id: string, data: UpdateRecipe): Promise<Recipe | undefined>;
   deleteRecipe(id: string): Promise<boolean>;
@@ -311,6 +312,44 @@ class DatabaseStorage implements IStorage {
         creatorFirstName,
         creatorLastName,
       }));
+  }
+
+  async searchRecipes(userId: string, query: string, limit: number = 20): Promise<RecipeWithCreator[]> {
+    // Get user's family
+    const membership = await db
+      .select({ familyId: familyMembers.familyId })
+      .from(familyMembers)
+      .where(eq(familyMembers.userId, userId))
+      .limit(1);
+    
+    const familyId = membership[0]?.familyId;
+    const searchPattern = `%${query}%`;
+    
+    // Search recipes user has access to: either in their family or public
+    const results = await db
+      .select({
+        recipe: recipes,
+        creatorFirstName: users.firstName,
+        creatorLastName: users.lastName,
+      })
+      .from(recipes)
+      .leftJoin(users, eq(recipes.createdById, users.id))
+      .where(
+        and(
+          ilike(recipes.name, searchPattern),
+          familyId 
+            ? or(eq(recipes.familyId, familyId), eq(recipes.isPublic, true))
+            : eq(recipes.isPublic, true)
+        )
+      )
+      .orderBy(desc(recipes.createdAt))
+      .limit(limit);
+
+    return results.map(({ recipe, creatorFirstName, creatorLastName }) => ({
+      ...recipe,
+      creatorFirstName,
+      creatorLastName,
+    }));
   }
 
   async getSavedRecipes(userId: string): Promise<RecipeWithCreator[]> {

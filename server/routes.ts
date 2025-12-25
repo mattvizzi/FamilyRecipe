@@ -363,6 +363,25 @@ export async function registerRoutes(
     }
   });
 
+  // Search recipes (family + public) - MUST be before /api/recipes/:id
+  app.get("/api/recipes/search", isAuthenticated, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user!.claims.sub;
+      const query = (req.query.q as string) || "";
+      const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
+      
+      if (!query.trim()) {
+        return res.json([]);
+      }
+      
+      const recipes = await storage.searchRecipes(userId, query.trim(), limit);
+      res.json(recipes);
+    } catch (error) {
+      console.error("Error searching recipes:", error);
+      res.status(500).json({ message: "Failed to search recipes" });
+    }
+  });
+
   // Get single recipe
   app.get("/api/recipes/:id", isAuthenticated, async (req: AuthRequest, res: Response) => {
     try {
