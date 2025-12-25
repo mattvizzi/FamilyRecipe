@@ -215,7 +215,7 @@ export function Header({ family }: HeaderProps) {
           <div className="flex items-center gap-6 h-10 overflow-x-auto scrollbar-hide">
             <Link href="/family-recipes">
               <span 
-                className={`text-[10px] text-white cursor-pointer hover:underline uppercase font-bold ${location === "/family-recipes" ? "underline" : ""}`}
+                className="text-white cursor-pointer hover:underline uppercase font-bold text-[12px]"
                 data-testid="subnav-family-recipes"
               >
                 My Recipes
