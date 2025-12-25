@@ -1,34 +1,39 @@
 # Recipe Tracker Design Guidelines
 
 ## Design Approach
-**Selected System:** OpenSea-inspired dark minimal aesthetic with flat design, emphasizing clean hierarchy, subtle borders for depth, and professional simplicity.
+**Selected System:** Warm & Cozy modern aesthetic with flat design, emphasizing clean hierarchy, subtle borders for depth, and an inviting, comfortable feel.
 
-**Design Philosophy:** Marketplace-inspired interface that puts recipes front and center, with flat surfaces, subtle 1px borders for visual hierarchy, and a dark color scheme that feels modern and sophisticated.
+**Design Philosophy:** A welcoming interface that feels like home, using warm amber tones, soft cream backgrounds, and gentle contrast to create a cozy yet modern experience.
 
 ---
 
 ## Color System
 
-**Theme:** Forced dark mode (no light mode toggle)
+**Theme:** Light and Dark mode with warm undertones throughout
 
-**Background Colors:**
-- Background Base: #0c0c0d (HSL 240 7% 5%)
-- Card Background: #1a1a1d (HSL 240 5% 11%)
-- Muted/Secondary: #1e1e21 (HSL 240 5% 12%)
+**Light Mode Background Colors:**
+- Background Base: Warm off-white (HSL 30 30% 98%)
+- Card Background: Soft cream (HSL 35 25% 96%)
+- Muted/Secondary: Warm neutral (HSL 30 15% 94%)
+
+**Dark Mode Background Colors:**
+- Background Base: Warm charcoal (HSL 25 15% 8%)
+- Card Background: Warm dark brown (HSL 25 12% 12%)
+- Muted/Secondary: Warm gray (HSL 25 10% 15%)
 
 **Border Colors:**
-- Default Border: #2a2a2d (HSL 240 4% 17%)
-- Subtle Border: rgba(255, 255, 255, 0.1)
+- Light: Warm taupe (HSL 30 15% 88%)
+- Dark: Warm brown-gray (HSL 25 10% 18%)
 
 **Accent Colors:**
-- Primary (Electric Blue): #2081e2 (HSL 210 77% 51%)
-- Primary Hover: Slightly lightened via opacity
-- Destructive: #dc2626
+- Primary (Warm Amber): HSL 28 85% 55% - a rich, inviting amber-orange
+- Primary Hover: Slightly elevated via built-in system
+- Destructive: Warm red (HSL 0 72% 55%)
 
 **Text Colors:**
-- Foreground (Primary): #f0f0f0
-- Muted Foreground: #8a8a8a
-- Secondary Foreground: #a0a0a0
+- Light Foreground: Warm dark brown (HSL 25 20% 10%)
+- Dark Foreground: Warm cream (HSL 35 20% 92%)
+- Muted Foreground: Warm gray tones
 
 ---
 
