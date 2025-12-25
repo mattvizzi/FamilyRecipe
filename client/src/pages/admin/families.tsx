@@ -1,16 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { AdminDataGrid, Column } from "@/components/admin-data-grid";
 import { format } from "date-fns";
 
 interface AdminFamily {
@@ -25,9 +18,59 @@ interface AdminFamily {
 }
 
 export default function AdminFamilies() {
-  const { data: families, isLoading } = useQuery<AdminFamily[]>({
+  const { data: families = [], isLoading } = useQuery<AdminFamily[]>({
     queryKey: ["/api/admin/families"],
   });
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const columns: Column<AdminFamily>[] = [
+    {
+      key: "name",
+      header: "Family Name",
+      sortable: true,
+      render: (family) => <span className="font-medium">{family.name}</span>,
+    },
+    {
+      key: "creatorName",
+      header: "Created By",
+      sortable: true,
+      render: (family) => (
+        <span className="text-muted-foreground">{family.creatorName || "Unknown"}</span>
+      ),
+    },
+    {
+      key: "memberCount",
+      header: "Members",
+      sortable: true,
+      className: "text-right",
+      render: (family) => <Badge variant="secondary">{family.memberCount}</Badge>,
+    },
+    {
+      key: "recipeCount",
+      header: "Recipes",
+      sortable: true,
+      className: "text-right",
+      render: (family) => family.recipeCount,
+    },
+    {
+      key: "inviteCode",
+      header: "Invite Code",
+      render: (family) => (
+        <code className="text-xs bg-muted px-2 py-1 rounded">{family.inviteCode}</code>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Created",
+      sortable: true,
+      render: (family) => (
+        <span className="text-muted-foreground">
+          {format(new Date(family.createdAt), "MMM d, yyyy")}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <AdminLayout>
@@ -39,51 +82,22 @@ export default function AdminFamilies() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">All Families ({families?.length ?? 0})</CardTitle>
+            <CardTitle className="text-lg">All Families ({families.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Family Name</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead className="text-right">Members</TableHead>
-                    <TableHead className="text-right">Recipes</TableHead>
-                    <TableHead>Invite Code</TableHead>
-                    <TableHead>Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {families?.map((family) => (
-                    <TableRow key={family.id} data-testid={`row-family-${family.id}`}>
-                      <TableCell className="font-medium">{family.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {family.creatorName || "Unknown"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="secondary">{family.memberCount}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">{family.recipeCount}</TableCell>
-                      <TableCell>
-                        <code className="text-xs bg-muted px-2 py-1 rounded">
-                          {family.inviteCode}
-                        </code>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {format(new Date(family.createdAt), "MMM d, yyyy")}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
+            <AdminDataGrid
+              data={families}
+              columns={columns}
+              isLoading={isLoading}
+              searchPlaceholder="Search families..."
+              searchKeys={["name", "creatorName"]}
+              selectable={true}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              getRowId={(family) => family.id}
+              emptyMessage="No families found"
+              pageSize={10}
+            />
           </CardContent>
         </Card>
       </div>
