@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, Link, useLocation } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { RecipeCard, RecipeCardSkeleton } from "../components/recipe-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LayoutGrid, List, Search, ChefHat, Plus } from "lucide-react";
+import { LayoutGrid, List, Search, ChefHat } from "lucide-react";
 import type { RecipeWithCreator, Family } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
 import { SEO } from "@/components/seo";
@@ -171,19 +171,6 @@ export default function PublicRecipes() {
           )}
         </div>
 
-        {/* Floating Action Button for Add Recipe - Only show if logged in */}
-        {user && (
-          <Link href="/add-recipe">
-            <Button
-              size="lg"
-              className="fixed bottom-6 right-6 rounded-full w-14 h-14 z-40 border border-border"
-              aria-label="Add new recipe"
-              data-testid="button-fab-add-recipe"
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
-          </Link>
-        )}
       </main>
     </>
   );

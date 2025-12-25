@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -76,6 +76,9 @@ import {
   X,
   Check,
   Loader2,
+  Upload,
+  Sparkles,
+  Camera,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -121,6 +124,7 @@ export default function RecipeDetail() {
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set([0]));
   const [newComment, setNewComment] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const { data: family } = useQuery<Family>({
     queryKey: ["/api/family"],
@@ -383,6 +387,59 @@ export default function RecipeDetail() {
     },
   });
 
+  const regenerateImageMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", `/api/recipes/${recipeId}/regenerate-image`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/recipes", recipeId, "stats"] });
+      toast({ title: "Image Regenerated", description: "New photo has been generated" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to regenerate image", variant: "destructive" });
+    },
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: async (imageData: string) => {
+      return apiRequest("POST", `/api/recipes/${recipeId}/upload-image`, { imageData });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/recipes", recipeId, "stats"] });
+      toast({ title: "Image Uploaded", description: "Your photo has been saved" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to upload image", variant: "destructive" });
+    },
+  });
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Please select an image file", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 10MB", variant: "destructive" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      uploadImageMutation.mutate(base64);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
   const toggleGroup = (index: number) => {
     const newExpanded = new Set(expandedGroups);
     if (newExpanded.has(index)) {
@@ -624,6 +681,51 @@ export default function RecipeDetail() {
               {isEditing ? "Cancel" : "Back"}
             </Button>
 
+            {/* Image Edit Controls - show when editing */}
+            {isEditing && (
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  data-testid="input-recipe-image"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="bg-background border border-border"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={uploadImageMutation.isPending}
+                  data-testid="button-upload-image"
+                >
+                  {uploadImageMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-2" />
+                  )}
+                  Upload Photo
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  className="bg-background border border-border"
+                  onClick={() => regenerateImageMutation.mutate()}
+                  disabled={regenerateImageMutation.isPending}
+                  data-testid="button-regenerate-image"
+                >
+                  {regenerateImageMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-2" />
+                  )}
+                  Generate with AI
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Floating Edit Mode Bar */}

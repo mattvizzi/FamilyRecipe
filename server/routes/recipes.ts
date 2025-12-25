@@ -245,10 +245,10 @@ SEO Guidelines:
     }
 
     const imagePrompt = `Professional food photography of ${extracted.name}. 
-Beautifully plated on an elegant white ceramic plate, overhead shot, soft natural lighting, 
-garnished elegantly, appetizing and mouthwatering presentation, restaurant quality, 
-high-end cookbook style photography, clean minimal background, 8k quality, 
-shallow depth of field, food styling.`;
+Overhead shot on a simple white plate, soft natural lighting, clean presentation. 
+Show the dish as it would naturally appear when served - no added garnishes unless specifically mentioned in the recipe.
+Appetizing, restaurant-quality presentation, cookbook style photography, 
+clean minimal background, 8k quality, shallow depth of field.`;
 
     let imageUrl: string | undefined;
     let imageAltText: string | undefined;
@@ -360,6 +360,89 @@ router.delete("/:id", isAuthenticated, async (req: AuthRequest, res: Response) =
   } catch (error) {
     console.error("Error deleting recipe:", error);
     res.status(500).json({ message: "Failed to delete recipe" });
+  }
+});
+
+router.post("/:id/regenerate-image", isAuthenticated, aiProcessingLimiter, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.claims.sub;
+    const { id } = req.params;
+    
+    const recipe = await storage.getRecipe(id);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+    
+    const isMember = await storage.isFamilyMember(recipe.familyId, userId);
+    if (!isMember) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const imagePrompt = `Professional food photography of ${recipe.name}. 
+Overhead shot on a simple white plate, soft natural lighting, clean presentation. 
+Show the dish as it would naturally appear when served - no added garnishes unless the dish specifically includes them.
+Appetizing, restaurant-quality presentation, cookbook style photography, 
+clean minimal background, 8k quality, shallow depth of field.`;
+
+    const imageBuffer = await generateImageBuffer(imagePrompt, "1024x1024");
+    const base64Data = imageBuffer.toString("base64");
+    const imageUrl = await uploadRecipeImage(base64Data, id);
+    
+    let imageAltText: string | undefined;
+    try {
+      const altTextCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: `Generate a concise, SEO-friendly alt text (max 125 characters) for this recipe image of "${recipe.name}". Focus on describing the dish's appearance, key ingredients visible, and presentation style. Do not include phrases like "image of" or "photo of".` },
+            { type: "image_url", image_url: { url: `data:image/png;base64,${base64Data}` } }
+          ]
+        }],
+      });
+      imageAltText = altTextCompletion.choices[0]?.message?.content?.trim();
+    } catch (altTextError) {
+      console.error("Alt text generation failed:", altTextError);
+      imageAltText = `${recipe.name} - beautifully plated and ready to serve`;
+    }
+    
+    const updated = await storage.updateRecipe(id, { imageUrl, imageAltText });
+    res.json(updated);
+  } catch (error) {
+    console.error("Error regenerating image:", error);
+    res.status(500).json({ message: "Failed to regenerate image" });
+  }
+});
+
+router.post("/:id/upload-image", isAuthenticated, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.claims.sub;
+    const { id } = req.params;
+    const { imageData } = req.body;
+    
+    if (!imageData || typeof imageData !== "string") {
+      return res.status(400).json({ message: "Image data is required" });
+    }
+    
+    const recipe = await storage.getRecipe(id);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+    
+    const isMember = await storage.isFamilyMember(recipe.familyId, userId);
+    if (!isMember) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const imageUrl = await uploadRecipeImage(imageData, id);
+    const updated = await storage.updateRecipe(id, { 
+      imageUrl, 
+      imageAltText: `${recipe.name} - home cooking` 
+    });
+    res.json(updated);
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ message: "Failed to upload image" });
   }
 });
 
