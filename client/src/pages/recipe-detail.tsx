@@ -357,7 +357,7 @@ export default function RecipeDetail() {
 
   if (isLoading) {
     return (
-      <main className="pt-20 px-4 sm:px-6">
+      <main className="pt-20 sm:pt-24 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <Skeleton className="h-8 w-24 mb-6" />
           <Skeleton className="h-10 w-2/3 mb-4" />
@@ -375,7 +375,7 @@ export default function RecipeDetail() {
 
   if (!recipe) {
     return (
-      <main className="pt-20 px-4 sm:px-6">
+      <main className="pt-20 sm:pt-24 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-xl font-bold mb-4">Recipe Not Found</h1>
           <Button asChild>
@@ -389,7 +389,7 @@ export default function RecipeDetail() {
   const isOwner = recipe.createdById === user?.id;
 
   return (
-    <main className="pt-20 pb-12 px-4 sm:px-6">
+    <main className="pt-20 sm:pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <Button 

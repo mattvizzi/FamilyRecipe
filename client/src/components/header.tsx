@@ -27,11 +27,12 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
-import { LogOut, Users, ChefHat, Search, ChevronDown, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp, Menu } from "lucide-react";
+import { LogOut, Users, ChefHat, Search, Globe, Plus, Settings, BookOpen, Loader2, TrendingUp, Menu, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import type { Family, RecipeWithCreator } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
+import { useTheme } from "@/components/theme-provider";
 
 interface HeaderProps {
   family?: Family | null;
@@ -43,6 +44,7 @@ export function Header({ family }: HeaderProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   // Keyboard shortcut to open command palette
   useEffect(() => {
@@ -77,30 +79,51 @@ export function Header({ family }: HeaderProps) {
     return (first + last).toUpperCase() || user.email?.[0]?.toUpperCase() || "?";
   };
 
-  const isMyRecipes = location === "/my-recipes" || location === "/";
   const isBrowsing = location?.startsWith("/recipes") ?? false;
+  const currentCategory = isBrowsing ? location.split("/recipes/")[1] : null;
 
   const runCommand = (command: () => void) => {
     setOpen(false);
     command();
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
     <>
+      {/* Main Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border h-14">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          {/* Mobile: Hamburger Left, Logo Center */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileNavOpen(true)}
+              data-testid="button-mobile-menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Logo - Centered on mobile, left on desktop */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 sm:relative sm:left-0 sm:transform-none">
             <Link href="/home">
               <div className="flex items-center cursor-pointer" data-testid="link-home">
                 <span className="text-xl font-bold tracking-tight text-primary">Family</span>
                 <span className="text-xl font-light text-foreground tracking-tight">Recipe</span>
               </div>
             </Link>
+          </div>
 
+          {/* Desktop: Search */}
+          <div className="hidden sm:flex items-center gap-4 flex-1">
             <Button
               variant="outline"
               size="sm"
-              className="hidden sm:flex items-center gap-2 text-muted-foreground w-52 justify-between"
+              className="flex items-center gap-2 text-muted-foreground w-52 justify-between"
               onClick={() => setOpen(true)}
               data-testid="button-search"
             >
@@ -112,62 +135,10 @@ export function Header({ family }: HeaderProps) {
                 <span className="text-xs">⌘</span>K
               </kbd>
             </Button>
-
-            <nav className="hidden sm:flex items-center gap-1">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={isBrowsing ? "bg-accent" : ""}
-                    data-testid="nav-browse-dropdown"
-                  >
-                    Browse Recipes
-                    <ChevronDown className="h-3 w-3 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-40">
-                  <DropdownMenuItem asChild>
-                    <Link href="/recipes" className="cursor-pointer" data-testid="nav-all-recipes">
-                      All Recipes
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {recipeCategories.map((cat) => (
-                    <DropdownMenuItem key={cat} asChild>
-                      <Link href={`/recipes/${cat.toLowerCase()}`} className="cursor-pointer" data-testid={`nav-category-${cat.toLowerCase()}`}>
-                        {cat}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Link href="/my-recipes">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={isMyRecipes ? "bg-accent" : ""}
-                  data-testid="nav-my-recipes"
-                >
-                  <ChefHat className="h-4 w-4 mr-1.5" />
-                  My Family Recipes
-                </Button>
-              </Link>
-            </nav>
           </div>
 
+          {/* Right side actions */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="sm:hidden"
-              onClick={() => setMobileNavOpen(true)}
-              data-testid="button-mobile-menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-
             <Button
               variant="ghost"
               size="icon"
@@ -177,8 +148,6 @@ export function Header({ family }: HeaderProps) {
             >
               <Search className="h-4 w-4" />
             </Button>
-
-            <ThemeToggle />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -200,10 +169,35 @@ export function Header({ family }: HeaderProps) {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/add-recipe" className="flex items-center gap-2" data-testid="dropdown-add-recipe">
+                    <Plus className="h-4 w-4" />
+                    Add a Recipe
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/my-recipes" className="flex items-center gap-2" data-testid="dropdown-my-recipes">
+                    <ChefHat className="h-4 w-4" />
+                    My Recipes
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <Link href="/family" className="flex items-center gap-2" data-testid="link-family-settings">
                     <Users className="h-4 w-4" />
                     Family Settings
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={toggleTheme}
+                  className="cursor-pointer"
+                  data-testid="dropdown-theme-toggle"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Moon className="h-4 w-4 mr-2" />
+                  )}
+                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -220,6 +214,36 @@ export function Header({ family }: HeaderProps) {
           </div>
         </div>
       </header>
+
+      {/* Desktop Sub-navigation bar with categories */}
+      <nav className="fixed top-14 left-0 right-0 z-40 bg-primary hidden sm:block">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center gap-1 h-10 overflow-x-auto scrollbar-hide">
+            <Link href="/recipes">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className={`text-primary-foreground hover:bg-primary-foreground/10 ${!currentCategory ? "bg-primary-foreground/20" : ""}`}
+                data-testid="subnav-all-recipes"
+              >
+                All Recipes
+              </Button>
+            </Link>
+            {recipeCategories.map((cat) => (
+              <Link key={cat} href={`/recipes/${cat.toLowerCase()}`}>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className={`text-primary-foreground hover:bg-primary-foreground/10 whitespace-nowrap ${currentCategory === cat.toLowerCase() ? "bg-primary-foreground/20" : ""}`}
+                  data-testid={`subnav-category-${cat.toLowerCase()}`}
+                >
+                  {cat}
+                </Button>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </nav>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput 
@@ -357,14 +381,26 @@ export function Header({ family }: HeaderProps) {
               </Link>
             </SheetClose>
             <SheetClose asChild>
+              <Link href="/add-recipe">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3"
+                  data-testid="mobile-nav-add"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add a Recipe
+                </Button>
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
               <Link href="/my-recipes">
                 <Button 
                   variant="ghost" 
-                  className={`w-full justify-start gap-3 ${isMyRecipes ? "bg-accent" : ""}`}
+                  className="w-full justify-start gap-3"
                   data-testid="mobile-nav-my-recipes"
                 >
                   <ChefHat className="h-4 w-4" />
-                  My Family Recipes
+                  My Recipes
                 </Button>
               </Link>
             </SheetClose>
@@ -377,18 +413,6 @@ export function Header({ family }: HeaderProps) {
                 >
                   <BookOpen className="h-4 w-4" />
                   Browse All Recipes
-                </Button>
-              </Link>
-            </SheetClose>
-            <SheetClose asChild>
-              <Link href="/add-recipe">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start gap-3"
-                  data-testid="mobile-nav-add"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add New Recipe
                 </Button>
               </Link>
             </SheetClose>
@@ -425,6 +449,20 @@ export function Header({ family }: HeaderProps) {
                 </Button>
               </Link>
             </SheetClose>
+            
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start gap-3"
+              onClick={toggleTheme}
+              data-testid="mobile-nav-theme-toggle"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </Button>
           </nav>
         </SheetContent>
       </Sheet>

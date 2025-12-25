@@ -171,9 +171,8 @@ function CategoryGrid() {
   };
 
   return (
-    <section className="mb-10">
-      <h2 className="text-xl font-semibold mb-4">Browse by Category</h2>
-      <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:justify-between">
+    <section>
+      <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 sm:-mx-6 sm:px-6 scrollbar-hide md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:justify-start md:gap-3">
         {recipeCategories.map((category) => (
           <Link key={category} href={`/recipes/${category.toLowerCase()}`}>
             <Card 
@@ -229,16 +228,14 @@ export default function Dashboard() {
   const savedRecipesList = savedRecipes.slice(0, 8);
 
   return (
-    <main className="pt-20 pb-12">
+    <main className="pt-20 sm:pt-24 pb-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {isLoading ? (
-          <Skeleton className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl mb-10" />
+          <Skeleton className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl" />
         ) : featuredRecipe ? (
-          <div className="mb-10">
-            <HeroRecipe recipe={featuredRecipe} />
-          </div>
+          <HeroRecipe recipe={featuredRecipe} />
         ) : (
-          <div className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col items-center justify-center mb-10">
+          <div className="aspect-square sm:aspect-[21/9] md:aspect-[3/1] rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col items-center justify-center">
             <ChefHat className="h-16 w-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold mb-2">No recipes yet</h2>
             <p className="text-muted-foreground mb-4">Add your first family recipe to get started</p>
@@ -247,7 +244,16 @@ export default function Dashboard() {
             </Link>
           </div>
         )}
+      </div>
 
+      {/* Categories Section with secondary background */}
+      <section className="bg-section-alt py-8 mt-8 mb-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <CategoryGrid />
+        </div>
+      </section>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <RecipeCarousel
           title="From Your Family"
           recipes={recentFamilyRecipes}
@@ -268,8 +274,6 @@ export default function Dashboard() {
           recipes={quickMeals}
           isLoading={isLoading}
         />
-
-        <CategoryGrid />
 
         <RecipeCarousel
           title="Trending Public Recipes"

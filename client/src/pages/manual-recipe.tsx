@@ -156,7 +156,7 @@ export default function ManualRecipe() {
   const groups = form.watch("groups");
 
   return (
-    <main className="pt-24 pb-12 px-4 sm:px-6">
+    <main className="pt-20 sm:pt-24 pb-12 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <Button 
             variant="ghost" 
