@@ -3,7 +3,7 @@ import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, CheckCircle, Info, Play, Loader2 } from "lucide-react";
+import { RefreshCw, CheckCircle, Info, Play, Loader2, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -19,8 +19,38 @@ interface SyncResult {
   };
 }
 
+interface SetupResult {
+  success: boolean;
+  results: {
+    contacts: { created: number; failed: number };
+    companies: { created: number; failed: number };
+    deals: { created: number; failed: number };
+  };
+}
+
 export default function AdminHubSpot() {
   const { toast } = useToast();
+
+  const setupMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/hubspot/setup");
+      return res.json() as Promise<SetupResult>;
+    },
+    onSuccess: (data) => {
+      const { contacts, companies, deals } = data.results;
+      toast({
+        title: "Setup completed",
+        description: `Contacts: ${contacts.created} properties. Companies: ${companies.created} properties. Deals: ${deals.created} properties.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Setup failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const syncUsersMutation = useMutation({
     mutationFn: async () => {
@@ -106,6 +136,7 @@ export default function AdminHubSpot() {
   });
 
   const isSyncing = syncUsersMutation.isPending || syncFamiliesMutation.isPending || syncRecipesMutation.isPending || syncAllMutation.isPending;
+  const isSetupPending = setupMutation.isPending;
 
   return (
     <AdminLayout>
@@ -222,6 +253,52 @@ export default function AdminHubSpot() {
             </CardContent>
           </Card>
         </div>
+
+        <Card className="mt-4">
+          <CardHeader className="flex flex-row items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Setup Custom Properties
+              </CardTitle>
+              <CardDescription>Create custom properties in HubSpot to sync all app data</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setupMutation.mutate()}
+              disabled={isSetupPending}
+              data-testid="button-setup-properties"
+            >
+              {isSetupPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Setting up...
+                </>
+              ) : (
+                <>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Setup Properties
+                </>
+              )}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Contact Properties</p>
+                <p className="text-muted-foreground text-xs">app_user_id, signup_date, profile_image_url</p>
+              </div>
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Company Properties</p>
+                <p className="text-muted-foreground text-xs">app_family_id, invite_code, family_created_date</p>
+              </div>
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="font-medium mb-1">Deal Properties</p>
+                <p className="text-muted-foreground text-xs">app_recipe_id, recipe_category, cook_time, servings, view_count, is_public</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mt-4">
           <CardHeader className="flex flex-row items-center justify-between gap-2">

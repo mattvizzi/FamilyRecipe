@@ -24,7 +24,8 @@ import {
   syncUserToHubSpot,
   associateContactWithCompany,
   getHubSpotContactByEmail,
-  getHubSpotCompanyByFamilyId
+  getHubSpotCompanyByFamilyId,
+  setupHubSpotProperties
 } from "./hubspot";
 import { uploadRecipeImage, isBase64Image } from "./imageStorage";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
@@ -1199,6 +1200,17 @@ shallow depth of field, food styling.`;
     } catch (error) {
       console.error("Error deleting comment:", error);
       res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // Admin HubSpot setup endpoint - creates custom properties
+  app.post("/api/admin/hubspot/setup", isAuthenticated, isAdmin, async (req: AuthRequest, res: Response) => {
+    try {
+      const results = await setupHubSpotProperties();
+      res.json({ success: true, results });
+    } catch (error) {
+      console.error("Error setting up HubSpot properties:", error);
+      res.status(500).json({ message: "Failed to setup HubSpot properties" });
     }
   });
 

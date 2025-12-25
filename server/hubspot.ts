@@ -43,10 +43,19 @@ export async function syncUserToHubSpot(user: User): Promise<string | null> {
     
     const properties: Record<string, string> = {
       email: user.email,
+      app_user_id: user.id,
     };
     
     if (user.firstName) properties.firstname = user.firstName;
     if (user.lastName) properties.lastname = user.lastName;
+    if (user.profileImageUrl) properties.profile_image_url = user.profileImageUrl;
+    if (user.createdAt) {
+      // HubSpot date properties require Unix timestamp in milliseconds
+      const dateMs = new Date(user.createdAt).getTime();
+      // Round to midnight UTC for date-only properties
+      const midnightMs = Math.floor(dateMs / 86400000) * 86400000;
+      properties.signup_date = String(midnightMs);
+    }
     
     // Try to find existing contact by email
     try {
@@ -92,7 +101,17 @@ export async function syncFamilyToHubSpot(family: Family): Promise<string | null
     const properties: Record<string, string> = {
       name: family.name,
       description: `Family ID: ${family.id}`,
+      app_family_id: family.id,
+      invite_code: family.inviteCode || '',
     };
+    
+    if (family.createdAt) {
+      // HubSpot date properties require Unix timestamp in milliseconds
+      const dateMs = new Date(family.createdAt).getTime();
+      // Round to midnight UTC for date-only properties
+      const midnightMs = Math.floor(dateMs / 86400000) * 86400000;
+      properties.family_created_date = String(midnightMs);
+    }
     
     // Search for existing company by name and description (which contains our ID)
     try {
@@ -141,8 +160,16 @@ export async function syncRecipeToHubSpot(recipe: Recipe, familyName: string): P
       dealname: recipe.name,
       pipeline: pipelineId,
       dealstage: stageId,
-      description: `Recipe ID: ${recipe.id} | Family: ${familyName} | Category: ${recipe.category} | ${recipe.isPublic ? 'Public' : 'Private'}`,
+      description: `Recipe ID: ${recipe.id} | Family: ${familyName}`,
+      app_recipe_id: recipe.id,
+      recipe_category: recipe.category,
+      is_public: recipe.isPublic ? 'true' : 'false',
+      view_count: String(recipe.viewCount || 0),
     };
+    
+    if (recipe.cookTime) properties.cook_time_minutes = String(recipe.cookTime);
+    if (recipe.prepTime) properties.prep_time_minutes = String(recipe.prepTime);
+    if (recipe.servings) properties.servings = String(recipe.servings);
     
     // Search for existing deal by description (which contains our ID)
     try {
@@ -262,6 +289,117 @@ export async function triggerEmailViaPropertyUpdate(
     console.error('Error triggering email:', error);
     return false;
   }
+}
+
+// ============ CUSTOM PROPERTIES SETUP ============
+
+interface PropertyDefinition {
+  name: string;
+  label: string;
+  type: string;
+  fieldType: string;
+  groupName: string;
+  description?: string;
+}
+
+const CONTACT_PROPERTIES: PropertyDefinition[] = [
+  { name: 'app_user_id', label: 'App User ID', type: 'string', fieldType: 'text', groupName: 'contactinformation', description: 'User ID from Recipe Tracker app' },
+  { name: 'signup_date', label: 'App Signup Date', type: 'date', fieldType: 'date', groupName: 'contactinformation', description: 'Date user signed up for Recipe Tracker' },
+  { name: 'profile_image_url', label: 'Profile Image URL', type: 'string', fieldType: 'text', groupName: 'contactinformation', description: 'User profile image URL' },
+];
+
+const COMPANY_PROPERTIES: PropertyDefinition[] = [
+  { name: 'app_family_id', label: 'App Family ID', type: 'string', fieldType: 'text', groupName: 'companyinformation', description: 'Family ID from Recipe Tracker app' },
+  { name: 'invite_code', label: 'Family Invite Code', type: 'string', fieldType: 'text', groupName: 'companyinformation', description: 'Invite code to join the family' },
+  { name: 'family_created_date', label: 'Family Created Date', type: 'date', fieldType: 'date', groupName: 'companyinformation', description: 'Date family was created' },
+];
+
+const DEAL_PROPERTIES: PropertyDefinition[] = [
+  { name: 'app_recipe_id', label: 'App Recipe ID', type: 'string', fieldType: 'text', groupName: 'dealinformation', description: 'Recipe ID from Recipe Tracker app' },
+  { name: 'recipe_category', label: 'Recipe Category', type: 'string', fieldType: 'text', groupName: 'dealinformation', description: 'Category like Breakfast, Lunch, Dinner' },
+  { name: 'cook_time_minutes', label: 'Cook Time (minutes)', type: 'number', fieldType: 'number', groupName: 'dealinformation', description: 'Cooking time in minutes' },
+  { name: 'prep_time_minutes', label: 'Prep Time (minutes)', type: 'number', fieldType: 'number', groupName: 'dealinformation', description: 'Preparation time in minutes' },
+  { name: 'servings', label: 'Servings', type: 'number', fieldType: 'number', groupName: 'dealinformation', description: 'Number of servings' },
+  { name: 'view_count', label: 'View Count', type: 'number', fieldType: 'number', groupName: 'dealinformation', description: 'Number of times recipe was viewed' },
+  { name: 'is_public', label: 'Is Public', type: 'bool', fieldType: 'booleancheckbox', groupName: 'dealinformation', description: 'Whether recipe is publicly visible' },
+];
+
+async function createPropertyIfNotExists(
+  client: Client,
+  objectType: 'contacts' | 'companies' | 'deals',
+  property: PropertyDefinition
+): Promise<boolean> {
+  try {
+    // Check if property exists
+    try {
+      await client.crm.properties.coreApi.getByName(objectType, property.name);
+      console.log(`Property ${property.name} already exists for ${objectType}`);
+      return true;
+    } catch {
+      // Property doesn't exist, create it
+    }
+    
+    const propertyInput: any = {
+      name: property.name,
+      label: property.label,
+      type: property.type,
+      fieldType: property.fieldType,
+      groupName: property.groupName,
+      description: property.description || '',
+    };
+    
+    // For boolean checkbox, add options
+    if (property.fieldType === 'booleancheckbox') {
+      propertyInput.options = [
+        { label: 'Yes', value: 'true', displayOrder: 0 },
+        { label: 'No', value: 'false', displayOrder: 1 }
+      ];
+    }
+    
+    await client.crm.properties.coreApi.create(objectType, propertyInput);
+    console.log(`Created property ${property.name} for ${objectType}`);
+    return true;
+  } catch (error: any) {
+    console.error(`Error creating property ${property.name} for ${objectType}:`, error?.body?.message || error);
+    return false;
+  }
+}
+
+export async function setupHubSpotProperties(): Promise<{
+  contacts: { created: number; failed: number };
+  companies: { created: number; failed: number };
+  deals: { created: number; failed: number };
+}> {
+  const client = getHubSpotClient();
+  const results = {
+    contacts: { created: 0, failed: 0 },
+    companies: { created: 0, failed: 0 },
+    deals: { created: 0, failed: 0 },
+  };
+  
+  // Create contact properties
+  for (const prop of CONTACT_PROPERTIES) {
+    const success = await createPropertyIfNotExists(client, 'contacts', prop);
+    if (success) results.contacts.created++;
+    else results.contacts.failed++;
+  }
+  
+  // Create company properties
+  for (const prop of COMPANY_PROPERTIES) {
+    const success = await createPropertyIfNotExists(client, 'companies', prop);
+    if (success) results.companies.created++;
+    else results.companies.failed++;
+  }
+  
+  // Create deal properties
+  for (const prop of DEAL_PROPERTIES) {
+    const success = await createPropertyIfNotExists(client, 'deals', prop);
+    if (success) results.deals.created++;
+    else results.deals.failed++;
+  }
+  
+  console.log('HubSpot properties setup complete:', results);
+  return results;
 }
 
 // ============ HELPER FUNCTIONS ============
