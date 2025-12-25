@@ -8,6 +8,7 @@ import { type AuthRequest, validateCsrf, generateCsrfToken } from "./middleware"
 import familyRouter from "./routes/family";
 import recipesRouter, { publicRecipesRouter } from "./routes/recipes";
 import adminRouter from "./routes/admin";
+import userRouter from "./routes/user";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -32,6 +33,7 @@ export async function registerRoutes(
   app.use("/api", validateCsrf);
   
   // Protected routes
+  app.use("/api/user", userRouter);
   app.use("/api/family", familyRouter);
   app.use("/api/recipes", recipesRouter);
   app.use("/api/admin", adminRouter);

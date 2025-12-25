@@ -49,6 +49,7 @@ const ManualRecipe = lazy(() => import("@/features/recipes/pages/manual-recipe")
 const FamilySettings = lazy(() => import("@/features/family/pages/family-settings"));
 const FamilyOnboarding = lazy(() => import("@/features/family/pages/family-onboarding"));
 const JoinFamily = lazy(() => import("@/features/family/pages/join-family"));
+const UserOnboarding = lazy(() => import("@/features/onboarding/pages/user-onboarding"));
 
 // Admin pages (lazy loaded)
 const AdminDashboard = lazy(() => import("@/features/admin/pages/dashboard"));
@@ -147,10 +148,46 @@ function SkipToMainContent() {
   );
 }
 
+interface OnboardingStatus {
+  needsOnboarding: boolean;
+  firstName: string | null;
+  lastName: string | null;
+  profileImageUrl: string | null;
+}
+
 function AuthenticatedRouter() {
+  const [location] = useLocation();
+  
+  const { data: onboardingStatus, isLoading: onboardingLoading } = useQuery<OnboardingStatus>({
+    queryKey: ["/api/user/onboarding-status"],
+  });
+  
   const { data: family, isLoading: familyLoading } = useQuery<Family>({
     queryKey: ["/api/family"],
+    enabled: !onboardingStatus?.needsOnboarding,
   });
+
+  if (onboardingLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+  
+  // Check if user needs to complete onboarding (but allow join flow to proceed)
+  const isJoinRoute = location?.startsWith("/join/");
+  if (onboardingStatus?.needsOnboarding && !isJoinRoute) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/onboarding" component={UserOnboarding} />
+          <Route path="/join/:code" component={JoinFamily} />
+          <Route>{() => <Redirect to="/onboarding" />}</Route>
+        </Switch>
+      </Suspense>
+    );
+  }
 
   if (familyLoading) {
     return (
