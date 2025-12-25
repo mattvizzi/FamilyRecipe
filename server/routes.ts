@@ -26,6 +26,7 @@ import {
   getHubSpotContactByEmail,
   getHubSpotCompanyByFamilyId
 } from "./hubspot";
+import { uploadRecipeImage, isBase64Image } from "./imageStorage";
 
 // Rate limiters for expensive operations
 const aiProcessingLimiter = rateLimit({
@@ -51,6 +52,16 @@ const pdfExportLimiter = rateLimit({
     return authReq.user?.claims?.sub || req.ip || 'unknown';
   },
 });
+
+// Rate limiter for public endpoints (no auth required)
+const publicRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per 15 minutes per IP
+  message: { message: "Too many requests. Please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => req.ip || 'unknown',
+});
 import { scaleAmount } from "@shared/lib/fraction";
 
 interface AuthRequest extends Request {
@@ -61,6 +72,7 @@ interface AuthRequest extends Request {
   };
   session?: {
     csrfToken?: string;
+    viewedRecipes?: string[]; // Track viewed recipes to prevent view count inflation
   } & Request['session'];
 }
 
