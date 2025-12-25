@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Camera, Users, Sparkles, ArrowRight, Heart, BookOpen, Share2, CheckCircle } from "lucide-react";
+import { Camera, Users, Sparkles, ArrowRight, CheckCircle } from "lucide-react";
 import heroImage from "@assets/ChatGPT_Image_Dec_24,_2025,_11_46_48_PM_1766638042461.png";
+import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
 
 export default function Landing() {
   return (
@@ -77,6 +77,8 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        <RecipeShowcaseCarousel />
 
         <section id="features" className="py-16 px-6 bg-card scroll-mt-14">
           <div className="max-w-5xl mx-auto">
