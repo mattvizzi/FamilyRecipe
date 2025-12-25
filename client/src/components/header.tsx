@@ -212,19 +212,18 @@ export function Header({ family }: HeaderProps) {
       {/* Desktop Sub-navigation bar with categories */}
       <nav className="fixed top-14 left-0 right-0 z-40 dark:bg-white hidden sm:block shadow-md bg-[#fbfaf8]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-4 h-10 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-6 h-10 overflow-x-auto scrollbar-hide">
             <Link href="/family-recipes">
               <span 
-                className={`text-sm text-black cursor-pointer hover:underline ${location === "/family-recipes" ? "font-bold underline" : ""}`}
+                className={`text-[10px] text-black cursor-pointer hover:underline uppercase font-semibold ${location === "/family-recipes" ? "font-bold underline" : ""}`}
                 data-testid="subnav-family-recipes"
               >
-                Family Recipes
+                My Recipes
               </span>
             </Link>
-            <span className="text-black">|</span>
             <Link href="/recipes">
               <span 
-                className={`text-sm text-black cursor-pointer hover:underline ${location === "/recipes" ? "font-bold underline" : ""}`}
+                className={`text-[10px] text-black cursor-pointer hover:underline uppercase font-semibold ${location === "/recipes" ? "font-bold underline" : ""}`}
                 data-testid="subnav-all-recipes"
               >
                 All Recipes
@@ -233,7 +232,7 @@ export function Header({ family }: HeaderProps) {
             {recipeCategories.map((cat) => (
               <Link key={cat} href={`/recipes/${cat.toLowerCase()}`}>
                 <span 
-                  className={`text-sm text-black cursor-pointer hover:underline whitespace-nowrap ${currentCategory === cat.toLowerCase() ? "font-bold underline" : ""}`}
+                  className={`text-[10px] text-black cursor-pointer hover:underline whitespace-nowrap uppercase font-semibold ${currentCategory === cat.toLowerCase() ? "font-bold underline" : ""}`}
                   data-testid={`subnav-category-${cat.toLowerCase()}`}
                 >
                   {cat}
