@@ -370,24 +370,18 @@ export default function RecipeDetail() {
                       {recipe.groups.length > 1 && (
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">{group.name}</p>
                       )}
-                      <table className="w-full text-sm">
-                        <tbody>
-                          {group.ingredients.map((ingredient, i) => {
-                            const scaledAmount = scaleAmount(ingredient.amount, scale);
-                            return (
-                              <tr key={i} data-testid={`ingredient-${groupIndex}-${i}`}>
-                                <td className="py-1 pr-2 text-right align-baseline w-12">
-                                  <span className="font-data font-medium text-primary">{scaledAmount}</span>
-                                </td>
-                                <td className="py-1 pr-3 text-muted-foreground align-baseline w-14">
-                                  {abbreviateUnit(ingredient.unit)}
-                                </td>
-                                <td className="py-1 align-baseline">{ingredient.name}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                      <ul className="space-y-2">
+                        {group.ingredients.map((ingredient, i) => {
+                          const scaledAmount = scaleAmount(ingredient.amount, scale);
+                          return (
+                            <li key={i} className="flex items-baseline gap-2 text-sm" data-testid={`ingredient-${groupIndex}-${i}`}>
+                              <span className="font-data font-medium text-primary whitespace-nowrap">{scaledAmount}</span>
+                              <span className="text-muted-foreground whitespace-nowrap">{abbreviateUnit(ingredient.unit)}</span>
+                              <span>{ingredient.name}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   ))}
                 </CardContent>
