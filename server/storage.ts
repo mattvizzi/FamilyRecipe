@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { 
   families, 
@@ -138,11 +138,11 @@ class DatabaseStorage implements IStorage {
   }
 
   async getFamilyMemberCount(familyId: string): Promise<number> {
-    const members = await db
-      .select()
+    const result = await db
+      .select({ count: sql<number>`COUNT(*)` })
       .from(familyMembers)
       .where(eq(familyMembers.familyId, familyId));
-    return members.length;
+    return Number(result[0]?.count ?? 0);
   }
 
   // Recipe operations

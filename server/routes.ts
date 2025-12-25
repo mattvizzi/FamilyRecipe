@@ -6,7 +6,7 @@ import { registerAuthRoutes } from "./replit_integrations/auth/routes";
 import { openai, generateImageBuffer } from "./replit_integrations/image/client";
 import { insertRecipeSchema, updateRecipeSchema, recipeCategories, type RecipeGroup } from "@shared/schema";
 import PDFDocument from "pdfkit";
-import { scaleAmount } from "./lib/fraction";
+import { scaleAmount } from "@shared/lib/fraction";
 
 interface AuthRequest extends Request {
   user?: {

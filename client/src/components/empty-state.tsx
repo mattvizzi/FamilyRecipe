@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Camera, Link as LinkIcon, FileText, Plus, Sparkles } from "lucide-react";
+import { Camera, Link as LinkIcon, FileText, Plus, BookOpen } from "lucide-react";
 import { Link } from "wouter";
-import emptyStateImage from "@assets/image_1766638977081.png";
 
 interface EmptyStateProps {
   familyName: string;
@@ -11,12 +10,8 @@ export function EmptyState({ familyName }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-6">
       <div className="max-w-md w-full text-center">
-        <div className="w-48 h-48 mx-auto mb-6 rounded-2xl overflow-hidden">
-          <img 
-            src={emptyStateImage} 
-            alt="Start your cookbook" 
-            className="w-full h-full object-cover"
-          />
+        <div className="w-24 h-24 mx-auto mb-6 rounded-lg bg-primary/10 flex items-center justify-center">
+          <BookOpen className="h-12 w-12 text-primary" />
         </div>
         
         <h2 className="text-2xl font-bold mb-2" data-testid="text-empty-title">

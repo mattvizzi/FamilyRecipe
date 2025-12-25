@@ -5,7 +5,6 @@ import { z } from "zod";
 
 // Re-export auth models
 export * from "./models/auth";
-export * from "./models/chat";
 
 // Recipe categories enum
 export const recipeCategories = [

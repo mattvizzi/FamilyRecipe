@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { scaleAmount } from "@/lib/fraction";
+import { scaleAmount } from "@shared/lib/fraction";
 import { abbreviateUnit } from "@/lib/units";
 import type { RecipeWithCreator, Family } from "@shared/schema";
 
@@ -343,7 +343,6 @@ export default function RecipeDetail() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
                         onClick={() => setScale(Math.max(0.5, scale - 0.5))}
                         disabled={scale <= 0.5}
                         data-testid="button-scale-down"
@@ -354,7 +353,6 @@ export default function RecipeDetail() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
                         onClick={() => setScale(Math.min(4, scale + 0.5))}
                         disabled={scale >= 4}
                         data-testid="button-scale-up"

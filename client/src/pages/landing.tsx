@@ -66,7 +66,7 @@ export default function Landing() {
                 </div>
               </div>
               <div className="relative lg:pl-8">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-border shadow-lg">
+                <div className="aspect-[4/3] rounded-lg overflow-hidden border-2 border-border">
                   <img 
                     src={heroImage} 
                     alt="Home cooking with love" 
@@ -90,7 +90,7 @@ export default function Landing() {
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-background rounded-xl p-6 border border-border">
+              <div className="bg-background rounded-lg p-6 border border-border">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Camera className="h-6 w-6 text-primary" />
                 </div>
@@ -99,7 +99,7 @@ export default function Landing() {
                   Photos, handwritten cards, websites, or typed text. Our AI extracts it all.
                 </p>
               </div>
-              <div className="bg-background rounded-xl p-6 border border-border">
+              <div className="bg-background rounded-lg p-6 border border-border">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
@@ -108,7 +108,7 @@ export default function Landing() {
                   Automatically parse ingredients, instructions, and even generate beautiful photos.
                 </p>
               </div>
-              <div className="bg-background rounded-xl p-6 border border-border">
+              <div className="bg-background rounded-lg p-6 border border-border">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
