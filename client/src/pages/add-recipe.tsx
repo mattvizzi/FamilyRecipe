@@ -40,6 +40,7 @@ export default function AddRecipe() {
   const [inputValue, setInputValue] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [isConvertingHeic, setIsConvertingHeic] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressMessage, setProgressMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -168,13 +169,64 @@ export default function AddRecipe() {
     });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const convertHeicToJpeg = async (file: File): Promise<File> => {
+    const isHeic = file.type === "image/heic" || 
+                   file.type === "image/heif" || 
+                   file.name.toLowerCase().endsWith(".heic") ||
+                   file.name.toLowerCase().endsWith(".heif");
+    
+    if (!isHeic) {
+      return file;
+    }
+    
+    try {
+      const convertedBlob = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.85,
+      });
+      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+      const newFileName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
+      return new File([blob], newFileName, { type: "image/jpeg" });
+    } catch (e) {
+      console.error("HEIC conversion failed:", e);
+      throw new Error("Failed to convert HEIC image");
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const fileArray = Array.from(files);
-      setSelectedFiles(fileArray);
-      setPreviewUrls(fileArray.map(f => URL.createObjectURL(f)));
+      
+      const hasHeic = fileArray.some(f => 
+        f.type === "image/heic" || 
+        f.type === "image/heif" || 
+        f.name.toLowerCase().endsWith(".heic") ||
+        f.name.toLowerCase().endsWith(".heif")
+      );
+      
       setStep("input");
+      
+      if (hasHeic) {
+        setIsConvertingHeic(true);
+        setPreviewUrls([]);
+        
+        try {
+          const convertedFiles = await Promise.all(fileArray.map(convertHeicToJpeg));
+          setSelectedFiles(convertedFiles);
+          setPreviewUrls(convertedFiles.map(f => URL.createObjectURL(f)));
+        } catch {
+          setErrorMessage("Failed to convert HEIC image. Please try a different photo.");
+          setStep("error");
+          return;
+        } finally {
+          setIsConvertingHeic(false);
+        }
+      } else {
+        setSelectedFiles(fileArray);
+        setPreviewUrls(fileArray.map(f => URL.createObjectURL(f)));
+      }
     }
   };
 
@@ -368,7 +420,13 @@ export default function AddRecipe() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {(inputMethod === "photo" || inputMethod === "camera") && previewUrls.length > 0 && (
+                    {(inputMethod === "photo" || inputMethod === "camera") && isConvertingHeic && (
+                      <div className="mb-6 flex flex-col items-center justify-center py-8">
+                        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3" />
+                        <p className="text-sm text-muted-foreground">Converting HEIC image...</p>
+                      </div>
+                    )}
+                    {(inputMethod === "photo" || inputMethod === "camera") && !isConvertingHeic && previewUrls.length > 0 && (
                       <div className="mb-6">
                         <div className={`grid gap-2 ${previewUrls.length === 1 ? '' : 'grid-cols-2'}`}>
                           {previewUrls.map((url, index) => (
