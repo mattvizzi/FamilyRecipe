@@ -223,7 +223,7 @@ export function Header({ family }: HeaderProps) {
             </Link>
             <Link href="/recipes">
               <span 
-                className={`text-[10px] text-white cursor-pointer hover:underline uppercase font-bold ${location === "/recipes" ? "underline" : ""}`}
+                className="text-white cursor-pointer hover:underline uppercase font-bold text-[12px]"
                 data-testid="subnav-all-recipes"
               >
                 All Recipes
