@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Link as LinkIcon, FileText, PenLine, ArrowRight, CheckCircle, Sparkles } from "lucide-react";
+import { Camera, Link as LinkIcon, FileText, PenLine, ArrowRight, CheckCircle, Sparkles, Clock, Users, Minus, Plus, Copy, FileDown } from "lucide-react";
 import heroImage from "@assets/ChatGPT_Image_Dec_24,_2025,_11_46_48_PM_1766638042461.png";
+import carbonaraImage from "@assets/generated_images/spaghetti_carbonara_dish.png";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
 
 export default function Landing() {
@@ -238,39 +241,96 @@ export default function Landing() {
 
         <section className="py-16 px-6">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <p className="text-sm font-medium text-primary mb-2">HOW IT WORKS</p>
+            <div className="text-center mb-10">
+              <p className="text-sm font-medium text-primary mb-2">RECIPE VIEW</p>
               <h2 className="text-2xl md:text-3xl font-bold mb-3">
-                Three simple steps
+                Beautiful, functional recipe pages
               </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Every recipe is organized perfectly with scaling, export options, and more
+              </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto mb-4 font-bold">
-                  1
+            
+            <div className="bg-card rounded-lg border border-border overflow-hidden">
+              <div className="grid md:grid-cols-2">
+                <div className="aspect-square md:aspect-auto">
+                  <img 
+                    src={carbonaraImage} 
+                    alt="Spaghetti Carbonara" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-                <h3 className="font-semibold mb-2">Upload</h3>
-                <p className="text-sm text-muted-foreground">
-                  Take a photo or paste a URL
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto mb-4 font-bold">
-                  2
+                <div className="p-6 md:p-8">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <Badge variant="secondary" className="mb-2">Dinner</Badge>
+                      <h3 className="text-2xl font-bold">Spaghetti Carbonara</h3>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-data">15 min prep</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-data">20 min cook</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Users className="h-4 w-4" />
+                      <span className="font-data">4 servings</span>
+                    </div>
+                  </div>
+                  
+                  <Card className="border border-border mb-4">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <CardTitle className="text-base font-semibold">Ingredients</CardTitle>
+                        <div className="flex items-center gap-0.5 border border-border rounded-lg">
+                          <Button variant="ghost" size="icon" disabled>
+                            <Minus className="h-3.5 w-3.5" />
+                          </Button>
+                          <span className="w-10 text-center text-sm font-data">1x</span>
+                          <Button variant="ghost" size="icon">
+                            <Plus className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <ul className="space-y-1.5 text-sm">
+                        <li className="flex gap-2">
+                          <span className="font-data text-muted-foreground w-16">400g</span>
+                          <span>spaghetti</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-data text-muted-foreground w-16">200g</span>
+                          <span>guanciale</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-data text-muted-foreground w-16">4</span>
+                          <span>egg yolks</span>
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-data text-muted-foreground w-16">100g</span>
+                          <span>pecorino romano</span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Copy className="h-4 w-4" />
+                      Copy
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <FileDown className="h-4 w-4" />
+                      Export PDF
+                    </Button>
+                  </div>
                 </div>
-                <h3 className="font-semibold mb-2">AI Extracts</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ingredients and steps parsed automatically
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mx-auto mb-4 font-bold">
-                  3
-                </div>
-                <h3 className="font-semibold mb-2">Cook & Share</h3>
-                <p className="text-sm text-muted-foreground">
-                  Access anywhere, share with family
-                </p>
               </div>
             </div>
           </div>
@@ -291,14 +351,14 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className="py-6 px-6 border-t border-border">
+      <footer className="py-6 px-6 bg-black">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center">
-            <span className="text-lg font-bold tracking-tight">Family</span>
-            <span className="text-lg font-light text-primary tracking-tight">Recipe</span>
+            <span className="text-lg font-bold tracking-tight text-white">Family</span>
+            <span className="text-lg font-light text-white/80 tracking-tight">Recipe</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Powered by AI. Made with love.
+          <p className="text-sm text-white/60">
+            Made with love.
           </p>
         </div>
       </footer>
