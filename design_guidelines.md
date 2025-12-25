@@ -1,39 +1,48 @@
 # Recipe Tracker Design Guidelines
 
 ## Design Approach
-**Selected System:** Warm & Cozy modern aesthetic with flat design, emphasizing clean hierarchy, subtle borders for depth, and an inviting, comfortable feel.
+**Selected System:** Warm & Vibrant aesthetic with flat design, emphasizing clean hierarchy, subtle borders for depth, and visual interest through strategic accent colors.
 
-**Design Philosophy:** A welcoming interface that feels like home, using warm amber tones, soft cream backgrounds, and gentle contrast to create a cozy yet modern experience.
+**Design Philosophy:** A welcoming, lively interface that uses a warm amber primary with complementary sage green and rose accents. Sections have visible contrast for better visual separation.
 
 ---
 
 ## Color System
 
-**Theme:** Light and Dark mode with warm undertones throughout
+**Theme:** Light and Dark mode with warm undertones and accent color variety
 
 **Light Mode Background Colors:**
-- Background Base: Warm off-white (HSL 30 30% 98%)
-- Card Background: Soft cream (HSL 35 25% 96%)
-- Muted/Secondary: Warm neutral (HSL 30 15% 94%)
+- Background Base: Warm off-white (HSL 40 30% 98%)
+- Card Background: Soft cream (HSL 40 35% 95%)
+- Section Alt: Warmer cream for alternating sections (HSL 40 40% 92%)
+- Muted/Secondary: Warm neutral (HSL 40 20% 90%)
 
 **Dark Mode Background Colors:**
-- Background Base: Warm charcoal (HSL 25 15% 8%)
-- Card Background: Warm dark brown (HSL 25 12% 12%)
-- Muted/Secondary: Warm gray (HSL 25 10% 15%)
+- Background Base: Warm charcoal (HSL 25 20% 7%)
+- Card Background: Warm dark brown (HSL 25 18% 11%)
+- Section Alt: Elevated dark (HSL 25 18% 12%)
+- Muted/Secondary: Warm gray (HSL 25 15% 15%)
 
 **Border Colors:**
-- Light: Warm taupe (HSL 30 15% 88%)
-- Dark: Warm brown-gray (HSL 25 10% 18%)
+- Light: Warm taupe (HSL 35 20% 85%)
+- Dark: Warm brown-gray (HSL 25 15% 18%)
 
-**Accent Colors:**
-- Primary (Warm Amber): HSL 28 85% 55% - a rich, inviting amber-orange
-- Primary Hover: Slightly elevated via built-in system
+**Primary & Accent Colors:**
+- Primary (Amber): HSL 24 90% 50% - vibrant amber-orange
+- Accent Green (Sage): HSL 152 55% 42% - fresh, natural green
+- Accent Rose: HSL 345 70% 55% - warm, inviting pink-red
 - Destructive: Warm red (HSL 0 72% 55%)
 
 **Text Colors:**
-- Light Foreground: Warm dark brown (HSL 25 20% 10%)
-- Dark Foreground: Warm cream (HSL 35 20% 92%)
+- Light Foreground: Warm dark brown (HSL 25 25% 8%)
+- Dark Foreground: Warm cream (HSL 40 25% 94%)
 - Muted Foreground: Warm gray tones
+
+**Accent Usage:**
+- Use accent-green for positive actions, sharing, collaboration features
+- Use accent-rose for testimonials, favorites, emotional highlights
+- Use primary for main CTAs, active states, primary features
+- Alternate bg-section-alt with bg-background for section contrast
 
 ---
 

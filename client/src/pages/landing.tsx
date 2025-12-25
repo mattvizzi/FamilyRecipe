@@ -86,56 +86,75 @@ export default function Landing() {
 
         <RecipeShowcaseCarousel />
 
-        <section className="py-20 px-6">
+        <div className="h-16 bg-background" />
+
+        <section className="py-20 px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-3">How It Works</p>
-              <h2 className="text-3xl md:text-4xl font-bold">
-                Three simple steps
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                From photo to cookbook in seconds
               </h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Our AI does the heavy lifting so you can focus on cooking
+              </p>
             </div>
             
-            <div className="relative">
-              <div className="hidden md:block absolute top-8 left-[16.67%] right-[16.67%] h-0.5 bg-border" />
-              <div className="hidden md:block absolute top-8 left-[16.67%] w-[33%] h-0.5 bg-primary" />
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="relative bg-card rounded-lg p-6 border border-border">
+                <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
+                  1
+                </div>
+                <div className="pt-4">
+                  <div className="w-full h-32 rounded-lg bg-muted mb-4 flex items-center justify-center border-2 border-dashed border-border">
+                    <div className="text-center">
+                      <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <span className="text-sm text-muted-foreground">Upload photo</span>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-1">Capture any recipe</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Photo, URL, or paste text. Even messy handwriting works.
+                  </p>
+                </div>
+              </div>
               
-              <div className="grid md:grid-cols-3 gap-12 md:gap-8">
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative z-10 w-16 h-16 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <Upload className="h-7 w-7 text-primary-foreground" />
-                    </div>
-                    <span className="text-6xl font-bold text-primary/10">01</span>
+              <div className="relative bg-card rounded-lg p-6 border-2 border-primary">
+                <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-accent-green text-accent-green-foreground flex items-center justify-center font-bold text-lg">
+                  2
+                </div>
+                <div className="pt-4">
+                  <div className="w-full h-32 rounded-lg bg-primary/10 mb-4 flex items-center justify-center relative overflow-hidden">
+                    <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Upload</h3>
-                  <p className="text-muted-foreground">
-                    Snap a photo, paste a URL, or type it in. We handle any format.
+                  <h3 className="text-lg font-semibold mb-1">AI extracts everything</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Ingredients, steps, timing, and even generates a photo.
                   </p>
                 </div>
-                
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative z-10 w-16 h-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center flex-shrink-0">
-                      <Wand2 className="h-7 w-7 text-primary" />
-                    </div>
-                    <span className="text-6xl font-bold text-primary/10">02</span>
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">AI Magic</h3>
-                  <p className="text-muted-foreground">
-                    Our AI extracts ingredients, instructions, and generates a photo.
-                  </p>
+              </div>
+              
+              <div className="relative bg-card rounded-lg p-6 border border-border">
+                <div className="absolute -top-3 -left-3 w-10 h-10 rounded-full bg-accent-rose text-accent-rose-foreground flex items-center justify-center font-bold text-lg">
+                  3
                 </div>
-                
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative z-10 w-16 h-16 rounded-full bg-muted border-2 border-border flex items-center justify-center flex-shrink-0">
-                      <ChefHat className="h-7 w-7 text-muted-foreground" />
+                <div className="pt-4">
+                  <div className="w-full h-32 rounded-lg bg-muted mb-4 flex items-center justify-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Users className="h-4 w-4 text-primary" />
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex -space-x-2">
+                        <div className="w-8 h-8 rounded-full bg-accent-green/20 border-2 border-card" />
+                        <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-card" />
+                        <div className="w-8 h-8 rounded-full bg-accent-rose/20 border-2 border-card" />
+                      </div>
                     </div>
-                    <span className="text-6xl font-bold text-primary/10">03</span>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Cook & Share</h3>
-                  <p className="text-muted-foreground">
-                    Access anywhere, scale servings, and share with your family.
+                  <h3 className="text-lg font-semibold mb-1">Share with family</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Everyone can access, cook, and add their own recipes.
                   </p>
                 </div>
               </div>
@@ -395,18 +414,18 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-20 px-6 bg-muted/30">
+        <section className="py-20 px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
-                <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-3">Family Sharing</p>
+                <p className="text-xs font-semibold tracking-widest text-accent-green uppercase mb-3">Family Sharing</p>
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">
                   One cookbook for everyone
                 </h2>
                 <div className="space-y-6">
                   <div className="flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <UserPlus className="h-5 w-5 text-primary-foreground" />
+                    <div className="w-10 h-10 rounded-full bg-accent-green text-accent-green-foreground flex items-center justify-center flex-shrink-0">
+                      <UserPlus className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Easy Invites</h3>
@@ -414,8 +433,8 @@ export default function Landing() {
                     </div>
                   </div>
                   <div className="flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary flex items-center justify-center flex-shrink-0">
-                      <Share2 className="h-5 w-5 text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0">
+                      <Share2 className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Collaborate</h3>
@@ -423,8 +442,8 @@ export default function Landing() {
                     </div>
                   </div>
                   <div className="flex gap-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="h-5 w-5 text-primary/70" />
+                    <div className="w-10 h-10 rounded-full bg-accent-rose text-accent-rose-foreground flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Access Anywhere</h3>
@@ -436,8 +455,8 @@ export default function Landing() {
               <div className="relative">
                 <div className="bg-card rounded-lg border border-border p-6">
                   <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Users className="h-5 w-5 text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-accent-green/20 flex items-center justify-center">
+                      <Users className="h-5 w-5 text-accent-green" />
                     </div>
                     <div>
                       <p className="font-medium">The Johnson Family</p>
@@ -446,16 +465,16 @@ export default function Landing() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">GM</AvatarFallback></Avatar>
-                      <span className="text-sm">Grandma added <span className="font-medium">Apple Pie</span></span>
+                      <Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-accent-green/20 text-accent-green">GM</AvatarFallback></Avatar>
+                      <span className="text-sm">Grandma added <span className="font-medium text-accent-green">Apple Pie</span></span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">MJ</AvatarFallback></Avatar>
-                      <span className="text-sm">Mom added <span className="font-medium">Thanksgiving Stuffing</span></span>
+                      <Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/20 text-primary">MJ</AvatarFallback></Avatar>
+                      <span className="text-sm">Mom added <span className="font-medium text-primary">Thanksgiving Stuffing</span></span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-primary/10 text-primary">SJ</AvatarFallback></Avatar>
-                      <span className="text-sm">Sarah added <span className="font-medium">Chocolate Cookies</span></span>
+                      <Avatar className="h-8 w-8"><AvatarFallback className="text-xs bg-accent-rose/20 text-accent-rose">SJ</AvatarFallback></Avatar>
+                      <span className="text-sm">Sarah added <span className="font-medium text-accent-rose">Chocolate Cookies</span></span>
                     </div>
                   </div>
                 </div>
@@ -464,23 +483,23 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-20 px-6">
+        <section className="py-20 px-6 bg-card">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <p className="text-xs font-semibold tracking-widest text-primary uppercase mb-3">Loved by Families</p>
+              <p className="text-xs font-semibold tracking-widest text-accent-rose uppercase mb-3">Loved by Families</p>
               <h2 className="text-3xl md:text-4xl font-bold">
                 What people are saying
               </h2>
             </div>
             
-            <div className="relative mb-10 p-8 rounded-lg bg-primary/5 border-l-4 border-primary">
-              <Quote className="absolute top-6 left-6 h-12 w-12 text-primary/10" />
+            <div className="relative mb-10 p-8 rounded-lg bg-background border-l-4 border-accent-rose">
+              <Quote className="absolute top-6 left-6 h-12 w-12 text-accent-rose/20" />
               <blockquote className="relative z-10 text-lg md:text-xl leading-relaxed mb-6 pl-8">
                 "I finally digitized my grandmother's handwritten recipe cards. The AI read her cursive perfectly - even the notes in the margins. Now my kids can access them anytime."
               </blockquote>
               <div className="flex items-center gap-4 pl-8">
                 <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-primary text-primary-foreground font-medium">MR</AvatarFallback>
+                  <AvatarFallback className="bg-accent-rose text-accent-rose-foreground font-medium">MR</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-semibold">Maria Rodriguez</p>
@@ -490,13 +509,13 @@ export default function Landing() {
             </div>
             
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-lg bg-muted/50">
+              <div className="p-6 rounded-lg bg-background border border-border">
                 <p className="text-muted-foreground mb-4">
                   "Our family is spread across three states. Now everyone contributes recipes and we actually use them. No more lost bookmarks."
                 </p>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm">JT</AvatarFallback>
+                    <AvatarFallback className="bg-accent-green/20 text-accent-green text-sm">JT</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">James Thompson</p>
@@ -505,13 +524,13 @@ export default function Landing() {
                 </div>
               </div>
               
-              <div className="p-6 rounded-lg bg-muted/50">
+              <div className="p-6 rounded-lg bg-background border border-border">
                 <p className="text-muted-foreground mb-4">
                   "The scaling feature is a game-changer. Mom's recipe for 4 becomes a feast for 8 instantly. PDF export is perfect for printing."
                 </p>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm">SK</AvatarFallback>
+                    <AvatarFallback className="bg-primary/20 text-primary text-sm">SK</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="text-sm font-medium">Sarah Kim</p>
@@ -523,7 +542,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="py-20 px-6 bg-muted/30">
+        <section className="py-20 px-6 bg-section-alt">
           <div className="max-w-5xl mx-auto">
             <div className="grid lg:grid-cols-5 gap-12">
               <div className="lg:col-span-2">

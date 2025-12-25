@@ -81,6 +81,15 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
+        "accent-green": {
+          DEFAULT: "hsl(var(--accent-green) / <alpha-value>)",
+          foreground: "hsl(var(--accent-green-foreground) / <alpha-value>)",
+        },
+        "accent-rose": {
+          DEFAULT: "hsl(var(--accent-rose) / <alpha-value>)",
+          foreground: "hsl(var(--accent-rose-foreground) / <alpha-value>)",
+        },
+        "section-alt": "hsl(var(--section-alt) / <alpha-value>)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
