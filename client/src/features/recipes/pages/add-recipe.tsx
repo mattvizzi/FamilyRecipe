@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,19 +14,16 @@ import {
   FileText,
   Sparkles,
   ArrowLeft,
-  ArrowRight,
   Check,
   AlertCircle,
-  Globe,
-  Lock,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Family, InsertRecipe } from "@shared/schema";
+import type { Family } from "@shared/schema";
 import { Link } from "wouter";
 
 type InputMethod = "photo" | "camera" | "url" | "text" | null;
-type WizardStep = "select" | "input" | "processing" | "visibility" | "complete" | "error";
+type WizardStep = "select" | "input" | "processing" | "error";
 
 export default function AddRecipe() {
   const [, navigate] = useLocation();
@@ -40,38 +37,20 @@ export default function AddRecipe() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [isConvertingHeic, setIsConvertingHeic] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [progressMessage, setProgressMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [createdRecipeId, setCreatedRecipeId] = useState<string | null>(null);
-  const [isBackgroundProcessing, setIsBackgroundProcessing] = useState(false);
-  const [pendingContent, setPendingContent] = useState<{ method: string; content: string } | null>(null);
 
   const { data: family } = useQuery<Family>({
     queryKey: ["/api/family"],
   });
 
-  useEffect(() => {
-    if (step === "processing" && !isBackgroundProcessing) {
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        e.preventDefault();
-        e.returnValue = "Recipe is still being processed. Are you sure you want to leave?";
-        return e.returnValue;
-      };
-      window.addEventListener("beforeunload", handleBeforeUnload);
-      return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-    }
-  }, [step, isBackgroundProcessing]);
-
   const processRecipeMutation = useMutation({
     mutationFn: async (data: { method: string; content: string }) => {
-      const response = await apiRequest("POST", "/api/recipes/process", data);
+      const response = await apiRequest("POST", "/api/recipes/process-background", data);
       return response.json();
     },
-    onSuccess: (data) => {
-      setCreatedRecipeId(data.id);
-      setStep("visibility");
-      queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
+    onSuccess: () => {
+      setStep("processing");
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
     },
     onError: (error: Error) => {
       setErrorMessage(error.message);
@@ -79,44 +58,6 @@ export default function AddRecipe() {
     },
   });
 
-  const visibilityMutation = useMutation({
-    mutationFn: async (isPublic: boolean) => {
-      return apiRequest("PATCH", `/api/recipes/${createdRecipeId}/visibility`, { isPublic });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/recipes"] });
-      setStep("complete");
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to set visibility", variant: "destructive" });
-    },
-  });
-
-  const backgroundProcessMutation = useMutation({
-    mutationFn: async (data: { method: string; content: string }) => {
-      const response = await apiRequest("POST", "/api/recipes/process-background", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ 
-        title: "Processing in Background", 
-        description: "You can leave this page. We'll notify you when your recipe is ready.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
-      navigate("/home");
-    },
-    onError: (error: Error) => {
-      setIsBackgroundProcessing(false);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const handleBackgroundProcess = () => {
-    if (pendingContent) {
-      setIsBackgroundProcessing(true);
-      backgroundProcessMutation.mutate(pendingContent);
-    }
-  };
 
   const handleMethodSelect = (method: InputMethod) => {
     setInputMethod(method);
@@ -249,27 +190,16 @@ export default function AddRecipe() {
   };
 
   const handleSubmit = async () => {
-    setStep("processing");
-    setProgress(0);
-    setProgressMessage("Preparing...");
-
     let content = inputValue;
 
     if (selectedFiles.length > 0) {
       try {
-        setProgressMessage("Converting images...");
-        setProgress(10);
-        
         const base64Images: string[] = [];
         for (let i = 0; i < selectedFiles.length; i++) {
-          setProgressMessage(`Converting image ${i + 1} of ${selectedFiles.length}...`);
-          setProgress(10 + (i / selectedFiles.length) * 30);
           const base64 = await convertToJpegBase64(selectedFiles[i]);
           base64Images.push(base64);
         }
-        
         content = base64Images.join("|||IMAGE_SEPARATOR|||");
-        setProgress(40);
       } catch {
         setErrorMessage("Failed to process image. Please try a different photo.");
         setStep("error");
@@ -277,35 +207,11 @@ export default function AddRecipe() {
       }
     }
 
-    const processData = {
+    processRecipeMutation.mutate({
       method: inputMethod || "text",
       content,
-    };
-    setPendingContent(processData);
-
-    setProgressMessage("AI is analyzing your recipe...");
-    setProgress(50);
+    });
   };
-
-  const handleForegroundProcess = async () => {
-    if (!pendingContent) return;
-    
-    try {
-      await processRecipeMutation.mutateAsync(pendingContent);
-      setProgress(100);
-      setProgressMessage("Complete!");
-    } catch {
-      // Error handled by mutation
-    }
-  };
-
-  // Auto-start foreground processing when content is ready
-  useEffect(() => {
-    if (step === "processing" && pendingContent && !isBackgroundProcessing && !processRecipeMutation.isPending) {
-      handleForegroundProcess();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, pendingContent]);
 
   const reset = () => {
     setStep("select");
@@ -313,10 +219,7 @@ export default function AddRecipe() {
     setInputValue("");
     setSelectedFiles([]);
     setPreviewUrls([]);
-    setProgress(0);
-    setProgressMessage("");
     setErrorMessage("");
-    setCreatedRecipeId(null);
   };
 
   const inputMethods = [
@@ -328,47 +231,40 @@ export default function AddRecipe() {
 
   if (step === "processing") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6" role="status" aria-live="polite" aria-busy="true">
-        <div className="max-w-sm w-full text-center">
-          <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-              <Sparkles className="h-8 w-8 text-primary animate-pulse" aria-hidden="true" />
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 sm:px-6" role="status" aria-live="polite">
+        <Card className="max-w-sm w-full">
+          <CardContent className="pt-8 pb-6 text-center">
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+                <Sparkles className="h-8 w-8 text-primary animate-pulse" aria-hidden="true" />
+              </div>
+              <h2 className="text-lg font-semibold mb-2">Processing Your Recipe</h2>
+              <p className="text-sm text-muted-foreground">
+                Our AI is extracting your recipe. This usually takes about a minute.
+              </p>
             </div>
-            <h2 className="text-lg font-semibold mb-2">Processing Recipe</h2>
-            <p className="text-sm text-muted-foreground" aria-live="assertive">
-              {progressMessage || "Our AI is extracting your recipe..."}
-            </p>
-          </div>
-          
-          <div className="flex items-center justify-center gap-1.5 mb-6" aria-hidden="true">
-            <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-            <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-            <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-          </div>
-          
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">
-              This may take a minute. You can wait here or continue in the background.
-            </p>
+            
+            <div className="flex items-center justify-center gap-1.5 mb-6" aria-hidden="true">
+              <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
+            
+            <div className="bg-muted/50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-muted-foreground">
+                You can leave this page anytime. Check the notification bell in the header when your recipe is ready.
+              </p>
+            </div>
             
             <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBackgroundProcess}
-              disabled={backgroundProcessMutation.isPending || !pendingContent}
-              data-testid="button-process-background"
+              onClick={() => navigate("/home")}
+              className="w-full"
+              data-testid="button-go-home"
             >
-              {backgroundProcessMutation.isPending ? (
-                "Starting..."
-              ) : (
-                "Continue in Background"
-              )}
+              Got it, take me home
             </Button>
-            <p className="text-xs text-muted-foreground">
-              We'll notify you when your recipe is ready
-            </p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -532,111 +428,6 @@ export default function AddRecipe() {
                       >
                         <Sparkles className="h-4 w-4 mr-2" />
                         Process with AI
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {step === "visibility" && (
-              <motion.div
-                key="visibility"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card>
-                  <CardContent className="p-8">
-                    <div className="text-center mb-6">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                        className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4"
-                      >
-                        <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-                      </motion.div>
-                      <h2 className="text-xl font-bold mb-2">Recipe Extracted!</h2>
-                      <p className="text-muted-foreground">
-                        One last step: Choose who can see this recipe.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                      <button
-                        onClick={() => visibilityMutation.mutate(false)}
-                        disabled={visibilityMutation.isPending}
-                        className="p-6 rounded-lg border-2 border-border hover:border-primary bg-background hover-elevate active-elevate-2 text-center transition-colors"
-                        data-testid="button-visibility-private"
-                      >
-                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                          <Lock className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <p className="font-semibold mb-1">Keep Private</p>
-                        <p className="text-sm text-muted-foreground">
-                          Only your family can see this recipe
-                        </p>
-                      </button>
-
-                      <button
-                        onClick={() => visibilityMutation.mutate(true)}
-                        disabled={visibilityMutation.isPending}
-                        className="p-6 rounded-lg border-2 border-border hover:border-primary bg-background hover-elevate active-elevate-2 text-center transition-colors"
-                        data-testid="button-visibility-public"
-                      >
-                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                          <Globe className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <p className="font-semibold mb-1">Make Public</p>
-                        <p className="text-sm text-muted-foreground">
-                          Anyone can discover and save this recipe
-                        </p>
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-center text-muted-foreground">
-                      You can change this later from the recipe page.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {step === "complete" && (
-              <motion.div
-                key="complete"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", damping: 10, stiffness: 100 }}
-                      className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4"
-                    >
-                      <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
-                    </motion.div>
-                    
-                    <h2 className="text-xl font-bold mb-2">Recipe Added!</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Your recipe has been successfully processed and saved.
-                    </p>
-                    
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                      <Button variant="outline" onClick={reset} data-testid="button-add-another">
-                        Add Another
-                      </Button>
-                      <Button asChild data-testid="button-view-recipe">
-                        <Link href={`/recipe/${createdRecipeId}`}>
-                          View Recipe
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Link>
                       </Button>
                     </div>
                   </CardContent>

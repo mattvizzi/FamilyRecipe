@@ -503,8 +503,9 @@ router.post("/process-background", isAuthenticated, aiProcessingLimiter, async (
     
     const job = await storage.createProcessingJob({
       userId,
+      familyId: family.id,
       inputType: method,
-      inputData: { content: content.substring(0, 1000) },
+      inputData: content.substring(0, 1000),
     });
     
     processRecipeInBackground(job.id, userId, family.id, family.name, method, content);
