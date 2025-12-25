@@ -469,7 +469,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Recipe content is required" });
       }
       
-      // Build the extraction prompt
+      // Build the extraction prompt with SEO fields
       const extractionPrompt = `
 Extract the recipe from the following content. Return a JSON object with this exact structure:
 {
@@ -486,12 +486,18 @@ Extract the recipe from the following content. Return a JSON object with this ex
       ],
       "instructions": ["Step 1...", "Step 2..."]
     }
-  ]
+  ],
+  "metaDescription": "A compelling 150-160 character SEO description that entices users to try this recipe. Include key ingredients and cooking method.",
+  "seoKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
 }
 
 For complex recipes like "Spaghetti and Meatballs", create separate groups for each component.
 Use fractions for amounts where appropriate (e.g., "1/2", "1 1/2").
 Choose the most appropriate category based on the recipe.
+
+SEO Guidelines:
+- metaDescription: Write an enticing 150-160 character description focusing on taste, key ingredients, and ease of preparation. Use action words like "discover", "savor", "enjoy".
+- seoKeywords: Generate 5-8 relevant search keywords including cuisine type, main ingredients, cooking method, dietary info (if applicable), occasion, and related search terms users might use.
 `;
 
       // Build messages based on content type (image or text)
@@ -572,6 +578,7 @@ high-end cookbook style photography, clean minimal background, 8k quality,
 shallow depth of field, food styling.`;
 
       let imageUrl: string | undefined;
+      let imageAltText: string | undefined;
       try {
         const imageBuffer = await generateImageBuffer(imagePrompt, "1024x1024");
         // Upload to Object Storage instead of storing base64 in database
@@ -579,12 +586,31 @@ shallow depth of field, food styling.`;
         // Generate a temporary ID for the image (will be updated after recipe is created)
         const tempId = `temp-${Date.now()}`;
         imageUrl = await uploadRecipeImage(base64Data, tempId);
+        
+        // Generate SEO-optimized alt text for the image using AI vision
+        try {
+          const altTextCompletion = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [{
+              role: "user",
+              content: [
+                { type: "text", text: `Generate a concise, SEO-friendly alt text (max 125 characters) for this recipe image of "${extracted.name}". Focus on describing the dish's appearance, key ingredients visible, and presentation style. Do not include phrases like "image of" or "photo of".` },
+                { type: "image_url", image_url: { url: `data:image/png;base64,${base64Data}` } }
+              ]
+            }],
+          });
+          imageAltText = altTextCompletion.choices[0]?.message?.content?.trim();
+        } catch (altTextError) {
+          console.error("Alt text generation failed:", altTextError);
+          // Fallback to recipe name
+          imageAltText = `${extracted.name} - beautifully plated and ready to serve`;
+        }
       } catch (imageError) {
         console.error("Image generation failed:", imageError);
         // Continue without image
       }
 
-      // Create the recipe
+      // Create the recipe with SEO fields
       const recipe = await storage.createRecipe(family.id, userId, {
         name: extracted.name,
         category: extracted.category,
@@ -593,6 +619,9 @@ shallow depth of field, food styling.`;
         servings: extracted.servings || 4,
         imageUrl,
         groups: extracted.groups,
+        metaDescription: extracted.metaDescription || null,
+        seoKeywords: Array.isArray(extracted.seoKeywords) ? extracted.seoKeywords : null,
+        imageAltText: imageAltText || null,
       });
 
       // Sync recipe to HubSpot as a deal (non-blocking)

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { RecipeEditDrawer } from "@/components/recipe-edit-drawer";
+import { SEO } from "@/components/seo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -160,6 +161,7 @@ export default function RecipeDetail() {
     document.head.appendChild(script);
 
     // Update document title and meta description
+    // Use AI-generated metaDescription if available, otherwise fallback to generated one
     document.title = `${recipe.name} | Family Recipe Book`;
     
     let metaDesc = document.querySelector('meta[name="description"]');
@@ -168,9 +170,9 @@ export default function RecipeDetail() {
       metaDesc.setAttribute("name", "description");
       document.head.appendChild(metaDesc);
     }
-    metaDesc.setAttribute("content", 
-      `${recipe.name} - ${recipe.category} recipe. ${totalTime > 0 ? `Ready in ${totalTime} minutes.` : ""} Serves ${recipe.servings}.`
-    );
+    const seoDescription = recipe.metaDescription || 
+      `${recipe.name} - ${recipe.category} recipe. ${totalTime > 0 ? `Ready in ${totalTime} minutes.` : ""} Serves ${recipe.servings}.`;
+    metaDesc.setAttribute("content", seoDescription);
 
     // Add canonical URL to prevent duplicate content issues
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -581,7 +583,8 @@ export default function RecipeDetail() {
             <div className="rounded-lg overflow-hidden aspect-video mb-8">
               <img 
                 src={recipe.imageUrl} 
-                alt={recipe.name}
+                alt={recipe.imageAltText || recipe.name}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             </div>

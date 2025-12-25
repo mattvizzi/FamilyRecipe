@@ -37,6 +37,16 @@ Recipe Tracker is a family recipe management application that allows users to or
   - Ingredients and HowToStep instructions
   - Optional aggregateRating and image
   - Dynamic meta descriptions and canonical URLs
+- **AI-powered SEO optimization**: Auto-generates SEO content during recipe creation:
+  - `metaDescription`: 150-160 char compelling description for search results
+  - `seoKeywords`: Array of 5-8 relevant search keywords
+  - `imageAltText`: AI vision-generated alt text for recipe images
+  - Database schema updated with new columns in `recipes` table
+- **React Helmet SEO**: Added react-helmet-async for managing page meta tags:
+  - Reusable SEO component with title templating and Open Graph support
+  - SEO applied to landing page, home page, and public recipes page
+  - Recipe detail pages use AI-generated descriptions when available
+- **Performance improvements**: Added lazy loading (`loading="lazy"`) to all images
 - **Cache invalidation fix**: Added `/api/recipes/saved` to invalidateRecipeQueries() helper
 
 ### Earlier in December
