@@ -46,9 +46,12 @@ export default function UserOnboarding() {
     mutationFn: async (data: { firstName: string; lastName: string; profileImageData?: string }) => {
       return apiRequest("POST", "/api/user/complete-onboarding", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/user/onboarding-status"] });
+    onSuccess: async () => {
+      // Wait for both query invalidations to complete before navigating
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/user/onboarding-status"] }),
+      ]);
       navigate("/create-family");
     },
     onError: () => {
@@ -144,23 +147,18 @@ export default function UserOnboarding() {
             <CardContent className="pt-6">
               <form onSubmit={handleSubmit}>
                 <div className="flex flex-col items-center mb-6">
-                  <div className="relative group">
-                    <Avatar className="h-24 w-24 border-2 border-border">
+                  <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                    <Avatar className="h-28 w-28 border-2 border-border transition-opacity group-hover:opacity-90">
                       {profileImagePreview ? (
                         <AvatarImage src={profileImagePreview} alt="Profile" />
                       ) : null}
-                      <AvatarFallback className="text-2xl bg-muted">
+                      <AvatarFallback className="text-3xl bg-muted">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 p-2 rounded-full bg-primary text-primary-foreground border-2 border-background"
-                      data-testid="button-change-photo"
-                    >
+                    <div className="absolute bottom-0 right-0 p-2.5 rounded-full bg-primary text-primary-foreground border-2 border-background">
                       <Camera className="h-4 w-4" />
-                    </button>
+                    </div>
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -170,8 +168,19 @@ export default function UserOnboarding() {
                       data-testid="input-profile-image"
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Add a profile photo
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-3 text-primary"
+                    onClick={() => fileInputRef.current?.click()}
+                    data-testid="button-change-photo"
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    {profileImagePreview ? "Change Photo" : "Add Profile Photo"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optional - helps family members recognize you
                   </p>
                 </div>
 
