@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, CheckCircle, AlertCircle, Info, Play, Loader2 } from "lucide-react";
+import { RefreshCw, CheckCircle, Info, Play, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -24,7 +23,10 @@ export default function AdminHubSpot() {
   const { toast } = useToast();
 
   const syncUsersMutation = useMutation({
-    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/users", { method: "POST" }),
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/hubspot/sync/users");
+      return res.json() as Promise<SyncResult>;
+    },
     onSuccess: (data) => {
       toast({
         title: "Users sync completed",
@@ -41,7 +43,10 @@ export default function AdminHubSpot() {
   });
 
   const syncFamiliesMutation = useMutation({
-    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/families", { method: "POST" }),
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/hubspot/sync/families");
+      return res.json() as Promise<SyncResult>;
+    },
     onSuccess: (data) => {
       toast({
         title: "Families sync completed",
@@ -58,7 +63,10 @@ export default function AdminHubSpot() {
   });
 
   const syncRecipesMutation = useMutation({
-    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/recipes", { method: "POST" }),
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/hubspot/sync/recipes");
+      return res.json() as Promise<SyncResult>;
+    },
     onSuccess: (data) => {
       toast({
         title: "Recipes sync completed",
@@ -75,7 +83,10 @@ export default function AdminHubSpot() {
   });
 
   const syncAllMutation = useMutation({
-    mutationFn: () => apiRequest<SyncResult>("/api/admin/hubspot/sync/all", { method: "POST" }),
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/hubspot/sync/all");
+      return res.json() as Promise<SyncResult>;
+    },
     onSuccess: (data) => {
       if (data.results) {
         const { users, families, recipes } = data.results;
