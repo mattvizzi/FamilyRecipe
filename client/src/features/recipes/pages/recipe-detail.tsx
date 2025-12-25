@@ -143,7 +143,7 @@ export default function RecipeDetail() {
           worstRating: 1,
         },
       } : {}),
-      ...(recipe.image ? { image: recipe.image } : {}),
+      ...(recipe.imageUrl ? { image: recipe.imageUrl } : {}),
     };
 
     // Remove undefined values
@@ -391,12 +391,30 @@ export default function RecipeDetail() {
   const isOwner = recipe.createdById === user?.id;
 
   return (
-    <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
+    <main className="pt-16 sm:pt-20 pb-12">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          {/* Hero Image - Full Width */}
+          <div className="relative">
+            {recipe.imageUrl ? (
+              <div className="aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden">
+                <img 
+                  src={recipe.imageUrl} 
+                  alt={recipe.imageAltText || recipe.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="aspect-[16/9] sm:aspect-[21/9] w-full bg-muted flex items-center justify-center text-muted-foreground">
+                <ImageOff className="h-16 w-16" />
+              </div>
+            )}
+            
+            {/* Overlay Back Button */}
             <Button 
-              variant="ghost" 
+              variant="outline"
               size="sm"
+              className="absolute top-4 left-4 bg-background border border-border"
               onClick={() => {
                 if (window.history.length > 1) {
                   window.history.back();
@@ -409,137 +427,141 @@ export default function RecipeDetail() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            
-            <div className="flex items-center gap-2">
-              {!isOwner && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => saveMutation.mutate()}
-                      disabled={saveMutation.isPending}
-                      data-testid="button-save"
-                      aria-label={recipe.isSaved ? "Remove from saved recipes" : "Save recipe"}
-                    >
-                      <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{recipe.isSaved ? "Remove from saved" : "Save recipe"}</TooltipContent>
-                </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy" aria-label="Copy recipe to clipboard">
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Copy to clipboard</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf" aria-label="Export recipe as PDF">
-                    <FileDown className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Export as PDF</TooltipContent>
-              </Tooltip>
-              {isOwner && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost"
-                      size="icon" 
-                      onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
-                      disabled={visibilityMutation.isPending}
-                      data-testid="button-visibility"
-                      aria-label={recipe.isPublic ? "Make recipe private" : "Make recipe public"}
-                    >
-                      {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{recipe.isPublic ? "Make private" : "Make public"}</TooltipContent>
-                </Tooltip>
-              )}
-              {isOwner && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit" aria-label="Edit recipe">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Edit recipe</TooltipContent>
-                </Tooltip>
-              )}
-              {isOwner && (
-                <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" data-testid="button-delete" aria-label="Delete recipe">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Delete recipe</TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete "{recipe.name}".
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={() => deleteMutation.mutate()}
-                        className="bg-destructive text-destructive-foreground"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-            </div>
           </div>
 
-          <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4" data-testid="text-recipe-name">
-              {recipe.name}
-            </h1>
-            
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge variant="secondary" data-testid="badge-category">
-                {recipe.category}
-              </Badge>
-              {isOwner && recipe.isPublic && (
-                <Badge variant="success" className="gap-1" data-testid="badge-public">
-                  <Globe className="h-3 w-3" />
-                  Public
-                </Badge>
-              )}
+          {/* Content Area */}
+          <div className="px-4 sm:px-6">
+            {/* Title and Primary Actions Row */}
+            <div className="flex items-start justify-between gap-4 pt-6 pb-4">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl md:text-3xl font-bold mb-2" data-testid="text-recipe-name">
+                  {recipe.name}
+                </h1>
+                
+                {/* Metadata Row - Category, Visibility, Times */}
+                <div className="flex flex-wrap items-center gap-3 text-sm">
+                  <Badge variant="secondary" data-testid="badge-category">
+                    {recipe.category}
+                  </Badge>
+                  {isOwner && recipe.isPublic && (
+                    <Badge variant="success" className="gap-1" data-testid="badge-public">
+                      <Globe className="h-3 w-3" />
+                      Public
+                    </Badge>
+                  )}
+                  <span className="text-muted-foreground">
+                    {((recipe.prepTime || 0) + (recipe.cookTime || 0)) > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span className="font-data">{(recipe.prepTime || 0) + (recipe.cookTime || 0)}m</span>
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" />
+                    <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
+                  </span>
+                </div>
+              </div>
+
+              {/* Primary Actions - Compact */}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {!isOwner && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => saveMutation.mutate()}
+                        disabled={saveMutation.isPending}
+                        data-testid="button-save"
+                        aria-label={recipe.isSaved ? "Remove from saved recipes" : "Save recipe"}
+                      >
+                        <Bookmark className={`h-4 w-4 ${recipe.isSaved ? "fill-current" : ""}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{recipe.isSaved ? "Remove from saved" : "Save recipe"}</TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={copyToClipboard} data-testid="button-copy" aria-label="Copy recipe to clipboard">
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copy to clipboard</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={exportToPDF} data-testid="button-export-pdf" aria-label="Export recipe as PDF">
+                      <FileDown className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Export as PDF</TooltipContent>
+                </Tooltip>
+                {isOwner && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost"
+                        size="icon" 
+                        onClick={() => visibilityMutation.mutate(!recipe.isPublic)}
+                        disabled={visibilityMutation.isPending}
+                        data-testid="button-visibility"
+                        aria-label={recipe.isPublic ? "Make recipe private" : "Make recipe public"}
+                      >
+                        {recipe.isPublic ? <Globe className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{recipe.isPublic ? "Make private" : "Make public"}</TooltipContent>
+                  </Tooltip>
+                )}
+                {isOwner && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={() => setEditDrawerOpen(true)} data-testid="button-edit" aria-label="Edit recipe">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit recipe</TooltipContent>
+                  </Tooltip>
+                )}
+                {isOwner && (
+                  <AlertDialog>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" data-testid="button-delete" aria-label="Delete recipe">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete recipe</TooltipContent>
+                    </Tooltip>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Recipe?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete "{recipe.name}".
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => deleteMutation.mutate()}
+                          className="bg-destructive text-destructive-foreground"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
             </div>
-            
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
-              {(recipe.prepTime || 0) > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-data">{recipe.prepTime}m</span> prep
-                </span>
-              )}
-              {(recipe.cookTime || 0) > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-data">{recipe.cookTime}m</span> cook
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4" />
-                <span className="font-data">{Math.round((recipe.servings || 4) * scale)}</span> servings
-              </span>
-              
+
+            {/* Rating and "I Made This" Row */}
+            <div className="flex flex-wrap items-center gap-4 pb-6 border-b border-border">
               <div className="flex items-center gap-0">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -548,6 +570,7 @@ export default function RecipeDetail() {
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => rateMutation.mutate(star)}
                     className="p-3 -m-2"
+                    aria-label={`Rate ${star} stars`}
                     data-testid={`button-rate-${star}`}
                   >
                     <Star 
@@ -579,25 +602,9 @@ export default function RecipeDetail() {
                 {recipe.canCookAgain ? "I Made This" : "Cooked"}
               </Button>
             </div>
-          </div>
 
-          {recipe.imageUrl && (
-            <div className="rounded-lg overflow-hidden aspect-video mb-8">
-              <img 
-                src={recipe.imageUrl} 
-                alt={recipe.imageAltText || recipe.name}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-          {!recipe.imageUrl && (
-            <div className="rounded-lg overflow-hidden aspect-video mb-8 bg-muted flex items-center justify-center text-muted-foreground">
-              <ImageOff className="h-12 w-12" />
-            </div>
-          )}
-
-          <div className="space-y-8">
+            {/* Recipe Content */}
+            <div className="space-y-8 pt-6">
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-2">
@@ -806,6 +813,7 @@ export default function RecipeDetail() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
 

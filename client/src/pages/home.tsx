@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { RecipeCard, RecipeCardSkeleton } from "@/features/recipes/components/recipe-card";
@@ -6,14 +6,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { LayoutGrid, List, Search, Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayoutGrid, List, Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import type { RecipeWithCreator, Family, RecipeCategory } from "@shared/schema";
 import { recipeCategories } from "@shared/schema";
@@ -94,111 +88,96 @@ export default function Home() {
       />
       <main className="pt-20 sm:pt-28 pb-12 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="mb-8">
+          {/* Page Header */}
+          <div className="mb-6">
             <h1 className="text-2xl font-semibold text-foreground" data-testid="text-page-title">
               My Recipes
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Your personal recipe collection
-            </p>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-6">
-            <Button
-              variant={category === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleCategoryChange("all")}
-              data-testid="button-category-all"
-            >
-              All
-            </Button>
-            {recipeCategories.map((cat) => (
+          {/* Filter Tabs: My Recipes / Saved */}
+          <Tabs value={recipeFilter} onValueChange={(v) => setRecipeFilter(v as RecipeFilter)} className="mb-4">
+            <TabsList className="grid w-full max-w-xs grid-cols-3">
+              <TabsTrigger value="all" data-testid="tab-all">All</TabsTrigger>
+              <TabsTrigger value="my-recipes" data-testid="tab-my-recipes">Created</TabsTrigger>
+              <TabsTrigger value="saved" data-testid="tab-saved">Saved</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Horizontal Scrolling Category Chips */}
+          <div className="relative mb-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <Button
-                key={cat}
-                variant={category.toLowerCase() === cat.toLowerCase() ? "default" : "outline"}
+                variant={category === "all" ? "default" : "outline"}
                 size="sm"
-                onClick={() => handleCategoryChange(cat)}
-                data-testid={`button-category-${cat.toLowerCase()}`}
+                onClick={() => handleCategoryChange("all")}
+                className="flex-shrink-0"
+                data-testid="button-category-all"
               >
-                {cat}
+                All
               </Button>
-            ))}
+              {recipeCategories.map((cat) => (
+                <Button
+                  key={cat}
+                  variant={category.toLowerCase() === cat.toLowerCase() ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleCategoryChange(cat)}
+                  className="flex-shrink-0"
+                  data-testid={`button-category-${cat.toLowerCase()}`}
+                >
+                  {cat}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search and View Toggle */}
+          <div className="flex gap-2 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search recipes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                data-testid="input-search"
+              />
+            </div>
+            <div className="flex border border-border rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
+                data-testid="button-grid-view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("list")}
+                aria-label="List view"
+                data-testid="button-list-view"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (
-            <>
-              <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                <div className="flex-1 h-10 bg-muted rounded-lg animate-pulse" />
-                <div className="flex gap-2">
-                  <div className="w-20 h-10 bg-muted rounded-lg animate-pulse" />
-                  <div className="w-24 h-10 bg-muted rounded-lg animate-pulse" />
-                  <div className="w-28 h-10 bg-muted rounded-lg animate-pulse" />
-                </div>
-              </div>
-              <div className={viewMode === "grid" 
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-                : "flex flex-col gap-4"
-              }>
-                {[...Array(8)].map((_, i) => (
-                  <RecipeCardSkeleton key={i} viewMode={viewMode} />
-                ))}
-              </div>
-            </>
+            <div className={viewMode === "grid" 
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              : "flex flex-col gap-4"
+            }>
+              {[...Array(8)].map((_, i) => (
+                <RecipeCardSkeleton key={i} viewMode={viewMode} />
+              ))}
+            </div>
           ) : familyRecipes.length === 0 && savedRecipes.length === 0 ? (
             <EmptyState />
           ) : (
             <>
-              <div className="flex flex-col sm:flex-row gap-3 mb-8">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search recipes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                    data-testid="input-search"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <div className="flex border border-border rounded-lg overflow-hidden">
-                    <Button
-                      variant={viewMode === "grid" ? "secondary" : "ghost"}
-                      size="icon"
-                      onClick={() => setViewMode("grid")}
-                      data-testid="button-grid-view"
-                    >
-                      <LayoutGrid className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === "list" ? "secondary" : "ghost"}
-                      size="icon"
-                      onClick={() => setViewMode("list")}
-                      data-testid="button-list-view"
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <Select 
-                    value={recipeFilter} 
-                    onValueChange={(v) => setRecipeFilter(v as RecipeFilter)}
-                  >
-                    <SelectTrigger className="w-28" data-testid="select-recipe-filter">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="my-recipes">My Recipes</SelectItem>
-                      <SelectItem value="saved">Saved</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button asChild className="gap-2" data-testid="button-add-recipe">
-                    <Link href="/add-recipe">
-                      <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Add Recipe</span>
-                    </Link>
-                  </Button>
-                </div>
-              </div>
 
               {filteredRecipes.length === 0 ? (
                 <div className="text-center py-16">
@@ -237,6 +216,18 @@ export default function Home() {
             </>
           )}
         </div>
+
+        {/* Floating Action Button for Add Recipe */}
+        <Link href="/add-recipe">
+          <Button
+            size="lg"
+            className="fixed bottom-6 right-6 rounded-full w-14 h-14 z-40 border border-border"
+            aria-label="Add new recipe"
+            data-testid="button-fab-add-recipe"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </Link>
       </main>
     </>
   );
