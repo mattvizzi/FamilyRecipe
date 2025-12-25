@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "./use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
 interface AdminCheckResponse {
   isAdmin: boolean;

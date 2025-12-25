@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { RecipeEditDrawer } from "@/components/recipe-edit-drawer";
+import { RecipeEditDrawer } from "../components/recipe-edit-drawer";
 import { SEO } from "@/components/seo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

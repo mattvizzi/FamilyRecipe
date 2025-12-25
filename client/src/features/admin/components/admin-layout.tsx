@@ -28,7 +28,7 @@ import {
 import { LogOut, Search, LayoutDashboard, Users, Home as HomeIcon, ChefHat, RefreshCw, ExternalLink, Sun, Moon, Bot, MessageSquare, ChevronDown, Database, Puzzle, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
-import { AdminAISidebar } from "@/components/admin-ai-sidebar";
+import { AdminAISidebar } from "./admin-ai-sidebar";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/use-auth";
-import { useAdmin } from "@/hooks/use-admin";
+import { useAdmin } from "@/features/admin/use-admin";
 import { useQuery } from "@tanstack/react-query";
 import type { Family } from "@shared/schema";
 import { Header } from "@/components/header";
@@ -42,21 +42,21 @@ import NotFound from "@/pages/not-found";
 
 // Lazy loaded pages (code splitting for less frequently used pages)
 const Dashboard = lazy(() => import("@/pages/dashboard"));
-const PublicRecipes = lazy(() => import("@/pages/public-recipes"));
-const RecipeDetail = lazy(() => import("@/pages/recipe-detail"));
-const AddRecipe = lazy(() => import("@/pages/add-recipe"));
-const ManualRecipe = lazy(() => import("@/pages/manual-recipe"));
-const FamilySettings = lazy(() => import("@/pages/family-settings"));
-const FamilyOnboarding = lazy(() => import("@/pages/family-onboarding"));
-const JoinFamily = lazy(() => import("@/pages/join-family"));
+const PublicRecipes = lazy(() => import("@/features/recipes/pages/public-recipes"));
+const RecipeDetail = lazy(() => import("@/features/recipes/pages/recipe-detail"));
+const AddRecipe = lazy(() => import("@/features/recipes/pages/add-recipe"));
+const ManualRecipe = lazy(() => import("@/features/recipes/pages/manual-recipe"));
+const FamilySettings = lazy(() => import("@/features/family/pages/family-settings"));
+const FamilyOnboarding = lazy(() => import("@/features/family/pages/family-onboarding"));
+const JoinFamily = lazy(() => import("@/features/family/pages/join-family"));
 
 // Admin pages (lazy loaded)
-const AdminDashboard = lazy(() => import("@/pages/admin/dashboard"));
-const AdminUsers = lazy(() => import("@/pages/admin/users"));
-const AdminFamilies = lazy(() => import("@/pages/admin/families"));
-const AdminRecipes = lazy(() => import("@/pages/admin/recipes"));
-const AdminComments = lazy(() => import("@/pages/admin/comments"));
-const AdminHubSpot = lazy(() => import("@/pages/admin/hubspot"));
+const AdminDashboard = lazy(() => import("@/features/admin/pages/dashboard"));
+const AdminUsers = lazy(() => import("@/features/admin/pages/users"));
+const AdminFamilies = lazy(() => import("@/features/admin/pages/families"));
+const AdminRecipes = lazy(() => import("@/features/admin/pages/recipes"));
+const AdminComments = lazy(() => import("@/features/admin/pages/comments"));
+const AdminHubSpot = lazy(() => import("@/features/admin/pages/hubspot"));
 
 // Loading fallback component
 function PageLoader() {

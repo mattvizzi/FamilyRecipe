@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { AdminLayout } from "@/components/admin-layout";
+import { AdminLayout } from "../components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AdminDataGrid, Column, FilterOption } from "@/components/admin-data-grid";
+import { AdminDataGrid, Column, FilterOption } from "../components/admin-data-grid";
 import { Eye, EyeOff, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest, queryClient } from "@/lib/queryClient";

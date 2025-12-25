@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AdminLayout } from "@/components/admin-layout";
+import { AdminLayout } from "../components/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Home, ChefHat, Globe, TrendingUp, Eye } from "lucide-react";

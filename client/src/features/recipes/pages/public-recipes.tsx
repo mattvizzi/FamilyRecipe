@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useLocation } from "wouter";
-import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
+import { RecipeCard, RecipeCardSkeleton } from "../components/recipe-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LayoutGrid, List, Search, ChefHat, Plus } from "lucide-react";

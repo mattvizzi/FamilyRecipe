@@ -8,7 +8,7 @@ import carbonaraImage from "@assets/generated_images/spaghetti_carbonara_dish.pn
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { RecipeShowcaseCarousel } from "@/components/recipe-showcase-carousel";
+import { RecipeShowcaseCarousel } from "@/features/recipes/components/recipe-showcase-carousel";
 import { SEO } from "@/components/seo";
 
 export default function Landing() {

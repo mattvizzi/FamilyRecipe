@@ -54,6 +54,13 @@ Recipe Tracker is a family recipe management application that allows users to or
   - Recipe detail pages use AI-generated descriptions when available
 - **Performance improvements**: Added lazy loading (`loading="lazy"`) to all images
 - **Cache invalidation fix**: Added `/api/recipes/saved` to invalidateRecipeQueries() helper
+- **Frontend Feature-Based Restructure**: Reorganized client code into feature-based modules:
+  - `client/src/features/recipes/` - Recipe pages and components (recipe-card, recipe-detail, add-recipe, etc.)
+  - `client/src/features/family/` - Family pages (onboarding, settings, join)
+  - `client/src/features/admin/` - Admin pages, components, and use-admin hook
+  - `client/src/components/` - Shared components (header, seo, theme-toggle)
+  - `client/src/pages/` - Core pages (landing, home, dashboard, not-found)
+- **Dead Code Cleanup**: Removed 20 unused UI components and lib files, 3 npm packages (embla-carousel-react, input-otp, react-resizable-panels)
 
 ### Earlier in December
 - **OpenSea-inspired design rebrand**: Dark minimal aesthetic with flat design, 1px borders for depth, no shadows/glows
@@ -80,10 +87,13 @@ Preferred communication style: Simple, everyday language.
 - **Build Tool**: Vite with path aliases (`@/` for client src, `@shared/` for shared code)
 - **Design System**: OpenSea-inspired dark minimal aesthetic with Inter/JetBrains Mono fonts
 
-The frontend follows a page-based architecture with:
-- Protected routes for authenticated users
-- Family onboarding flow for new users
-- Recipe CRUD operations with form validation via react-hook-form and Zod
+The frontend follows a feature-based architecture:
+- `client/src/features/` - Domain-specific modules (recipes, family, admin) with pages and components
+- `client/src/components/` - Shared components (header, seo, theme-toggle, ui primitives)
+- `client/src/pages/` - Core pages (landing, home, dashboard, not-found)
+- `client/src/hooks/` - Shared hooks (use-auth, use-toast, use-mobile)
+- Protected routes for authenticated users with family onboarding flow
+- Form validation via react-hook-form and Zod
 
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript

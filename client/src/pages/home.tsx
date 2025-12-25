@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
-import { RecipeCard, RecipeCardSkeleton } from "@/components/recipe-card";
+import { RecipeCard, RecipeCardSkeleton } from "@/features/recipes/components/recipe-card";
 import { useAuth } from "@/hooks/use-auth";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
